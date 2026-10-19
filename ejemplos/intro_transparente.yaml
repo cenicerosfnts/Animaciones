@@ -1,0 +1,19 @@
+# Overlay transparente (sin video): se arrastra encima de tu clip en CapCut / Premiere / DaVinci.
+# Render:  python -m animaciones ejemplos/intro_transparente.yaml            -> .mov con transparencia
+#          python -m animaciones ejemplos/intro_transparente.yaml -o x.mp4   -> fondo verde para croma
+formato: vertical
+elementos:
+  - tipo: titulo
+    texto: "Viví 24 horas en el tren más caro del mundo"
+    resaltar: [24, horas, caro]
+    caja_resalte: true
+    posicion: [0.5, 0.3]
+    inicio: 0.1
+    duracion: 3
+  - tipo: emoji
+    emoji: "🚄"
+    posicion: [0.5, 0.52]
+    tamano: 260
+    animacion: caer
+    inicio: 0.8
+    duracion: 2.3

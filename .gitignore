@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.mov
+*.webm
+*_sonidos.wav
+*.png
+guiones/*.mp4

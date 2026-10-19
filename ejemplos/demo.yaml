@@ -1,0 +1,90 @@
+# Demo de todas las animaciones sobre un clip de prueba.
+# Render:  python -m animaciones ejemplos/demo.yaml
+formato: vertical
+fps: 30
+video: clip_prueba.mp4
+
+elementos:
+  # --- Intro ---
+  - tipo: titulo
+    texto: "Esto NO lo puedo creer"
+    resaltar: [creer]
+    estilo: pop
+    posicion: [0.5, 0.32]
+    rotacion: -4
+    inicio: 0.2
+    duracion: 2.3
+  - tipo: zoom
+    estilo: golpe
+    factor: 1.25
+    inicio: 0.2
+    duracion: 2.3
+  - tipo: emoji
+    emoji: "🤯"
+    posicion: [0.78, 0.2]
+    tamano: 200
+    inicio: 0.7
+    duracion: 1.8
+
+  - tipo: transicion
+    colores: [amarillo, negro]
+    inicio: 2.5
+    duracion: 0.8
+
+  # --- Ubicación + cartel ---
+  - tipo: ubicacion
+    lugar: "Tokio, Japón"
+    posicion: [0.22, 0.42]
+    inicio: 3.1
+    duracion: 3
+  - tipo: cartel
+    titulo: "Día 1 en Japón"
+    subtitulo: "Shibuya · 9:00 pm"
+    inicio: 3.4
+    duracion: 2.7
+
+  # --- Flecha + círculo ---
+  - tipo: circulo
+    posicion: [0.62, 0.6]
+    radio: [190, 150]
+    inicio: 6.3
+    duracion: 2.2
+  - tipo: flecha
+    desde: [0.25, 0.3]
+    hasta: [0.5, 0.52]
+    texto: "¡mira esto!"
+    inicio: 6.6
+    duracion: 1.9
+
+  # --- Contador con sacudida ---
+  - tipo: contador
+    desde: 0
+    hasta: 25000
+    prefijo: "$"
+    sufijo: " MXN"
+    posicion: [0.5, 0.4]
+    inicio: 8.6
+    duracion: 2.2
+  - tipo: sacudida
+    inicio: 10.2
+    duracion: 0.5
+  - tipo: flash
+    inicio: 10.2
+
+  # --- Dato curioso ---
+  - tipo: dato
+    titulo: "¿Sabías qué?"
+    texto: "En Tokio hay más de 160 mil restaurantes, más que en cualquier otra ciudad del mundo."
+    posicion: [0.5, 0.45]
+    inicio: 10.9
+    duracion: 3
+
+  # --- Subtítulos dinámicos todo el video ---
+  - tipo: subtitulos
+    posicion: [0.5, 0.8]
+    frases:
+      - {inicio: 0.3, fin: 2.4, texto: "Chicos, esto no lo puedo creer"}
+      - {inicio: 3.2, fin: 6.0, texto: "Acabamos de llegar a Tokio y es otro mundo"}
+      - {inicio: 6.3, fin: 8.4, texto: "Miren lo que hay aquí atrás"}
+      - {inicio: 8.6, fin: 10.6, texto: "Esto cuesta veinticinco mil pesos"}
+      - {inicio: 10.9, fin: 13.8, texto: "Y no me van a creer el dato que les tengo"}
