@@ -363,6 +363,8 @@ const TOKENS = [
   ["acento", "Acento"], ["texto", "Texto"], ["gris", "Narración"], ["tinta", "Línea"], ["papel", "Relleno"], ["fondo", "Fondo"],
 ];
 const PALETAS = {
+  "Angel Ceniceros": { fondo: "#F3EFE7", texto: "#15120F", gris: "#A0988D", acento: "#E5482D", tinta: "#15120F", papel: "#FFFFFF" },
+  "Ceniceros noche": { fondo: "#15120F", texto: "#F3EFE7", gris: "#7D766D", acento: "#FF5A36", tinta: "#F3EFE7", papel: "#26211C" },
   "Documental rojo": { fondo: "#FFFFFF", texto: "#111111", gris: "#B9B9B9", acento: "#C8161D", tinta: "#111111", papel: "#FFFFFF" },
   "Museo": { fondo: "#F2ECDF", texto: "#1E1B16", gris: "#A79F8F", acento: "#B8892B", tinta: "#1E1B16", papel: "#FBF7EE" },
   "Noche": { fondo: "#0F0F12", texto: "#F5F2EA", gris: "#7C7A80", acento: "#FFC531", tinta: "#F5F2EA", papel: "#1C1C22" },
@@ -413,6 +415,7 @@ const ILUS = [
   { id: "hombre", n: "Hombre", t: "persona señor historia científico bigote", svg: G("0 0 300 340", `<path d="M30 340 C34 262 74 232 150 228 C226 232 266 262 270 340 Z"/><path d="M150 236 L116 290 L134 300 L122 340" fill="none"/><path d="M150 236 L184 290 L166 300 L178 340" fill="none"/><path d="M126 196 L126 236 L150 250 L174 236 L174 196"/><path d="M136 244 L150 252 L136 262 Z M164 244 L150 252 L164 262 Z" fill="#111"/><ellipse cx="104" cy="150" rx="12" ry="20"/><ellipse cx="196" cy="150" rx="12" ry="20"/><path d="M106 112 C106 70 194 70 194 112 L194 170 C194 206 174 226 150 226 C126 226 106 206 106 170 Z"/><path d="M96 120 C82 64 124 26 166 40 C204 30 226 74 204 116 C196 92 178 84 158 92 C138 80 112 92 102 128 Z" fill="#111"/><path d="M124 128 L140 124 M160 124 L176 128" fill="none"/><circle cx="133" cy="142" r="4.5" fill="#111"/><circle cx="167" cy="142" r="4.5" fill="#111"/><path d="M150 146 L146 170 L154 172" fill="none"/><path d="M150 180 C140 176 126 180 120 192 C132 188 142 190 150 186 C158 190 168 188 180 192 C174 180 160 176 150 180 Z" fill="#111"/>`, 6) },
   { id: "mujer", n: "Mujer", t: "persona señora historia científica", svg: G("0 0 300 340", `<path d="M92 120 C80 60 120 30 150 32 C190 30 222 64 210 126 L218 230 C190 240 110 240 84 230 Z" fill="#111"/><path d="M30 340 C34 262 74 236 150 232 C226 236 266 262 270 340 Z"/><path d="M128 196 L128 240 C140 250 160 250 172 240 L172 196"/><path d="M108 112 C108 72 192 72 192 112 L192 168 C192 204 172 222 150 222 C128 222 108 204 108 168 Z"/><path d="M104 126 C104 76 140 58 170 66 C196 74 200 100 196 124 C180 102 150 96 130 98 C118 104 110 114 104 126 Z" fill="#111"/><circle cx="133" cy="148" r="4.5" fill="#111"/><circle cx="167" cy="148" r="4.5" fill="#111"/><path d="M150 152 L146 172 L154 174" fill="none"/><path d="M136 190 C144 198 156 198 164 190" fill="none" stroke="#D0161B"/><circle cx="150" cy="262" r="8" fill="#D0161B"/>`, 6) },
   { id: "sombrero", n: "Persona con sombrero", t: "público gente multitud misterio espía", svg: G("0 0 200 240", `<path d="M20 240 C24 190 60 170 100 168 C140 170 176 190 180 240 Z"/><path d="M60 90 L60 140 C60 160 80 172 100 172 C120 172 140 160 140 140 L140 90 Z"/><path d="M58 112 L142 112 L138 132 C130 140 112 140 104 126 L96 126 C88 140 70 140 62 132 Z" fill="#111"/><rect x="66" y="20" width="68" height="64" rx="6"/><rect x="66" y="60" width="68" height="14" fill="#111"/><path d="M34 94 C34 80 166 80 166 94 C166 100 34 100 34 94 Z"/>`, 6) },
+  { id: "logo-ac", n: "Logo Angel Ceniceros", t: "logo marca canal angel ceniceros firma", svg: G("0 0 200 200", `<circle cx="100" cy="100" r="88" stroke-width="7"/><path d="M46 144 L74 56 L102 144 M57 114 L91 114" fill="none" stroke-width="15"/><path d="M158 74 C148 54 120 52 110 72 C100 92 100 110 110 128 C120 148 148 146 158 126" fill="none" stroke="#D0161B" stroke-width="15"/><circle cx="160" cy="154" r="8" fill="#D0161B" stroke="none"/>`) },
   { id: "chile", n: "Chile", t: "comida picante méxico", svg: G("0 0 200 300", CHILE_PATH) },
   { id: "campana", n: "Campana de vidrio", t: "museo exhibición laboratorio chile", svg: G("0 0 200 300", `<path d="M28 258 L28 110 C28 30 172 30 172 110 L172 258 Z"/><g transform="translate(62 92) scale(0.52)" stroke-width="12">${CHILE_PATH}</g><circle cx="62" cy="102" r="11" fill="none"/><rect x="14" y="258" width="172" height="20" rx="4"/>`) },
   { id: "vaso", n: "Vaso", t: "agua bebida líquido experimento", svg: G("0 0 240 300", `<path d="M30 24 L210 24 L192 284 L48 284 Z"/><path d="M38 78 Q58 68 78 78 T118 78 T158 78 T202 78 L188 276 L52 276 Z" fill="#D0161B" stroke-width="5"/><path d="M22 18 L218 18" fill="none" stroke-width="9"/>`) },
@@ -608,7 +611,7 @@ function nuevoElemento(tipo, props = {}) {
   return el;
 }
 function proyectoVacio() {
-  return { v: 1, nombre: "Mi primer video", formato: "16:9", duracion: 0, estilo: { ...PALETAS["Documental rojo"] },
+  return { v: 1, nombre: "Mi primer video", formato: "16:9", duracion: 0, estilo: { ...PALETAS["Angel Ceniceros"], fuenteMano: "marcador" },
     camara: [], elementos: [], ilusPropias: [] };
 }
 let proy = proyectoVacio();
@@ -732,7 +735,7 @@ function dibujarTexto(ctx, el, lt, u, W, H, medir) {
   const totalLetras = m.lineas.reduce((a, l) => a + l.ws.reduce((b, w) => b + w.w.length + 1, 0), 0);
   for (const l of m.lineas) for (const w of l.ws) {
     let visible = w.w, pp = 1;
-    if (el.animTexto === "palabras") { pp = clamp((lt - idx * el.ritmo) / .16); if (pp <= 0) { idx++; letra += w.w.length + 1; continue; } }
+    if (el.animTexto === "palabras") { const tw = el.tiempos && el.tiempos[idx] != null ? el.tiempos[idx] : idx * el.ritmo; pp = clamp((lt - tw) / .12); if (pp <= 0) { idx++; letra += w.w.length + 1; continue; } }
     else if (el.animTexto === "letras") {
       const n = Math.floor(lt / (el.ritmo / 4)) - letra;
       if (n <= 0) { idx++; letra += w.w.length + 1; continue; }
@@ -1597,7 +1600,7 @@ function enlazarCampos(p, el) {
       if (k === "dur") v = Math.max(.1, v);
       if (k === "inicio") v = Math.max(0, v);
       el[k] = v;
-      if (k === "media" && medios[v]) { el.nombre = medios[v].nombre; if (el.tipo !== "foto" && medios[v].dur) el.dur = +(medios[v].dur - (el.recorte || 0)).toFixed(3); }
+      if (k === "media" && medios[v]) { el.nombre = medios[v].nombre; if (el.tipo !== "foto" && medios[v].dur) el.dur = +(el.hueco ? Math.min(el.dur, medios[v].dur - (el.recorte || 0)) : medios[v].dur - (el.recorte || 0)).toFixed(3); el.hueco = false; }
       if (["ilus", "texto", "hasta", "prefijo", "sufijo", "sonido"].includes(k) && el.nombre === el._nombreAuto) { el.nombre = nombrePara(el); const fn = $("#f-nombre"); if (fn) fn.value = el.nombre; }
       el._nombreAuto = nombrePara(el);
       $$(`[data-k="${k}"]`, p).forEach(o => { if (o === inp) return; if (o.type === "range" || o.type === "number") o.value = v;
@@ -2036,11 +2039,14 @@ async function iniciar() {
    =================================================================== */
 const TIPOS_CONTENIDO = ["Cultura e historia", "Datos curiosos", "Biografías", "Misterios", "Viajes", "Comida", "Ciencia", "Noticias explicadas", "Educación", "Entretenimiento"];
 const TONOS = ["Curioso y cercano", "Serio documental", "Divertido", "Épico", "Misterioso", "Inspirador"];
-const IDENT_DEF = { canal: "", tipo: "Cultura e historia", tono: "Curioso y cercano", cierre: "Sígueme para más historias como esta",
-  paleta: "Documental rojo", colores: { ...PALETAS["Documental rojo"] }, fuenteTitulo: "barlow", fuenteNarracion: "barlow", fuenteMano: "mano" };
+const IDENT_DEF = { canal: "@angelceniceros", nombre: "Angel Ceniceros", tipo: "Cultura e historia", tono: "Curioso y cercano", cierre: "Sígueme para más historias",
+  paleta: "Angel Ceniceros", colores: { ...PALETAS["Angel Ceniceros"] }, fuenteTitulo: "barlow", fuenteNarracion: "barlow", fuenteMano: "marcador" };
 let identidad = { ...IDENT_DEF };
 function cargarIdentidad() {
-  try { const g = JSON.parse(localStorage.getItem("estudio-identidad") || "null"); if (g) identidad = { ...IDENT_DEF, ...g, colores: { ...IDENT_DEF.colores, ...(g.colores || {}) } }; } catch (e) { /* sin guardar */ }
+  try { const g = JSON.parse(localStorage.getItem("estudio-identidad") || "null");
+    // Identidades guardadas antes de tener marca toman la de Angel Ceniceros
+    if (g && !g.canal) { delete g.canal; delete g.paleta; delete g.colores; delete g.fuenteMano; delete g.cierre; }
+    if (g) identidad = { ...IDENT_DEF, ...g, colores: { ...IDENT_DEF.colores, ...(g.colores || {}) } }; } catch (e) { /* sin guardar */ }
 }
 function guardarIdentidad() { try { localStorage.setItem("estudio-identidad", JSON.stringify(identidad)); } catch (e) { /* almacenamiento bloqueado */ } }
 function estiloDeIdentidad() {
@@ -2051,7 +2057,8 @@ function pintarIdentidad(p) {
   const selFuente = (id, v) => `<select id="${id}">${FUENTES.map(f => `<option value="${f.id}"${v === f.id ? " selected" : ""}>${f.nombre}</option>`).join("")}</select>`;
   p.innerHTML = `<div class="nota">Tu marca. Se guarda en este navegador y se usa en cada video nuevo. Al cambiar colores o letras se actualiza el video abierto.</div>
     <div class="h">Tu canal</div>
-    <div class="campo"><label for="id-canal">Nombre del canal o usuario</label><input type="text" id="id-canal" placeholder="@tucanal" value="${escapar(identidad.canal)}"></div>
+    <div class="campo"><label for="id-nombre">Tu nombre en pantalla</label><input type="text" id="id-nombre" value="${escapar(identidad.nombre || "")}"></div>
+    <div class="campo"><label for="id-canal">Usuario en redes</label><input type="text" id="id-canal" placeholder="@tucanal" value="${escapar(identidad.canal)}"></div>
     <div class="campo"><label for="id-tipo">Tipo de contenido</label><select id="id-tipo">${TIPOS_CONTENIDO.map(t => `<option${identidad.tipo === t ? " selected" : ""}>${t}</option>`).join("")}</select></div>
     <div class="campo"><label for="id-tono">Tono</label><select id="id-tono">${TONOS.map(t => `<option${identidad.tono === t ? " selected" : ""}>${t}</option>`).join("")}</select></div>
     <div class="campo"><label for="id-cierre">Frase de cierre</label><input type="text" id="id-cierre" value="${escapar(identidad.cierre)}"></div>
@@ -2065,7 +2072,7 @@ function pintarIdentidad(p) {
     <div class="h">Colores a tu gusto</div>
     ${TOKENS.map(([k, n]) => `<div class="campo"><label for="tok-${k}">${n} <span style="font-family:var(--f-mono)">${proy.estilo[k]}</span></label><input type="color" id="tok-${k}" data-tok="${k}" value="${proy.estilo[k]}" style="width:100%;height:30px;background:var(--panel-2);border:1px solid var(--line);border-radius:5px"></div>`).join("")}`;
   const texto = (id, k) => $("#" + id, p).oninput = e => { identidad[k] = e.target.value; guardarIdentidad(); };
-  texto("id-canal", "canal"); texto("id-cierre", "cierre");
+  texto("id-canal", "canal"); texto("id-cierre", "cierre"); texto("id-nombre", "nombre");
   $("#id-tipo", p).onchange = e => { identidad.tipo = e.target.value; guardarIdentidad(); };
   $("#id-tono", p).onchange = e => { identidad.tono = e.target.value; guardarIdentidad(); };
   for (const [id, k, mu] of [["id-ft", "fuenteTitulo", "mu-ft"], ["id-fn", "fuenteNarracion", "mu-fn"], ["id-fm", "fuenteMano", "mu-fm"]]) {
@@ -2711,4 +2718,193 @@ cargarIdentidad();
 const cargarOriginal = cargarProyecto;
 cargarProyecto = p => { cargarOriginal(p); revisionIA = null; };
 iniciar().then(pintarPuntoIA);
+</script>
+
+<script>
+"use strict";
+/* ===================================================================
+   25. Marca del canal: firma de entrada y cierre
+   =================================================================== */
+const nombreMarca = () => (identidad.nombre || "Angel Ceniceros").toUpperCase();
+PLANTILLAS.unshift(
+  { id: "firma", n: "Firma de entrada", d: "Tu logo se dibuja y aparece tu nombre (1.8 s). Ponla después del gancho, nunca en el segundo cero.", dur: 1.8, gen: () => [
+    Fo({ color: "@fondo", transicion: "circulo", tEntrada: .35, salida: "barrido", tSalida: .3, sonido: "whoosh" }),
+    I({ ilus: "logo-ac", tam: 260, y: .42, entrada: "dibujar", tEntrada: .7, salida: "ninguna" }, 1),
+    T({ texto: nombreMarca(), tam: 96, y: .6, inicio: .45, ritmo: .1, salida: "ninguna" }, 0) ] },
+  { id: "cierre", n: "Cierre del canal", d: "Logo, tu nombre, tu usuario y tu frase para que te sigan (3.5 s).", dur: 3.5, gen: () => [
+    Fo({ color: "@fondo", transicion: "barrido-arriba", tEntrada: .45, sonido: "whoosh" }),
+    I({ ilus: "logo-ac", tam: 230, y: .3, inicio: .15, entrada: "dibujar", tEntrada: .8 }, 1),
+    T({ texto: nombreMarca(), tam: 112, y: .47, inicio: .55, ritmo: .14 }, 0),
+    T({ texto: identidad.canal || "@angelceniceros", mayus: false, fuente: Fn(), color: "@acento", tam: 58, y: .555, inicio: 1, animTexto: "ninguna", entrada: "pop", sonido: "pop" }, 0),
+    T({ texto: identidad.cierre || "Sígueme para más historias", fuente: Fm(), tam: 62, y: .7, inicio: 1.4, animTexto: "letras", ritmo: .14, color: "@gris" }, 0) ] },
+);
+
+/* ===================================================================
+   26. Subtítulos: desde un .srt, desde una transcripción con tiempos por
+       palabra (python -m animaciones subtitular) o aproximados desde tu guion.
+   =================================================================== */
+function agruparPalabras(palabras) {
+  const grupos = []; let g = [];
+  for (let i = 0; i < palabras.length; i++) {
+    const p = palabras[i], sig = palabras[i + 1];
+    g.push(p);
+    const largo = g.map(x => x.w).join(" ").length;
+    if (g.length >= 3 || largo >= 16 || /[.,;:!?…]$/.test(p.w) || !sig || sig.t0 - p.t1 > .45) { grupos.push(g); g = []; }
+  }
+  return grupos;
+}
+function crearSubtitulos(palabras, origen) {
+  if (!palabras.length) return aviso("No encontré palabras para los subtítulos.");
+  proy.elementos = proy.elementos.filter(e => !e.subtitulo);
+  const vertical = dimensiones(1080).H > dimensiones(1080).W, grupos = agruparPalabras(palabras);
+  const els = grupos.map((g, i) => {
+    const ini = g[0].t0, sig = grupos[i + 1], fin = sig ? Math.min(sig[0].t0, g[g.length - 1].t1 + .6) : g[g.length - 1].t1 + .4;
+    const texto = g.map(x => x.w).join(" ");
+    return { ...nuevoElemento("texto", { texto, nombre: "Sub: " + texto, fuente: Ft(), tam: vertical ? 80 : 64, color: "#FFFFFF", borde: 7, colorBorde: "#000000", sombra: true,
+      y: vertical ? .68 : .84, anchoMax: .82, camara: false, animTexto: "palabras", efectoPalabra: "pop", tiempos: g.map(x => +(x.t0 - ini).toFixed(3)),
+      entrada: "ninguna", salida: "ninguna", inicio: +ini.toFixed(3), dur: +Math.max(.3, fin - ini).toFixed(3) }), subtitulo: true, _p: 0 };
+  });
+  alFrente(els); registrar(); pintarTimeline(); pedirRender();
+  aviso(`${els.length} subtítulos creados ${origen}. Edita cualquiera como un texto normal.`);
+}
+function palabrasDeTexto(texto, t0, t1) {
+  const ws = texto.split(/\s+/).filter(Boolean); if (!ws.length) return [];
+  const peso = w => w.length + 2 + (/[.!?…]$/.test(w) ? 6 : /[,;:]$/.test(w) ? 3 : 0);
+  const total = ws.reduce((a, w) => a + peso(w), 0), k = (t1 - t0) / total;
+  let t = t0; return ws.map(w => { const d = peso(w) * k, x = { w, t0: t, t1: t + d - (/[.!?…,;:]$/.test(w) ? d * .35 : 0) }; t += d; return x; });
+}
+function leerSrt(txt) {
+  const seg = s => { const [h, m, r] = s.trim().replace(",", ".").split(":"); return +h * 3600 + +m * 60 + parseFloat(r); };
+  const out = [];
+  for (const b of txt.replace(/\r/g, "").split(/\n\s*\n/)) {
+    const ls = b.trim().split("\n"), i = ls.findIndex(l => l.includes("-->")); if (i < 0) continue;
+    const [a, z] = ls[i].split("-->"); out.push(...palabrasDeTexto(ls.slice(i + 1).join(" ").replace(/<[^>]+>/g, ""), seg(a), seg(z.trim().split(" ")[0])));
+  }
+  return out;
+}
+function desfaseClip() { const el = elPorId(est.sel); return el && (el.tipo === "video" || el.tipo === "audio") ? { off: el.inicio - (el.recorte || 0), el } : { off: 0, el: null }; }
+const pintarGrabacionBase = pintarGrabacion;
+pintarGrabacion = p => {
+  pintarGrabacionBase(p);
+  p.insertAdjacentHTML("beforeend", `<div class="grupo"><div class="h">Subtítulos</div>
+    <div class="nota">Grandes, palabra por palabra y dentro de la zona segura de Reels y TikTok. Si seleccionas un clip antes, se acomodan a ese clip.</div>
+    <button class="btn" id="subGuion">Crear desde mi guion (aproximados)</button>
+    <button class="btn" id="subArchivo">Importar transcripción (.srt o .json)</button>
+    <button class="btn" id="subQuitar">Quitar subtítulos</button>
+    <div class="nota">Para subtítulos exactos desde tu voz, en tu Mac: <b>python -m animaciones subtitular tu_clip.mov</b>, o mándame el clip y te los hago.</div></div>`);
+  $("#subGuion", p).onclick = () => {
+    const guion = (proy.guion || "").trim(); if (!guion) return aviso("Primero pega tu guion arriba, en el teleprompter.");
+    const { el } = desfaseClip(), narr = el || proy.elementos.filter(e => e.tipo === "audio").sort((a, b) => b.dur - a.dur)[0];
+    if (!narr) return aviso("Graba o importa tu narración primero, o selecciona el clip donde hablas.");
+    crearSubtitulos(palabrasDeTexto(guion, narr.inicio + .15, narr.inicio + narr.dur - .2), "desde tu guion (revisa que coincidan)");
+  };
+  $("#subArchivo", p).onclick = () => {
+    const i = Object.assign(document.createElement("input"), { type: "file", accept: ".srt,.json,.vtt,text/plain,application/json" });
+    i.onchange = async () => {
+      const f = i.files[0]; if (!f) return; const txt = await f.text(), { off } = desfaseClip();
+      let ps = [];
+      try {
+        if (/\.json$/i.test(f.name)) { const j = JSON.parse(txt); ps = (j.palabras || j.words || []).map(x => ({ w: String(x.texto ?? x.word).trim(), t0: +(x.inicio ?? x.start), t1: +(x.fin ?? x.end) })).filter(x => x.w); }
+        else ps = leerSrt(txt.replace(/^WEBVTT.*\n/, ""));
+      } catch (e) { return aviso("No pude leer ese archivo de subtítulos."); }
+      crearSubtitulos(ps.map(x => ({ ...x, t0: x.t0 + off, t1: x.t1 + off })), "desde tu transcripción");
+    };
+    i.click();
+  };
+  $("#subQuitar", p).onclick = () => { const n = proy.elementos.filter(e => e.subtitulo).length; proy.elementos = proy.elementos.filter(e => !e.subtitulo); compactarPistas(); registrar(); pintarTimeline(); pedirRender(); aviso(n + " subtítulos quitados."); };
+};
+
+/* ===================================================================
+   27. Mi primer video: "El chile 300 veces más picante" (Reel/TikTok, ~50 s)
+   =================================================================== */
+const GUION_PRIMERO = `[A CÁMARA]
+¿Sabías que existe un chile más de 300 veces más picante que un jalapeño?
+
+[VOZ]
+En 1912, un químico llamado Wilbur Scoville se hizo una pregunta muy simple: ¿qué chiles son los más picantes?
+El problema es que no había forma de medirlo.
+Así que inventó una prueba: disolvía el chile en alcohol, lo mezclaba con agua con azúcar y se lo daba a probar a cinco personas.
+Y lo diluía una y otra vez… hasta que la mayoría ya no sentía nada.
+Si tuvo que diluirlo quinientas veces, ese chile valía quinientos puntos.
+Así nació la escala Scoville.
+El pimiento morrón: cero.
+El jalapeño: hasta ocho mil.
+El habanero: hasta trescientos cincuenta mil.
+¿Y el récord mundial? El Pepper X: más de dos millones seiscientos mil.
+
+[A CÁMARA]
+Hoy se mide con máquinas, pero seguimos usando su nombre.
+¿Cuál es el chile más picante que has probado? Te leo en los comentarios.`;
+function proyectoPrimerVideo() {
+  const prev = proy;
+  proy = proyectoVacio(); proy.formato = "9:16"; proy.plataforma = "reel"; proy.objetivo = 50;
+  proy.nombre = "El chile 300 veces más picante"; proy.tema = "La escala Scoville: cómo se mide qué tan picante es un chile";
+  proy.estilo = { ...proy.estilo, ...estiloDeIdentidad() }; proy.guion = GUION_PRIMERO; proy.derechos = {};
+  const hueco = (n, ini, dur, nota) => { const el = nuevoElemento("video", { nombre: `▶ Toma ${n} a cámara: elige tu video`, inicio: ini, dur, hueco: true, pista: 40, notaToma: nota }); proy.elementos.push(el); };
+  hueco(1, 0, 3.4, "¿Sabías que existe un chile más de 300 veces más picante que un jalapeño?");
+  hueco(2, 41.5, 6.3, "Hoy se mide con máquinas… ¿Cuál es el chile más picante que has probado?");
+  compactarPistas();
+  const blanco = "#FFFFFF";
+  // 0–3.4 Gancho sobre tu toma
+  insertarGrupo([
+    T({ texto: "UN CHILE 300 VECES MÁS PICANTE QUE EL JALAPEÑO", resaltar: "300", estiloResalte: "caja", tam: 92, anchoMax: .8, y: .2, color: blanco, borde: 6, colorBorde: "#000000", sombra: true, camara: false, ritmo: .12, efectoPalabra: "pop", sonido: "golpe" }),
+    I({ ilus: "fuego", tam: 150, x: .78, y: .36, inicio: .9, entrada: "pop", mov: "latido", camara: false, sonido: "pop" }),
+  ], 3.4, 0);
+  // 3.4–11 Wilbur Scoville, 1912
+  insertarGrupo([
+    Fo({ color: "@fondo", transicion: "circulo", tEntrada: .35, sonido: "whoosh" }, 4),
+    T({ texto: "1912", color: "@gris", tam: 230, y: .22, inicio: .2, animTexto: "ninguna", entrada: "aparecer", tEntrada: .4 }, 3),
+    I({ ilus: "hombre", tam: 620, y: .5, inicio: .3, entrada: "subir" }, 2),
+    T({ texto: "WILBUR SCOVILLE", tam: 120, y: .72, inicio: 1, ritmo: .18, sonido: "pop" }, 0),
+    T({ texto: "QUÍMICO", fuente: "barlow-light", color: "@gris", tam: 56, y: .78, inicio: 1.6, animTexto: "ninguna" }, 0),
+    I({ ilus: "pregunta", tam: 150, x: .78, y: .32, inicio: 3.6, entrada: "pop", mov: "balanceo", sonido: "pop" }, 0),
+  ], 7.6, 3.4, [{ t: 0, z: 1, x: .5, y: .5 }, { t: 3.4, z: 1, x: .5, y: .5 }, { t: 7.4, z: 1.35, x: .55, y: .42 }]);
+  // 11–21 La prueba: diluir hasta que no pique
+  insertarGrupo([
+    Fo({ color: "@fondo", transicion: "corte" }, 4),
+    T({ texto: "CHILE + ALCOHOL + AGUA CON AZÚCAR", tam: 70, anchoMax: .8, y: .16, color: "@gris", ritmo: .2 }, 0),
+    Li({ x: .2, y: .66, x2: .8, y2: .66, color: "@tinta", grosor: 5, flecha: false, tEntrada: .4 }, 3),
+    I({ ilus: "vaso", tam: 330, y: .5, inicio: .2, dur: 5.2, entrada: "pop", tSalida: .9 }, 2),
+    I({ ilus: "vaso-chile", tam: 330, y: .5, inicio: 4.4, entrada: "aparecer", tEntrada: .9 }, 2),
+    ...[.2, .5, .8].map((x, i) => I({ ilus: "sombrero", tam: 170, x, y: .82, inicio: 2.2 + i * .25, entrada: "subir", sonido: i ? "ninguno" : "pop" }, 1)),
+    T({ texto: "5 PERSONAS", tam: 80, y: .95, inicio: 2.9, animTexto: "ninguna", entrada: "pop" }, 0),
+    T({ texto: "¡SÍ PICA!", fuente: Fm(), tam: 78, x: .72, y: .32, inicio: 3.2, dur: 1.8, animTexto: "letras", ritmo: .2, color: "@acento", sonido: "tecleo" }, 0),
+    T({ texto: "YA NI PICA", fuente: Fm(), tam: 78, x: .7, y: .32, inicio: 6.4, animTexto: "letras", ritmo: .2, sonido: "tecleo" }, 0),
+  ], 10, 11);
+  // 21–27 500 veces = 500 puntos
+  insertarGrupo([
+    Fo({ color: "@acento", transicion: "v", tEntrada: .5, sonido: "whoosh" }, 4),
+    Co({ desde: 0, hasta: 500, tam: 260, y: .42, color: blanco, inicio: .5, tConteo: 1.6, sonido: "ding" }, 0),
+    T({ texto: "VECES DILUIDO", color: blanco, tam: 72, y: .53, inicio: .9, ritmo: .15 }, 0),
+    T({ texto: "= 500 PUNTOS", color: "@tinta", tam: 110, y: .66, inicio: 2.6, animTexto: "ninguna", entrada: "zoom", sonido: "golpe" }, 0),
+    T({ texto: "LA ESCALA SCOVILLE", color: blanco, tam: 96, y: .85, inicio: 4, ritmo: .14 }, 0),
+  ], 6, 21);
+  // 27–41.5 La escala, de abajo hacia arriba
+  const esc = [
+    Fo({ color: "@fondo", transicion: "corte" }, 4),
+    Li({ x: .5, y: 1.25, x2: .5, y2: -2.55, color: "@acento", grosor: 7, tEntrada: 12 }, 3),
+  ];
+  [["morron", "PIMIENTO MORRÓN", "0", .45, 0], ["jalapeno", "JALAPEÑO", "2,500 – 8,000", -.38, 3.2], ["habanero", "HABANERO", "100,000 – 350,000", -1.2, 6.4], ["fuego", "PEPPER X · RÉCORD", "2,693,000", -2.05, 9.6]].forEach(([il, nom, val, y, t0]) => {
+    esc.push(I({ ilus: il, tam: il === "jalapeno" ? 380 : 260, y, inicio: t0, entrada: "pop", sonido: "pop" }, 1));
+    esc.push(T({ texto: nom, fuente: "barlow-light", tam: 54, y: y + .17, inicio: t0 + .3, animTexto: "ninguna" }, 0));
+    esc.push(T({ texto: val, tam: il === "fuego" ? 150 : 112, y: y + .25, inicio: t0 + .6, ritmo: .15, color: il === "fuego" ? "@acento" : "@texto", sonido: il === "fuego" ? "golpe" : "ninguno" }, 0));
+  });
+  insertarGrupo(esc, 14.5, 27, [{ t: 0, z: 1, x: .5, y: .5 }, { t: 2.4, z: 1, x: .5, y: .5 }, { t: 3.6, z: 1, x: .5, y: -.3 }, { t: 5.6, z: 1, x: .5, y: -.3 }, { t: 6.8, z: 1, x: .5, y: -1.12 }, { t: 8.8, z: 1, x: .5, y: -1.12 }, { t: 10, z: 1, x: .5, y: -1.95 }, { t: 12.5, z: 1.15, x: .5, y: -1.9 }]);
+  // 41.5–47.8 Pregunta al público sobre tu toma; 47.8–51.3 cierre
+  insertarGrupo([
+    T({ texto: "¿CUÁL ES EL MÁS PICANTE QUE HAS PROBADO?", tam: 84, anchoMax: .8, y: .2, inicio: 2.6, color: blanco, borde: 6, colorBorde: "#000000", sombra: true, camara: false, ritmo: .14, efectoPalabra: "pop" }),
+    I({ ilus: "dialogo", tam: 170, x: .76, y: .37, inicio: 3.6, entrada: "pop", camara: false, sonido: "pop" }),
+  ], 6.3, 41.5);
+  insertarGrupo(PLANTILLAS.find(x => x.id === "cierre").gen(), 3.5, 47.8);
+  const r = proy; proy = prev; return r;
+}
+const pintarProyectoBase = pintarProyecto;
+pintarProyecto = p => {
+  pintarProyectoBase(p);
+  p.insertAdjacentHTML("afterbegin", `<div class="grupo" style="border-top:0;padding-top:0"><div class="h">Tu primer video</div>
+    <div class="nota"><b>El chile 300 veces más picante</b> · Reel/TikTok de ~50 s. Ya trae las animaciones, tu cierre, el guion en el teleprompter y dos huecos para tus tomas a cámara.</div>
+    <button class="btn prim" id="cargarPrimero">Abrir mi primer video</button></div>`);
+  $("#cargarPrimero", p).onclick = () => { est.t = 0; cargarProyecto(proyectoPrimerVideo()); aviso("Listo. Graba tus 2 tomas a cámara y tu voz (pestaña Narración); el guion ya está en el teleprompter."); };
+};
+pintarLib();
 </script>

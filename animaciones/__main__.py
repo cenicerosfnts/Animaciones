@@ -6,6 +6,7 @@
     python -m animaciones --lista                     -> catálogo de animaciones
     python -m animaciones --editor                    -> editor visual en el navegador
     python -m animaciones convertir clips/ [-o salida/] -> videos de iPhone (HEVC/HDR) a H.264 compatible
+    python -m animaciones subtitular clip.mov         -> subtítulos con tu voz (Whisper, en tu computadora)
 """
 import argparse
 import os
@@ -31,6 +32,9 @@ def main(argv=None):
 
     if a.editor:
         return abrir_editor()
+    if a.guion == "subtitular":
+        from .subtitulos import main as subtitular
+        return subtitular(a.extra)
     if a.guion == "convertir":
         from .convertir import main as convertir
         return convertir(a.extra, a.salida)
