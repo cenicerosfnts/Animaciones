@@ -4,6 +4,12 @@ Este repo es un generador de motion graphics. El usuario pide animaciones en len
 ("pon un título que diga X en el segundo 3 con la palabra Y en amarillo", "una flecha señalando
 la torre", "subtítulos con este .srt"); tu trabajo es traducir eso a un guion YAML y renderizarlo.
 
+Estilo preferido del usuario: **explicativo/documental** (ver `ejemplos/explicativo.yaml`):
+fondo blanco o `rojo-doc`, tipografía `barlow` en mayúsculas, texto gris (`gris-claro`) palabra
+por palabra para la narración, ilustraciones de línea negra con acento rojo, cámara con zoom/paneo
+y transición `fondo` con `entrada_estilo: v`. Ilustraciones nuevas: SVG en `animaciones/recursos/`
+con trazo #111 de 6-7 px, puntas redondas, relleno blanco y acentos #D0161B.
+
 Flujo:
 1. Escribe/edita el guion en `guiones/<nombre>.yaml` (ver `README.md` para el catálogo y
    `ejemplos/demo.yaml` como referencia de todas las opciones).

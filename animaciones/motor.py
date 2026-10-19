@@ -1,5 +1,6 @@
 """Motor de render: lee un guion, dibuja cuadro por cuadro y lo codifica con ffmpeg."""
 import json
+import math
 import os
 import subprocess
 import sys
@@ -9,8 +10,12 @@ import yaml
 from PIL import Image
 
 from . import dibujo as dj
+from . import easing as ez
 from . import sonidos
-from .efectos import TIPOS, TIPOS_VIDEO
+from .efectos import POSICIONES, TIPOS, TIPOS_VIDEO
+from .explicativo import TIPOS_EXPLICATIVO
+
+TIPOS = {**TIPOS, **TIPOS_EXPLICATIVO}
 
 FORMATOS = {
     "vertical": (1080, 1920),     # Reels / TikTok / Shorts
@@ -30,11 +35,53 @@ def sondear(ruta):
     return dur, audio
 
 
+class Camara:
+    """Cámara virtual: keyframes [{t, zoom, centro}] interpolados suavemente.
+
+    `centro` es el punto de la pantalla (en fracción, píxeles o nombre) que queda al centro.
+    """
+
+    def __init__(self, claves, Wo, Ho):
+        self.claves = []
+        for c in claves or []:
+            centro = c.get("centro", "centro")
+            centro = POSICIONES.get(centro, (0.5, 0.5)) if isinstance(centro, str) else centro
+            cx = centro[0] / Wo if abs(centro[0]) > 5 else centro[0]
+            cy = centro[1] / Ho if abs(centro[1]) > 5 else centro[1]
+            self.claves.append((float(c.get("t", 0)), float(c.get("zoom", 1)), cx, cy, c.get("curva", "suave")))
+        self.claves.sort(key=lambda c: c[0])
+
+    def __bool__(self):
+        return bool(self.claves)
+
+    def zoom_max(self):
+        return max([c[1] for c in self.claves] or [1])
+
+    def en(self, t):
+        """(zoom, cx, cy) con cx, cy en fracción de pantalla."""
+        if not self.claves:
+            return 1.0, 0.5, 0.5
+        if t <= self.claves[0][0]:
+            return self.claves[0][1:4]
+        for a, b in zip(self.claves, self.claves[1:]):
+            if t < b[0]:
+                k = ez.curva(b[4])((t - a[0]) / (b[0] - a[0]))
+                # el zoom se interpola en escala logarítmica para que se sienta constante
+                z = math.exp(math.log(a[1]) + (math.log(b[1]) - math.log(a[1])) * k)
+                return z, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k
+        return self.claves[-1][1:4]
+
+
 class Escena:
     def __init__(self, guion, carpeta="."):
         self.carpeta = carpeta
         fmt = guion.get("formato", "vertical")
-        self.W, self.H = FORMATOS[fmt] if isinstance(fmt, str) else (int(fmt[0]), int(fmt[1]))
+        self.Wo, self.Ho = FORMATOS[fmt] if isinstance(fmt, str) else (int(fmt[0]), int(fmt[1]))
+        self.camara = Camara(guion.get("camara"), self.Wo, self.Ho)
+        # Con cámara dibujamos el "mundo" a más resolución para que el zoom quede nítido.
+        self.k = float(guion.get("nitidez_camara", min(2.0, max(1.0, self.camara.zoom_max()))))
+        self.W, self.H = int(round(self.Wo * self.k)), int(round(self.Ho * self.k))
+        self.fondo = guion.get("fondo")
         self.fps = float(guion.get("fps", 30))
         self.video = os.path.join(carpeta, guion["video"]) if guion.get("video") else None
         self.video_inicio = float(guion.get("video_inicio", 0))
@@ -55,7 +102,7 @@ class Escena:
         if self.video:
             dur_video, self.video_audio = sondear(self.video)
             dur_video -= self.video_inicio
-        fines = [e.fin for e in self.elementos + self.efectos_video] or [3]
+        fines = [e.fin for e in self.elementos + self.efectos_video if e.fin < 9000] or [3]
         self.duracion = float(guion.get("duracion") or dur_video or max(fines) + 0.2)
 
     @classmethod
@@ -65,16 +112,46 @@ class Escena:
 
     # --- dibujo -----------------------------------------------------------
 
-    def capa(self, t):
-        """Capa RGBA transparente con todos los elementos activos en el segundo t."""
+    def _dibujar_capa(self, nombre, t, origen=(0.0, 0.0)):
+        activos = [e for e in self.elementos if e.capa == nombre and e.activo(t)]
+        if not activos:
+            return None
         lienzo = Image.new("RGBA", (self.W, self.H), (0, 0, 0, 0))
-        for e in self.elementos:
-            if e.activo(t):
+        dj.ORIGEN[:] = origen
+        try:
+            for e in activos:
                 e.dibujar(lienzo, t - e.inicio)
+        finally:
+            dj.ORIGEN[:] = (0.0, 0.0)
         return lienzo
 
+    def capa(self, t, img=None):
+        """Dibuja fondos, mundo (a través de la cámara) y capa fija sobre `img` (tamaño de salida)."""
+        Wo, Ho = self.Wo, self.Ho
+        if img is None:
+            img = Image.new("RGBA", (Wo, Ho), (0, 0, 0, 0))
+        for e in self.elementos:  # los fondos se pintan directo a la resolución de salida
+            if e.capa == "fondo" and e.activo(t):
+                e.dibujar(img, t - e.inicio)
+        z, cx, cy = self.camara.en(t)
+        w, h = self.W / z, self.H / z
+        x0, y0 = cx * self.W - w / 2, cy * self.H - h / 2
+        # El lienzo del mundo se centra en lo que ve la cámara (puede estar fuera de 0..W, 0..H).
+        origen = (x0 - (self.W - w) / 2, y0 - (self.H - h) / 2)
+        mundo = self._dibujar_capa("mundo", t, origen)
+        if mundo is not None:
+            if abs(z - 1) < 1e-4 and abs(x0) < 0.5 and abs(y0) < 0.5 and self.k == 1:
+                img.alpha_composite(mundo)
+            else:
+                lx, ly = x0 - origen[0], y0 - origen[1]
+                img.alpha_composite(mundo.resize((Wo, Ho), Image.BICUBIC, box=(lx, ly, lx + w, ly + h)))
+        fija = self._dibujar_capa("fija", t)
+        if fija is not None:
+            img.alpha_composite(fija if self.k == 1 else fija.resize((Wo, Ho), Image.LANCZOS))
+        return img
+
     def transformar_video(self, img, t):
-        esc, centro, dx, dy = 1.0, (self.W / 2, self.H / 2), 0.0, 0.0
+        esc, centro, dx, dy = 1.0, (self.Wo / 2, self.Ho / 2), 0.0, 0.0
         for ef in self.efectos_video:
             if ef.activo(t):
                 e, c, (ox, oy) = ef.transformar(t - ef.inicio)
@@ -84,20 +161,20 @@ class Escena:
                 dx, dy = dx + ox, dy + oy
         if esc <= 1.0001 and not dx and not dy:
             return img
-        w, h = self.W / esc, self.H / esc
-        x0 = min(max(centro[0] - w / 2 + dx / esc, 0), self.W - w)
-        y0 = min(max(centro[1] - h / 2 + dy / esc, 0), self.H - h)
-        return img.resize((self.W, self.H), Image.BICUBIC, box=(x0, y0, x0 + w, y0 + h))
+        w, h = self.Wo / esc, self.Ho / esc
+        x0 = min(max(centro[0] - w / 2 + dx / esc, 0), self.Wo - w)
+        y0 = min(max(centro[1] - h / 2 + dy / esc, 0), self.Ho - h)
+        return img.resize((self.Wo, self.Ho), Image.BICUBIC, box=(x0, y0, x0 + w, y0 + h))
 
     def cuadro(self, t, base=None, fondo=None):
+        fondo = fondo or self.fondo
         if base is not None:
             img = self.transformar_video(base, t).convert("RGBA")
         elif fondo:
-            img = Image.new("RGBA", (self.W, self.H), dj.color(fondo))
+            img = Image.new("RGBA", (self.Wo, self.Ho), dj.color(fondo))
         else:
-            img = Image.new("RGBA", (self.W, self.H), (0, 0, 0, 0))
-        img.alpha_composite(self.capa(t))
-        return img
+            img = Image.new("RGBA", (self.Wo, self.Ho), (0, 0, 0, 0))
+        return self.capa(t, img)
 
     def eventos_sonido(self):
         return sorted((e.inicio, e.sonido) for e in self.elementos + self.efectos_video if e.sonido)
@@ -106,12 +183,13 @@ class Escena:
 
     def render(self, salida, fondo=None, sin_sonido=False, desde=0.0, hasta=None):
         ext = os.path.splitext(salida)[1].lower()
+        fondo = fondo or self.fondo
         alfa = ext in (".mov", ".webm") and not self.video and not fondo
         if ext == ".mp4" and not self.video and not fondo:
             fondo = "#00FF00"  # verde para croma en apps que no leen transparencia
         hasta = min(hasta or self.duracion, self.duracion)
         n = int(round((hasta - desde) * self.fps))
-        W, H = self.W, self.H
+        W, H = self.Wo, self.Ho
 
         tmp = tempfile.mkdtemp(prefix="anim_")
         audio = None

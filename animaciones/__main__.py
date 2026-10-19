@@ -9,8 +9,8 @@ import argparse
 import os
 import sys
 
-from .efectos import TIPOS, TIPOS_VIDEO
-from .motor import Escena
+from .efectos import TIPOS_VIDEO
+from .motor import TIPOS, Escena
 
 
 def main(argv=None):
@@ -39,15 +39,15 @@ def main(argv=None):
         if escena.video:
             import subprocess
             from PIL import Image
-            vf = f"scale={escena.W}:{escena.H}:force_original_aspect_ratio=increase,crop={escena.W}:{escena.H}"
+            vf = f"scale={escena.Wo}:{escena.Ho}:force_original_aspect_ratio=increase,crop={escena.Wo}:{escena.Ho}"
             datos = subprocess.run(["ffmpeg", "-loglevel", "error", "-ss", str(escena.video_inicio + a.cuadro),
                                     "-i", escena.video, "-frames:v", "1", "-vf", vf, "-f", "rawvideo",
                                     "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
-            base_img = Image.frombytes("RGB", (escena.W, escena.H), datos)
+            base_img = Image.frombytes("RGB", (escena.Wo, escena.Ho), datos)
         escena.cuadro(a.cuadro, base_img, a.fondo).save(salida)
     else:
         salida = a.salida or base + (".mp4" if escena.video else ".mov")
-        print(f"Renderizando {escena.W}x{escena.H} @ {escena.fps:g} fps, {escena.duracion:.2f} s -> {salida}")
+        print(f"Renderizando {escena.Wo}x{escena.Ho} @ {escena.fps:g} fps, {escena.duracion:.2f} s -> {salida}")
         escena.render(salida, a.fondo, a.sin_sonido, a.desde, a.hasta)
     print(f"Listo: {salida}")
     return 0

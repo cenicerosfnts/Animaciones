@@ -1,11 +1,15 @@
 # Animaciones 🎬
 
-Motion graphics estilo creador (títulos que "explotan", subtítulos dinámicos, flechas, círculos,
-pines de ubicación, contadores, transiciones, zoom de golpe, sacudidas y efectos de sonido)
-generados a partir de un **guion en texto**. Tú describes lo que quieres, se escribe un `.yaml`
-y el programa renderiza el video.
+Motion graphics generados a partir de un **guion en texto**. Tú describes lo que quieres,
+se escribe un `.yaml` y el programa renderiza el video. Dos estilos:
 
-▶️ Mira el resultado en [`ejemplos/demo.mp4`](ejemplos/demo.mp4) (guion: [`ejemplos/demo.yaml`](ejemplos/demo.yaml)).
+- **Explicativo / documental** — fondo liso, texto que aparece palabra por palabra al ritmo de
+  la voz, ilustraciones de línea con acento rojo, fotos recortadas, cámara que hace zoom y se
+  desplaza, transiciones de color en "V".
+  ▶️ [`ejemplos/explicativo.mp4`](ejemplos/explicativo.mp4) (guion: [`ejemplos/explicativo.yaml`](ejemplos/explicativo.yaml))
+- **Creador / reels** — títulos que "explotan", subtítulos dinámicos, flechas, círculos, pines,
+  contadores, zoom de golpe y sacudidas.
+  ▶️ [`ejemplos/demo.mp4`](ejemplos/demo.mp4) (guion: [`ejemplos/demo.yaml`](ejemplos/demo.yaml))
 
 ## Instalación
 
@@ -58,7 +62,36 @@ elementos:
 Cualquier elemento acepta `inicio`, `duracion` (o `fin`), `entrada`, `salida` y `sonido`
 (`pop`, `whoosh`, `ding`, `golpe`, un `.wav` propio o `no`).
 
-### Catálogo
+### Estilo explicativo
+
+```yaml
+formato: horizontal
+fondo: blanco                  # color base de toda la escena
+camara:                        # opcional: zoom y paneo con keyframes
+  - {t: 2, zoom: 1.0, centro: [0.5, 0.5]}
+  - {t: 4, zoom: 1.8, centro: [0.65, 0.7]}   # se acerca a ese punto entre el segundo 2 y el 4
+elementos:
+  - {tipo: ilustracion, recurso: hombre, ancho: 560, posicion: [0.44, 0.88], ancla: [0.5, 1.0], inicio: 0.5, fin: 6}
+  - {tipo: texto, texto: "¿QUÉ CHILES ERAN LOS MÁS PICANTES?", color: gris-claro, fijo: true, posicion: [0.5, 0.15], inicio: 1, fin: 5}
+  - {tipo: fondo, color: rojo-doc, entrada_estilo: v, inicio: 6}
+```
+
+| tipo | qué hace | opciones principales |
+|---|---|---|
+| `texto` | Texto plano palabra por palabra (o letra por letra a mano) | `texto, animacion (palabras/letras/pop/zoom/corte), ritmo (s por palabra) o tiempos: [...], fuente, tamano, color, alinear, ancho_max` |
+| `ilustracion` / `imagen` | SVG de la biblioteca o tu PNG/JPG/SVG | `recurso: chile` o `archivo: foto.png`, `ancho/alto, ancla, animacion (aparecer/pop/subir/zoom/caer/corte), flotar, gris, espejo, sombra` |
+| `linea` | Línea que crece, con flecha opcional | `desde, hasta, color, grosor, flecha` |
+| `fondo` | Color a pantalla completa | `color, entrada_estilo (v/barrido/circulo/desvanecer/corte)`; dura hasta su `fin` |
+
+- **Cámara**: lo que no lleva `fijo: true` se mueve con ella. Las posiciones pueden salir de la
+  pantalla (`[0.5, -1.0]` está una pantalla arriba), así se arman escalas y líneas de tiempo largas.
+- **Biblioteca incluida** (`animaciones/recursos/`): `hombre, chile, campana, vaso_rojo, vaso_claro,
+  morron, jalapeno, habanero, fuego`. Agrega tus propios SVG ahí y úsalos con `recurso: nombre`.
+- **Fuentes**: `barlow` (condensada gruesa), `barlow-bold`, `barlow-medium`, `barlow-light`, `mano`
+  (escrita a mano), además de `anton`, `bangers` y `montserrat`.
+- **Colores extra**: `rojo-doc`, `gris-claro`, `crema`.
+
+### Catálogo estilo creador
 
 | tipo | qué hace | opciones principales |
 |---|---|---|
@@ -76,5 +109,5 @@ Cualquier elemento acepta `inicio`, `duracion` (o `fin`), `entrada`, `salida` y 
 | `zoom` | Acercamiento al video | `factor, estilo (golpe/suave), posicion` |
 | `sacudida` | Temblor de cámara | `intensidad` |
 
-Las fuentes incluidas (Anton, Bangers, Montserrat y Noto Color Emoji) tienen licencia OFL.
+Las fuentes incluidas (Anton, Bangers, Montserrat, Barlow Condensed, Gochi Hand y Noto Color Emoji) tienen licencia OFL.
 Puedes usar cualquier `.ttf` propio poniendo su ruta en `fuente:`.

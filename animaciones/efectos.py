@@ -24,6 +24,8 @@ POSICIONES = {
 class Elemento:
     """Base de todos los elementos que se dibujan encima del video."""
 
+    capa = "mundo"  # mundo (se mueve con la cámara) | fija (encima, sin cámara) | fondo
+
     duracion_defecto = 3.0
     entrada_defecto = 0.4
     salida_defecto = 0.3
@@ -32,6 +34,7 @@ class Elemento:
     def __init__(self, cfg, escena):
         self.cfg = cfg
         self.W, self.H = escena.W, escena.H
+        self.Wo, self.Ho = escena.Wo, escena.Ho
         self.u = min(self.W, self.H) / 1080  # unidad: 1 px de un video de 1080 de ancho
         self.inicio = float(cfg.get("inicio", 0))
         if "fin" in cfg:
@@ -42,6 +45,7 @@ class Elemento:
         self.salida = float(cfg.get("salida", self.salida_defecto))
         snd = cfg.get("sonido", self.sonido_defecto)
         self.sonido = None if snd in (False, None, "no", "ninguno") else snd
+        self.capa = cfg.get("capa", "fija" if cfg.get("fijo") else self.capa)
 
     @property
     def fin(self):
@@ -64,8 +68,8 @@ class Elemento:
         if isinstance(valor, str):
             valor = POSICIONES.get(valor, POSICIONES["centro"])
         x, y = valor
-        x = x * self.W if abs(x) <= 1.5 else x  # fracción de pantalla o píxeles
-        y = y * self.H if abs(y) <= 1.5 else y
+        x = x * self.W if abs(x) <= 5 else x * self.W / self.Wo  # fracción de pantalla o píxeles
+        y = y * self.H if abs(y) <= 5 else y * self.H / self.Ho
         return (x, y)
 
     def tam(self, clave, defecto):
@@ -204,6 +208,8 @@ def leer_srt(ruta):
 
 class Subtitulos(Elemento):
     """Subtítulos dinámicos: grupos cortos de palabras con la palabra actual resaltada."""
+
+    capa = "fija"
 
     entrada_defecto = 0.12
 
@@ -622,6 +628,8 @@ class Ubicacion(Elemento):
 class Transicion(Elemento):
     """Barrido de colores a pantalla completa. Pon el corte de tu video a la mitad."""
 
+    capa = "fija"
+
     duracion_defecto = 0.8
     entrada_defecto = 0.0
     salida_defecto = 0.0
@@ -665,6 +673,8 @@ class Transicion(Elemento):
 class Flash(Elemento):
     """Destello de color que se desvanece (para golpes, cortes o revelaciones)."""
 
+    capa = "fija"
+
     duracion_defecto = 0.35
     entrada_defecto = 0.0
     salida_defecto = 0.0
@@ -681,7 +691,7 @@ class Flash(Elemento):
 class EfectoVideo:
     def __init__(self, cfg, escena):
         self.cfg = cfg
-        self.W, self.H = escena.W, escena.H
+        self.W, self.H = escena.Wo, escena.Ho  # el video base va a la resolución de salida
         self.inicio = float(cfg.get("inicio", 0))
         self.duracion = float(cfg.get("duracion", 1.0)) if "fin" not in cfg else float(cfg["fin"]) - self.inicio
         snd = cfg.get("sonido", getattr(self, "sonido_defecto", None))

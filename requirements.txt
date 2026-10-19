@@ -1,3 +1,4 @@
 pillow>=10
 numpy
 pyyaml
+cairosvg  # para ilustraciones .svg (en Windows/macOS requiere la librería Cairo)

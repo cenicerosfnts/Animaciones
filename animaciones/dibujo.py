@@ -19,6 +19,9 @@ COLORES = {
     "naranja": "#FF9F0A",
     "morado": "#BF5AF2",
     "gris": "#8E8E93",
+    "gris-claro": "#B8B8B8",
+    "rojo-doc": "#C8161D",
+    "crema": "#F4EFE6",
 }
 
 # nombre -> (archivo, variación de peso o None)
@@ -28,6 +31,12 @@ FUENTES = {
     "montserrat": ("Montserrat.ttf", "Black"),
     "montserrat-bold": ("Montserrat.ttf", "Bold"),
     "montserrat-medium": ("Montserrat.ttf", "Medium"),
+    # Estilo explicativo / documental
+    "barlow": ("BarlowCondensed-ExtraBold.ttf", None),
+    "barlow-bold": ("BarlowCondensed-Bold.ttf", None),
+    "barlow-medium": ("BarlowCondensed-Medium.ttf", None),
+    "barlow-light": ("BarlowCondensed-Regular.ttf", None),
+    "mano": ("GochiHand-Regular.ttf", None),
 }
 
 
@@ -119,6 +128,11 @@ def con_opacidad(img, opacidad):
     return img
 
 
+# Origen del lienzo actual dentro del "mundo". La cámara lo mueve para poder dibujar
+# elementos que están fuera de la pantalla original (por ejemplo, y negativa).
+ORIGEN = [0.0, 0.0]
+
+
 def pegar(lienzo, sprite, centro, escala=1.0, rotacion=0.0, opacidad=1.0, ancla=(0.5, 0.5)):
     """Pega un sprite en el lienzo con escala, rotación (grados) y opacidad.
 
@@ -141,7 +155,7 @@ def pegar(lienzo, sprite, centro, escala=1.0, rotacion=0.0, opacidad=1.0, ancla=
         ay = r.height / 2 + dx * math.sin(ang) + dy * math.cos(ang)
         s = r
     s = con_opacidad(s, opacidad)
-    x, y = int(round(centro[0] - ax)), int(round(centro[1] - ay))
+    x, y = int(round(centro[0] - ORIGEN[0] - ax)), int(round(centro[1] - ORIGEN[1] - ay))
     # alpha_composite no acepta destinos negativos: recortamos a mano.
     x0, y0 = max(0, x), max(0, y)
     x1, y1 = min(lienzo.width, x + s.width), min(lienzo.height, y + s.height)
@@ -155,7 +169,9 @@ class Pincel:
     """Capa supermuestreada para dibujar trazos con antialias en una región del lienzo."""
 
     def __init__(self, lienzo, caja, ss=3):
-        x0, y0, x1, y1 = [int(v) for v in caja]
+        self.ox, self.oy = ORIGEN
+        x0, y0, x1, y1 = [int(v) for v in (caja[0] - self.ox, caja[1] - self.oy,
+                                           caja[2] - self.ox, caja[3] - self.oy)]
         self.lienzo = lienzo
         self.x0, self.y0 = max(0, x0), max(0, y0)
         self.x1, self.y1 = min(lienzo.width, x1), min(lienzo.height, y1)
@@ -166,7 +182,7 @@ class Pincel:
         self.d = ImageDraw.Draw(self.img)
 
     def p(self, punto):
-        return ((punto[0] - self.x0) * self.ss, (punto[1] - self.y0) * self.ss)
+        return ((punto[0] - self.ox - self.x0) * self.ss, (punto[1] - self.oy - self.y0) * self.ss)
 
     def linea(self, puntos, col, ancho):
         if len(puntos) < 2:

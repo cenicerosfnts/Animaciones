@@ -1,0 +1,70 @@
+# Estilo explicativo / documental (fondo liso, texto palabra por palabra, ilustraciones de
+# línea, cámara que se mueve). Inspirado en la referencia de la escala Scoville.
+# Render:  python -m animaciones ejemplos/explicativo.yaml -o ejemplos/explicativo.mp4
+formato: horizontal
+fondo: blanco
+duracion: 27
+
+# Cámara virtual: en cada `t` (segundo) dice cuánto zoom y qué punto queda al centro.
+camara:
+  - {t: 4.4, zoom: 1.0, centro: [0.5, 0.5]}
+  - {t: 6.2, zoom: 1.0, centro: [0.5, 0.5]}
+  - {t: 8.2, zoom: 1.8, centro: [0.64, 0.7]}
+  - {t: 10.15, zoom: 1.8, centro: [0.64, 0.7]}
+  - {t: 10.2, zoom: 1.0, centro: [0.5, 0.5]}
+  - {t: 14.2, zoom: 1.3, centro: [0.5, 0.5]}
+  - {t: 17.0, zoom: 1.0, centro: [0.5, 0.5]}
+  - {t: 19.6, zoom: 1.0, centro: [0.5, 0.5]}
+  - {t: 21.8, zoom: 1.0, centro: [0.5, -0.25]}
+  - {t: 22.8, zoom: 1.0, centro: [0.5, -0.25]}
+  - {t: 24.6, zoom: 1.0, centro: [0.5, -1.0]}
+
+elementos:
+  # ---------- 1. Presentación del personaje ----------
+  - {tipo: texto, texto: "WILBUR", tamano: 72, alinear: izquierda, posicion: [0.27, 0.33], inicio: 0.2, fin: 3.6, animacion: corte}
+  - {tipo: texto, texto: "LINCOLN", tamano: 72, alinear: derecha, posicion: [0.73, 0.33], inicio: 0.8, fin: 3.6, animacion: corte}
+  - {tipo: texto, texto: "SCOVILLE", tamano: 270, posicion: [0.5, 0.5], inicio: 1.4, fin: 3.6, animacion: zoom, salida: 0.5}
+  - {tipo: ilustracion, recurso: hombre, ancho: 230, posicion: [0.45, 0.5], inicio: 1.6, fin: 4.6, animacion: pop}
+
+  # ---------- 2. La pregunta (la cámara se acerca a la campana) ----------
+  - {tipo: linea, desde: [0.18, 0.88], hasta: [0.8, 0.88], color: negro, grosor: 5, flecha: false, inicio: 4.4, fin: 10.3, entrada: 0.5}
+  - {tipo: ilustracion, recurso: hombre, ancho: 560, posicion: [0.44, 0.88], ancla: [0.5, 1.0], inicio: 4.5, fin: 10.3, animacion: subir}
+  - {tipo: ilustracion, recurso: campana, ancho: 190, posicion: [0.68, 0.88], ancla: [0.5, 1.0], inicio: 4.9, fin: 10.3, animacion: pop}
+  - tipo: texto
+    texto: "¿QUÉ CHILES ERAN LOS MÁS PICANTES DEL MUNDO?"
+    color: gris-claro
+    tamano: 76
+    ancho_max: 0.5
+    posicion: [0.5, 0.15]
+    fijo: true          # no se mueve con la cámara
+    inicio: 5.6
+    fin: 9.8
+    ritmo: 0.24
+
+  # ---------- 3. Golpe rojo: LA ESCALA SCOVILLE ----------
+  - {tipo: fondo, color: rojo-doc, entrada_estilo: v, inicio: 9.6, fin: 14.2, entrada: 0.6, sonido: whoosh}
+  - {tipo: texto, texto: "LA ESCALA", color: blanco, tamano: 120, posicion: [0.5, 0.36], inicio: 10.3, fin: 12.4, ritmo: 0.3}
+  - {tipo: texto, texto: "SCOVILLE", color: blanco, tamano: 250, posicion: [0.5, 0.56], inicio: 10.9, fin: 12.4, animacion: zoom}
+  - {tipo: texto, texto: "OK... ¿CÓMO?", color: blanco, tamano: 150, posicion: [0.5, 0.5], inicio: 12.6, fin: 14.2, animacion: corte, ritmo: 0.35}
+
+  # ---------- 4. El método: diluir hasta que ya no pique ----------
+  - {tipo: linea, desde: [0.3, 0.8], hasta: [0.7, 0.8], color: negro, grosor: 5, flecha: false, inicio: 14.2, fin: 19.0, entrada: 0.01}
+  - {tipo: ilustracion, recurso: vaso_rojo, ancho: 280, posicion: [0.5, 0.8], ancla: [0.5, 1.0], inicio: 14.2, fin: 16.8, salida: 0.8, animacion: corte}
+  - {tipo: ilustracion, recurso: vaso_claro, ancho: 280, posicion: [0.5, 0.8], ancla: [0.5, 1.0], inicio: 16.0, fin: 19.0, entrada: 0.8}
+  - {tipo: texto, texto: "¡ASUMAKINA, SÍ PICA!", animacion: letras, tamano: 80, posicion: [0.5, 0.2], inicio: 14.6, fin: 16.4, fijo: true}
+  - {tipo: texto, texto: "YA NI PICA, COMPA", animacion: letras, tamano: 80, posicion: [0.5, 0.2], inicio: 16.6, fin: 18.0, fijo: true}
+  - {tipo: texto, texto: "500 VECES", tamano: 96, alinear: derecha, posicion: [0.4, 0.62], inicio: 17.2, fin: 19.0, animacion: corte}
+  - {tipo: texto, texto: "500 PUNTOS", tamano: 96, alinear: izquierda, posicion: [0.6, 0.62], color: "#8A8A8A", inicio: 17.8, fin: 19.0, animacion: corte}
+
+  # ---------- 5. La escala: la cámara sube por la flecha ----------
+  - {tipo: linea, desde: [0.5, 1.2], hasta: [0.5, -1.45], color: rojo-doc, grosor: 6, inicio: 19.2, fin: 27, entrada: 5.2}
+  - {tipo: ilustracion, recurso: morron, ancho: 210, posicion: [0.5, 0.45], inicio: 19.2, fin: 27, animacion: pop}
+  - {tipo: texto, texto: "PIMIENTO MORRÓN", fuente: barlow-light, tamano: 46, posicion: [0.5, 0.7], inicio: 19.5, fin: 27}
+  - {tipo: texto, texto: "0", tamano: 110, posicion: [0.5, 0.62], inicio: 19.9, fin: 27}
+  - {tipo: ilustracion, recurso: jalapeno, ancho: 300, posicion: [0.5, -0.32], inicio: 21.3, fin: 27, animacion: pop}
+  - {tipo: texto, texto: "JALAPEÑO", fuente: barlow-light, tamano: 46, posicion: [0.5, -0.08], inicio: 21.6, fin: 27}
+  - {tipo: texto, texto: "3,500 - 8,000", tamano: 110, posicion: [0.5, -0.16], inicio: 21.9, fin: 27, ritmo: 0.2}
+  - {tipo: ilustracion, recurso: habanero, ancho: 210, posicion: [0.5, -1.08], inicio: 24.0, fin: 27, animacion: pop}
+  - {tipo: texto, texto: "HABANERO", fuente: barlow-light, tamano: 46, posicion: [0.5, -0.83], inicio: 24.3, fin: 27}
+  - {tipo: texto, texto: "100,000 - 350,000", tamano: 110, posicion: [0.5, -0.91], inicio: 24.6, fin: 27, ritmo: 0.2}
+  - {tipo: ilustracion, recurso: fuego, ancho: 90, posicion: [0.62, -1.12], inicio: 25.4, fin: 27, animacion: pop, flotar: 6}
