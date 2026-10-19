@@ -222,6 +222,67 @@ button { cursor: pointer; }
 .proyecto-nube b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .proyecto-nube small { color: var(--muted); }
 
+/* ============ Modo app (tipo CapCut): celular y tabletas ============ */
+.clip { isolation: isolate; }
+.clip canvas.tira, .clip canvas.onda { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; border-radius: 3px; }
+.clip.media .lbl-clip, .clip.audio .lbl-clip { background: rgba(0,0,0,.45); padding: 1px 5px; border-radius: 3px; }
+.barra-herr { display: none; }
+.linea-central { display: none; }
+.hoja-fondo { display: none; }
+body.capcut { overflow: hidden; }
+body.capcut .app { height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto var(--tl-h-app, 36vh) auto;
+  grid-template-areas: "top" "stage" "trans" "tl" "tb"; }
+body.capcut .top { flex-wrap: nowrap; overflow-x: auto; padding-block: 6px; gap: 6px; scrollbar-width: none; }
+body.capcut .top .btn { padding: 5px 9px; font-size: 12.5px; }
+body.capcut .top .marca { display: none; }
+body.capcut .top .nombre { width: 120px; flex: none; }
+body.capcut .top .esp { display: none; }
+body.capcut .stage { display: contents; }
+body.capcut .lienzo-wrap { grid-area: stage; padding: 8px; height: auto; min-height: 0; }
+body.capcut .transporte { grid-area: trans; justify-content: center; padding: 4px 10px; gap: 10px; }
+body.capcut .transporte #btnCortar, body.capcut .transporte #btnDuplicar, body.capcut .transporte #btnBorrar, body.capcut .transporte .esp { display: none; }
+body.capcut #btnPlay { border-radius: 999px; min-width: 56px !important; height: 40px; font-size: 16px; }
+body.capcut .tl { grid-area: tl; height: auto; }
+body.capcut .tl-bar { display: none; }
+body.capcut .tl { grid-template-rows: minmax(0, 1fr); }
+body.capcut .tl-body { grid-template-columns: 0 minmax(0, 1fr); overflow-y: auto; overflow-x: auto; touch-action: pan-x pan-y; overscroll-behavior: contain; scrollbar-width: none; }
+body.capcut .tl-heads { display: none; }
+body.capcut .tl-pistas { margin-left: 50vw; margin-right: 50vw; }
+body.capcut .cabezal { display: none; }
+body.capcut .linea-central { display: block; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; background: #fff; z-index: 6; pointer-events: none; box-shadow: 0 0 0 1px rgba(0,0,0,.4); }
+body.capcut .regla { cursor: default; }
+body.capcut .pista { height: var(--row-h-app, 38px); }
+body.capcut .top .nombre { order: -2; }
+body.capcut #btnExportar { order: -1; }
+body.capcut .pista.cam { height: 22px; }
+body.capcut .clip { touch-action: pan-x pan-y; border-radius: 6px; font-size: 11.5px; }
+body.capcut .clip.sel { touch-action: none; outline-width: 3px; }
+body.capcut .clip .borde { width: 16px; background: rgba(255,255,255,.18); }
+body.capcut .clip:not(.sel) .borde { display: none; }
+body.capcut .tl-resize { display: none; }
+body.capcut .barra-herr { grid-area: tb; display: flex; gap: 2px; overflow-x: auto; padding: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-right, 0px));
+  background: var(--panel); border-top: 1px solid var(--line); scrollbar-width: none; }
+.barra-herr button { flex: none; width: 66px; background: none; border: 0; color: var(--fg); display: grid; justify-items: center; gap: 4px; padding: 4px 0; font-size: 11px; border-radius: 8px; }
+.barra-herr button:active { background: var(--panel-3); }
+.barra-herr svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.barra-herr .volver { color: var(--amber); }
+.barra-herr .peligro { color: #ff8a80; }
+body.capcut .lib, body.capcut .props { position: fixed; left: 0; right: 0; bottom: 0; height: 62vh; max-height: none; z-index: 16; border: 0; border-top: 1px solid var(--line);
+  border-radius: 14px 14px 0 0; transform: translateY(105%); transition: transform .22s ease; box-shadow: 0 -10px 40px rgba(0,0,0,.5); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body.capcut .lib.abierta, body.capcut .props.abierta { transform: none; }
+body.capcut .hoja-fondo { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 15; opacity: 0; pointer-events: none; transition: opacity .2s; }
+body.capcut .hoja-fondo.visible { opacity: 1; pointer-events: auto; }
+.asa { display: none; }
+body.capcut .asa { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px 0; }
+body.capcut .asa::before { content: ""; position: absolute; left: 50%; top: 6px; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: var(--line); }
+body.capcut .asa b { font-family: var(--f-display); font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.hoja-rapida { position: fixed; left: 0; right: 0; bottom: 0; z-index: 17; background: var(--panel); border-top: 1px solid var(--line); border-radius: 14px 14px 0 0;
+  padding: 14px max(16px, env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 12px; box-shadow: 0 -10px 40px rgba(0,0,0,.5); }
+.hoja-rapida h3 { margin: 0; font-family: var(--f-display); font-size: 18px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+.hoja-rapida .valor { font-family: var(--f-mono); color: var(--amber); }
+.hoja-rapida input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
+@media (prefers-reduced-motion: reduce) { body.capcut .lib, body.capcut .props { transition: none; } }
+
 /* Teléfono / pantallas angostas: todo en una columna */
 @media (max-width: 900px) {
   body { overflow: auto; }
@@ -250,6 +311,7 @@ button { cursor: pointer; }
     <span class="esp"></span>
     <button class="btn icon" id="btnDeshacer" title="Deshacer (Ctrl+Z)" aria-label="Deshacer">↶</button>
     <button class="btn icon" id="btnRehacer" title="Rehacer (Ctrl+Shift+Z)" aria-label="Rehacer">↷</button>
+    <button class="btn" id="btnModoApp" title="Cambiar entre vista de app (celular) y vista de computadora">Vista app</button>
     <button class="btn" id="btnNuevo">Nuevo video</button>
     <button class="btn" id="btnAbrir">Abrir</button>
     <button class="btn" id="btnGuardar">Guardar proyecto</button>
@@ -698,7 +760,14 @@ function rrect(ctx, x, y, w, h, r) {
   ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
+const cacheMaqueta = new Map();
 function maquetarTexto(ctx, el, u, W) {
+  const clave = [el.texto, el.fuente, el.tam, el.anchoMax, el.interlineado, el.alinear, el.mayus, u.toFixed(4), W].join("|");
+  let m = cacheMaqueta.get(clave);
+  if (!m) { m = maquetarTextoSinCache(ctx, el, u, W); if (cacheMaqueta.size > 400) cacheMaqueta.clear(); cacheMaqueta.set(clave, m); }
+  return m;
+}
+function maquetarTextoSinCache(ctx, el, u, W) {
   const fs = el.tam * u;
   ctx.font = cssFuente(el.fuente, fs);
   const txt = el.mayus ? el.texto.toUpperCase() : el.texto;
@@ -795,6 +864,8 @@ function medidaMedia(el, u, W, H) {
   }
   const w = el.tam * u; return [w, w * ih / iw];
 }
+const FILTROS = { ninguno: "", bn: "grayscale(1) contrast(1.05)", calido: "sepia(.25) saturate(1.25) hue-rotate(-8deg)", frio: "saturate(1.1) hue-rotate(12deg) brightness(1.02)",
+  vintage: "sepia(.45) contrast(.9) brightness(1.05) saturate(.8)", contraste: "contrast(1.25) saturate(1.15)", vivo: "saturate(1.5) contrast(1.08)", drama: "grayscale(.35) contrast(1.35) brightness(.92)" };
 function dibujarMedia(ctx, el, lt, u, W, H, medir) {
   const [w, h] = medidaMedia(el, u, W, H);
   const caja = [-w / 2, -h / 2, w / 2, h / 2];
@@ -810,7 +881,8 @@ function dibujarMedia(ctx, el, lt, u, W, H, medir) {
   else if (marco === "esquinas") rrect(ctx, -w / 2, -h / 2, w, h, 26 * u);
   else ctx.rect(-w / 2, -h / 2, w, h);
   if (marco === "ninguno" || marco === "blanco") { /* sin recorte especial */ } else { if (el.sombra) { ctx.fillStyle = "#000"; ctx.fill(); ctx.shadowColor = "transparent"; } ctx.clip(); }
-  if (el.bn && "filter" in ctx) ctx.filter = "grayscale(1) contrast(1.05)";
+  const filtro = FILTROS[el.filtro || (el.bn ? "bn" : "ninguno")] || "";
+  if (filtro && "filter" in ctx) ctx.filter = filtro;
   if (fuente && (fuente.naturalWidth || fuente.videoWidth)) {
     let dw = w, dh = h;
     if (marco === "redondo") { const r = Math.min(w, h); dw = w * r / Math.min(w, h); dh = h * r / Math.min(w, h); }
@@ -1102,14 +1174,15 @@ function sincronizarMedios(prevT) {
     const activo = t >= el.inicio && t < el.inicio + el.dur;
     if (el.tipo === "video" || el.tipo === "audio") {
       const m = el.tipo === "video" ? videoDe(el) : audioDe(el); if (!m) continue;
-      const objetivo = el.recorte + (t - el.inicio);
+      const objetivo = el.recorte + (t - el.inicio) * (el.vel || 1);
       if (activo) {
+        if (m.playbackRate !== (el.vel || 1)) { m.playbackRate = el.vel || 1; m.preservesPitch = true; }
         let vol = clamp(el.volumen ?? 1, 0, 1);
         if (el.tipo === "audio") { const lt = t - el.inicio; if (el.fadeIn > 0) vol *= clamp(lt / el.fadeIn); if (el.fadeOut > 0) vol *= clamp((el.dur - lt) / el.fadeOut); }
         m.volume = vol; m.muted = !!est.silencio;
         if (est.play) {
           if (m.paused) { try { m.currentTime = objetivo; } catch (e) { /* aún cargando */ } m.play().catch(() => {}); }
-          else if (Math.abs(m.currentTime - objetivo) > .25) m.currentTime = objetivo;
+          else if (Math.abs(m.currentTime - objetivo) > .25 * (el.vel || 1)) m.currentTime = objetivo;
         } else { if (!m.paused) m.pause(); if (Math.abs(m.currentTime - objetivo) > .02) { try { m.currentTime = objetivo; } catch (e) { /* nada */ } } }
       } else if (!m.paused) m.pause();
     }
@@ -1266,13 +1339,13 @@ $("#tlPistas").addEventListener("pointermove", ev => {
   } else if (a.modo === "izq") {
     const fin = a.o.inicio + a.o.dur;
     let ini = clamp(imanar(a.o.inicio + dt, el.id), 0, fin - .1);
-    if (el.tipo === "video" || el.tipo === "audio") ini = Math.max(ini, a.o.inicio - a.o.recorte);
+    if (el.tipo === "video" || el.tipo === "audio") ini = Math.max(ini, a.o.inicio - a.o.recorte / (el.vel || 1));
     el.inicio = +ini.toFixed(3); el.dur = +(fin - ini).toFixed(3);
-    if (el.tipo === "video" || el.tipo === "audio") el.recorte = +(a.o.recorte + (ini - a.o.inicio)).toFixed(3);
+    if (el.tipo === "video" || el.tipo === "audio") el.recorte = +(a.o.recorte + (ini - a.o.inicio) * (el.vel || 1)).toFixed(3);
   } else if (a.modo === "der") {
     let fin = Math.max(a.o.inicio + .1, imanar(a.o.inicio + a.o.dur + dt, el.id));
     const m = medios[el.media];
-    if ((el.tipo === "video" || el.tipo === "audio") && m && m.dur) fin = Math.min(fin, a.o.inicio + m.dur - (el.recorte || 0));
+    if ((el.tipo === "video" || el.tipo === "audio") && m && m.dur) fin = Math.min(fin, a.o.inicio + (m.dur - (el.recorte || 0)) / (el.vel || 1));
     el.dur = +(fin - a.o.inicio).toFixed(3);
   }
   const d = $(`.clip[data-id="${el.id}"]`);
@@ -1522,17 +1595,19 @@ const ESQUEMAS = {
     C("colorResalte", "Color del resaltado"), R("anchoMax", "Ancho máximo", .15, 1), R("interlineado", "Interlineado", .7, 2),
     C("caja", "Caja detrás del texto", true), R("borde", "Contorno", 0, 20, .5), C("colorBorde", "Color del contorno"), X("sombra", "Sombra")],
   ilustracion: [{ k: "ilus", l: "Ilustración", tipo: "ilus" }, R("tam", "Tamaño", 30, 1800, 1), X("recolor", "Usar los colores de Mi identidad")],
-  foto: [{ k: "media", l: "Foto", tipo: "media", mt: "imagen" }, R("tam", "Tamaño", 60, 2400, 1), S("marco", "Marco", [["ninguno", "Sin marco"], ["blanco", "Foto impresa (borde blanco)"], ["esquinas", "Esquinas redondas"], ["redondo", "Círculo"], ["ovalo", "Óvalo dorado (retrato)"]]), X("bn", "Blanco y negro"), X("sombra", "Sombra")],
-  video: [{ k: "media", l: "Video", tipo: "media", mt: "video" }, N("recorte", "Empieza en el segundo (del archivo)"), R("volumen", "Volumen", 0, 1),
+  foto: [{ k: "media", l: "Foto", tipo: "media", mt: "imagen" }, R("tam", "Tamaño", 60, 2400, 1),
+    S("filtro", "Filtro", [["ninguno", "Original"], ["vivo", "Vivo"], ["calido", "Cálido"], ["frio", "Frío"], ["contraste", "Contraste"], ["drama", "Drama"], ["vintage", "Vintage"], ["bn", "Blanco y negro"]]), S("marco", "Marco", [["ninguno", "Sin marco"], ["blanco", "Foto impresa (borde blanco)"], ["esquinas", "Esquinas redondas"], ["redondo", "Círculo"], ["ovalo", "Óvalo dorado (retrato)"]]), X("sombra", "Sombra")],
+  video: [{ k: "media", l: "Video", tipo: "media", mt: "video" }, N("recorte", "Empieza en el segundo (del archivo)"), R("volumen", "Volumen", 0, 1), R("vel", "Velocidad", .25, 4, .05),
+    S("filtro", "Filtro", [["ninguno", "Original"], ["vivo", "Vivo"], ["calido", "Cálido"], ["frio", "Frío"], ["contraste", "Contraste"], ["drama", "Drama"], ["vintage", "Vintage"], ["bn", "Blanco y negro"]]),
     S("ajuste", "Encuadre", [["cubrir", "Llenar la pantalla"], ["contener", "Completo (con bordes)"], ["libre", "Libre (tamaño manual)"]]), R("tam", "Tamaño (si es libre)", 60, 2400, 1),
-    S("marco", "Marco", [["ninguno", "Sin marco"], ["blanco", "Borde blanco"], ["esquinas", "Esquinas redondas"], ["redondo", "Círculo"]]), X("bn", "Blanco y negro")],
+    S("marco", "Marco", [["ninguno", "Sin marco"], ["blanco", "Borde blanco"], ["esquinas", "Esquinas redondas"], ["redondo", "Círculo"]])],
   fondo: [C("color", "Color"), S("transicion", "Cómo entra", [["v", "En V (desde arriba)"], ["barrido", "Barrido lateral"], ["barrido-arriba", "Desde abajo"], ["circulo", "Círculo que crece"], ["persianas", "Persianas"], ["desvanecer", "Desvanecer"], ["corte", "Corte seco"]]),
     N("tEntrada", "Duración de la entrada (s)"), S("salida", "Cómo sale", [["ninguna", "Corte"], ["desvanecer", "Desvanecer"], ["barrido", "Barrido"]]), N("tSalida", "Duración de la salida (s)"), R("opacidad", "Opacidad", 0, 1)],
   forma: [S("figura", "Figura", [["pildora", "Píldora"], ["rect", "Rectángulo"], ["circulo", "Círculo / óvalo"]]), R("w", "Ancho", 4, 2000, 1), R("h", "Alto", 4, 2000, 1), C("color", "Color"), R("radio", "Redondeo", 0, 200, 1), R("borde", "Borde", 0, 40, 1), C("colorBorde", "Color del borde")],
   linea: [C("color", "Color"), R("grosor", "Grosor", 1, 40, .5), X("flecha", "Punta de flecha"), X("punteada", "Punteada"), R("curva", "Curva", -.8, .8), R("x2", "Final X", -1, 3, .001), R("y2", "Final Y", -2, 3, .001)],
   contador: [N("desde", "Desde", 1), N("hasta", "Hasta", 1), N("decimales", "Decimales", 1), TX("prefijo", "Antes del número (ej. $)"), TX("sufijo", "Después del número (ej. km)"), N("tConteo", "Segundos contando"), { k: "fuente", l: "Tipografía", tipo: "fuente" }, R("tam", "Tamaño", 20, 420, 1), C("color", "Color")],
   lupa: [R("radio", "Tamaño de la lupa", 40, 520, 1), R("aumento", "Aumento", 1.2, 5), R("x2", "Termina en X", -.2, 1.2, .001), R("y2", "Termina en Y", -.2, 1.2, .001)],
-  audio: [{ k: "media", l: "Archivo de audio", tipo: "media", mt: "audio" }, N("recorte", "Empieza en el segundo (del archivo)"), R("volumen", "Volumen", 0, 1), N("fadeIn", "Entrada suave (s)"), N("fadeOut", "Salida suave (s)")],
+  audio: [{ k: "media", l: "Archivo de audio", tipo: "media", mt: "audio" }, N("recorte", "Empieza en el segundo (del archivo)"), R("volumen", "Volumen", 0, 1), R("vel", "Velocidad", .25, 4, .05), N("fadeIn", "Entrada suave (s)"), N("fadeOut", "Salida suave (s)")],
   efecto: [S("sonido", "Sonido", SONIDOS.slice(1).map(s => [s, s[0].toUpperCase() + s.slice(1)])), R("volumen", "Volumen", 0, 1)],
 };
 const ANIM = [S("entrada", "Entrada", ENTRADAS), N("tEntrada", "Duración de la entrada (s)"), S("salida", "Salida", SALIDAS), N("tSalida", "Duración de la salida (s)"),
@@ -1683,7 +1758,7 @@ function cortar() {
   const el = elPorId(est.sel);
   if (!el || est.t <= el.inicio + .05 || est.t >= el.inicio + el.dur - .05) { aviso("Pon el cabezal rojo dentro del clip seleccionado para cortarlo."); return; }
   const corte = +est.t.toFixed(3), b = { ...copia(el), id: uid(), inicio: corte, dur: +(el.inicio + el.dur - corte).toFixed(3) };
-  if (el.tipo === "video" || el.tipo === "audio") b.recorte = +((el.recorte || 0) + corte - el.inicio).toFixed(3);
+  if (el.tipo === "video" || el.tipo === "audio") b.recorte = +((el.recorte || 0) + (corte - el.inicio) * (el.vel || 1)).toFixed(3);
   el.dur = +(corte - el.inicio).toFixed(3); el.salida = "ninguna"; el.fadeOut = 0;
   b.entrada = "ninguna"; b.fadeIn = 0; b.sonido = b.tipo === "efecto" ? b.sonido : "ninguno"; if (b.tipo === "texto") b.animTexto = "ninguna";
   proy.elementos.push(b); seleccionar(b.id); registrar();
@@ -1805,7 +1880,8 @@ async function mezclarAudio(dur) {
       g.gain.setValueAtTime(el.fadeIn > 0 ? 0 : vol, el.inicio);
       if (el.fadeIn > 0) g.gain.linearRampToValueAtTime(vol, el.inicio + el.fadeIn);
       if (el.fadeOut > 0) { g.gain.setValueAtTime(vol, Math.max(el.inicio, fin - el.fadeOut)); g.gain.linearRampToValueAtTime(0, fin); }
-      s.start(el.inicio, el.recorte || 0, el.dur); hay = true;
+      s.playbackRate.value = el.vel || 1;
+      s.start(el.inicio, el.recorte || 0, el.dur * (el.vel || 1)); hay = true;
     }
     const sfx = el.tipo === "efecto" ? el.sonido : (!ES_AUDIO(el) && el.sonido !== "ninguno" ? el.sonido : null);
     if (sfx && sfx !== "ninguno") {
@@ -1869,7 +1945,7 @@ async function exportar() {
     if (cancelarExport || errorEnc) break;
     const t = i / fps;
     const activos = proy.elementos.filter(e => e.tipo === "video" && t >= e.inicio && t < e.inicio + e.dur);
-    await Promise.all(activos.map(e => esperarSeek(videoDe(e), (e.recorte || 0) + t - e.inicio)));
+    await Promise.all(activos.map(e => esperarSeek(videoDe(e), (e.recorte || 0) + (t - e.inicio) * (e.vel || 1))));
     renderizar(cx, W, H, t, false);
     const frame = new VideoFrame(lz, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
     venc.encode(frame, { keyFrame: i % (fps * 2) === 0 }); frame.close();
@@ -2931,7 +3007,7 @@ function crearAvance(a, largo, firma, texto, golpe) {
     const ini = Math.max(e.inicio, a), fin = Math.min(e.inicio + e.dur, b);
     if (fin - ini < .05) continue;
     const c = { ...copia(e), id: uid(), inicio: +(ini - a).toFixed(3), dur: +(fin - ini).toFixed(3), avance: true, nombre: "Avance · " + e.nombre };
-    if (e.tipo === "video" || e.tipo === "audio") { c.recorte = +((e.recorte || 0) + ini - e.inicio).toFixed(3); c.fadeIn = 0; c.fadeOut = 0; }
+    if (e.tipo === "video" || e.tipo === "audio") { c.recorte = +((e.recorte || 0) + (ini - e.inicio) * (e.vel || 1)).toFixed(3); c.fadeIn = 0; c.fadeOut = 0; }
     else { c.desfase = +((e.desfase || 0) + ini - e.inicio).toFixed(3); c.durAnim = e.durAnim ?? e.dur; }
     if (ini > e.inicio) { c.sonido = c.tipo === "efecto" ? c.sonido : "ninguno"; c.entrada = "ninguna"; }
     if (fin < e.inicio + e.dur) c.salida = "ninguna";
@@ -2986,4 +3062,278 @@ proyectoPrimerVideo = () => {
   const r = proy; proy = prev; return r;
 };
 pintarLib();
+</script>
+
+<script>
+"use strict";
+/* ===================================================================
+   29. Miniaturas de video y ondas de audio en la línea de tiempo
+   =================================================================== */
+const enProceso = new Set();
+let repintarTl = 0;
+const pedirTimeline = () => { cancelAnimationFrame(repintarTl); repintarTl = requestAnimationFrame(pintarTimeline); };
+function generarTira(m) {
+  if (m.tira || enProceso.has("t" + m.id) || m.error) return;
+  enProceso.add("t" + m.id);
+  const th = 60;
+  if (m.tipo === "imagen") {
+    if (!m.img) { enProceso.delete("t" + m.id); return; }
+    const c = document.createElement("canvas"), tw = Math.round(th * m.w / m.h); c.width = tw; c.height = th;
+    c.getContext("2d").drawImage(m.img, 0, 0, tw, th); m.tira = { c, n: 1, intervalo: 1e9, tw, th }; pedirTimeline(); return;
+  }
+  const v = document.createElement("video"); v.muted = true; v.preload = "auto"; v.playsInline = true; v.src = m.url;
+  v.onloadeddata = async () => {
+    if (!v.videoWidth) return;
+    const dur = v.duration || m.dur || 1, n = Math.max(1, Math.min(90, Math.ceil(dur / 1))), intervalo = dur / n;
+    const tw = Math.round(th * v.videoWidth / v.videoHeight), c = document.createElement("canvas"); c.width = tw * n; c.height = th;
+    const x = c.getContext("2d");
+    m.tira = { c, n: 0, intervalo, tw, th };
+    for (let i = 0; i < n; i++) {
+      await new Promise(r => { const fin = () => { v.removeEventListener("seeked", fin); r(); }; v.addEventListener("seeked", fin); setTimeout(fin, 1500); v.currentTime = Math.min(dur - .05, (i + .5) * intervalo); });
+      try { x.drawImage(v, i * tw, 0, tw, th); } catch (e) { /* cuadro no disponible */ }
+      m.tira.n = i + 1;
+      if (i % 6 === 5 || i === n - 1) pedirTimeline();
+    }
+    v.removeAttribute("src"); v.load();
+  };
+  v.onerror = () => enProceso.delete("t" + m.id);
+}
+async function generarPicos(m) {
+  if (m.picos || enProceso.has("p" + m.id) || !m.blob || m.blob.size > 160 * 1024 * 1024) return; // archivos enormes: sin onda para no agotar la memoria del celular
+  enProceso.add("p" + m.id);
+  try {
+    const oac = new OfflineAudioContext(1, 1, 44100);
+    const b = await oac.decodeAudioData(await m.blob.arrayBuffer());
+    const porSeg = 60, n = Math.ceil(b.duration * porSeg), d = new Float32Array(n), canales = [...Array(b.numberOfChannels).keys()].map(i => b.getChannelData(i));
+    const paso = b.sampleRate / porSeg;
+    for (let i = 0; i < n; i++) { let mx = 0; const a = Math.floor(i * paso), z = Math.min(b.length, Math.floor((i + 1) * paso)); for (const ch of canales) for (let j = a; j < z; j += 4) { const v = Math.abs(ch[j]); if (v > mx) mx = v; } d[i] = mx; }
+    let pico = 0; for (const v of d) pico = Math.max(pico, v);
+    m.picos = { d, porSeg, pico: pico || 1 };
+  } catch (e) { m.picos = { d: new Float32Array(0), porSeg: 60, pico: 1 }; }
+  pedirTimeline();
+}
+function decorarClips() {
+  for (const div of $$("#tlPistas .clip")) {
+    const el = elPorId(div.dataset.id); if (!el) continue;
+    const nodo = [...div.childNodes].find(n => n.nodeType === 3);
+    if (nodo && nodo.textContent.trim()) { const sp = document.createElement("span"); sp.className = "lbl-clip"; sp.textContent = nodo.textContent; nodo.replaceWith(sp); }
+    const m = medios[el.media]; if (!m) continue;
+    const w = Math.min(4096, Math.max(6, Math.round(el.dur * est.pps))), h = div.clientHeight || 30, vel = el.vel || 1;
+    if (el.tipo === "video" || el.tipo === "foto") {
+      generarTira(m);
+      const t = m.tira; if (!t || !t.n) continue;
+      const c = document.createElement("canvas"); c.className = "tira"; c.width = w; c.height = h;
+      const x = c.getContext("2d"), sw = Math.max(8, Math.round(h * t.tw / t.th));
+      for (let px = 0; px < w; px += sw) {
+        const ts = (el.recorte || 0) + (px + sw / 2) / est.pps * vel, i = Math.min(t.n - 1, Math.max(0, Math.floor(ts / t.intervalo)));
+        x.drawImage(t.c, i * t.tw, 0, t.tw, t.th, px, 0, sw, h);
+      }
+      div.prepend(c);
+    }
+    if (el.tipo === "audio" || (el.tipo === "video" && (el.volumen ?? 1) > 0)) {
+      generarPicos(m);
+      const P = m.picos; if (!P || !P.d.length) continue;
+      const c = document.createElement("canvas"); c.className = "onda"; c.width = w; c.height = h;
+      const x = c.getContext("2d"); x.fillStyle = el.tipo === "audio" ? "rgba(255,255,255,.55)" : "rgba(120,255,170,.6)";
+      const alto = el.tipo === "audio" ? h - 6 : h * .45, base = el.tipo === "audio" ? h / 2 : h - 2;
+      for (let px = 0; px < w; px += 2) {
+        const i0 = Math.floor(((el.recorte || 0) + px / est.pps * vel) * P.porSeg), i1 = Math.max(i0 + 1, Math.floor(((el.recorte || 0) + (px + 2) / est.pps * vel) * P.porSeg));
+        let mx = 0; for (let i = i0; i < i1 && i < P.d.length; i++) mx = Math.max(mx, P.d[i]);
+        const a = Math.max(1, mx / P.pico * alto * (el.volumen ?? 1));
+        if (el.tipo === "audio") x.fillRect(px, base - a / 2, 1.4, a); else x.fillRect(px, base - a, 1.4, a);
+      }
+      div.prepend(c);
+    }
+  }
+}
+const pintarTimelineBase = pintarTimeline;
+pintarTimeline = () => {
+  pintarTimelineBase(); decorarClips();
+  if (modoApp()) {
+    ajustarScrollApp();
+    // que el clip seleccionado (o el video principal) quede visible sin mover el tiempo
+    const c = $(`#tlPistas .clip[data-id="${est.sel}"]`) || $$("#tlPistas .clip.media")[0];
+    if (c) { const y = c.parentElement.offsetTop, h = c.parentElement.offsetHeight, b = $("#tlBody");
+      if (y < b.scrollTop + 24 || y + h > b.scrollTop + b.clientHeight) b.scrollTop = Math.max(0, y - b.clientHeight / 2); }
+  }
+};
+
+/* ===================================================================
+   30. Modo app (tipo CapCut): cabezal fijo al centro, deslizar y pellizcar
+       la línea de tiempo, barra de herramientas y paneles desde abajo.
+   =================================================================== */
+const ICON = {
+  mas: '<path d="M12 5v14M5 12h14"/>', video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/>',
+  audio: '<path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>', texto: '<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',
+  sticker: '<path d="M14 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h8l7-7V6a3 3 0 0 0-3-3"/><path d="M14 21v-4a3 3 0 0 1 3-3h4"/>', plantilla: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
+  efecto: '<path d="m12 3 2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M19 15v4M17 17h4"/>', subs: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 11h4M13 11h4M7 15h10"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>', ia: '<path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><rect x="6" y="6" width="12" height="12" rx="3"/><path d="M10 10h4v4h-4z"/>',
+  marca: '<circle cx="12" cy="12" r="9"/><path d="M8 16 10.5 8 13 16M9 13.5h3"/><path d="M18 9.5a3 3 0 1 0 0 5"/>', camara: '<path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3"/>',
+  formato: '<rect x="7" y="2" width="10" height="20" rx="2"/>', revisar: '<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>',
+  volver: '<path d="M15 18l-6-6 6-6"/>', dividir: '<path d="M12 3v18"/><path d="M5 8l3 4-3 4M19 8l-3 4 3 4"/>', velocidad: '<path d="M12 14l4-4"/><path d="M3.5 18a10 10 0 1 1 17 0"/>',
+  volumen: '<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>', animacion: '<circle cx="7" cy="12" r="3"/><path d="M12 12h9M15 8l4 4-4 4"/>',
+  filtro: '<circle cx="9" cy="9" r="6"/><circle cx="15" cy="15" r="6"/>', editar: '<path d="M4 20h4L19 9l-4-4L4 16z"/>', duplicar: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  borrar: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>', reemplazar: '<path d="M4 4v6h6M20 20v-6h-6"/><path d="M5 15a8 8 0 0 0 14 2M19 9A8 8 0 0 0 5 7"/>',
+};
+const svg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
+let preferenciaApp = null;
+try { preferenciaApp = localStorage.getItem("estudio-modo-app"); } catch (e) { /* nada */ }
+const consultaMovil = matchMedia("(max-width: 900px), (pointer: coarse)");
+const modoApp = () => document.body.classList.contains("capcut");
+function aplicarModo() {
+  const on = preferenciaApp ? preferenciaApp === "1" : consultaMovil.matches;
+  document.body.classList.toggle("capcut", on);
+  $("#btnModoApp").textContent = on ? "Vista computadora" : "Vista app";
+  cerrarHojas(); pintarBarra(); ajustarLienzo(); pintarTimeline();
+  $("#btnPlay").textContent = on ? (est.play ? "❚❚" : "▶") : (est.play ? "❚❚ Pausa" : "▶ Play");
+}
+$("#btnModoApp").onclick = () => { preferenciaApp = modoApp() ? "0" : "1"; try { localStorage.setItem("estudio-modo-app", preferenciaApp); } catch (e) { /* nada */ } aplicarModo(); };
+consultaMovil.addEventListener("change", () => { if (!preferenciaApp) aplicarModo(); });
+
+// Elementos fijos del modo app
+const barra = document.createElement("nav"); barra.className = "barra-herr"; barra.setAttribute("aria-label", "Herramientas"); $("#app").appendChild(barra);
+const fondoHoja = document.createElement("div"); fondoHoja.className = "hoja-fondo"; document.body.appendChild(fondoHoja);
+$(".tl").insertAdjacentHTML("beforeend", `<div class="linea-central" aria-hidden="true"></div>`);
+for (const [sel, titulo] of [[".lib", "Biblioteca"], [".props", "Ajustes"]]) $(sel).insertAdjacentHTML("afterbegin", `<div class="asa"><b>${titulo}</b><button class="btn" data-cerrar-hoja>Listo</button></div>`);
+$$("[data-cerrar-hoja]").forEach(b => b.onclick = cerrarHojas);
+fondoHoja.onclick = cerrarHojas;
+function abrirHoja(cual, tab) {
+  if (!modoApp()) { if (cual === "lib") { est.tabLib = tab; pintarLib(); } else abrirTabProps(tab); return; }
+  cerrarHojas(false);
+  if (cual === "lib") { est.tabLib = tab; pintarLib(); $(".lib").classList.add("abierta"); }
+  else { est.tabProps = tab; pintarProps(); $(".props").classList.add("abierta"); }
+  fondoHoja.classList.add("visible");
+}
+function cerrarHojas() { $(".lib").classList.remove("abierta"); $(".props").classList.remove("abierta"); fondoHoja.classList.remove("visible"); const r = $("#hojaRapida"); if (r) r.remove(); }
+function hojaRapida(titulo, cuerpo) {
+  cerrarHojas(); const h = document.createElement("div"); h.className = "hoja-rapida"; h.id = "hojaRapida";
+  h.innerHTML = `<h3>${titulo}<button class="btn" data-cerrar-hoja>Listo</button></h3>${cuerpo}`; document.body.appendChild(h);
+  fondoHoja.classList.add("visible"); $("[data-cerrar-hoja]", h).onclick = cerrarHojas; return h;
+}
+function sliderRapido(el, k, titulo, min, max, paso, presets, formato) {
+  const h = hojaRapida(titulo, `<div class="valor" id="rapVal">${formato(el[k] ?? 1)}</div><input type="range" id="rapR" min="${min}" max="${max}" step="${paso}" value="${el[k] ?? 1}" aria-label="${titulo}">
+    <div class="chips">${presets.map(v => `<button data-v="${v}" aria-pressed="${(el[k] ?? 1) == v}">${formato(v)}</button>`).join("")}</div>`);
+  const fijar = v => {
+    const viejo = el[k] ?? 1; el[k] = v; $("#rapVal").textContent = formato(v); $("#rapR").value = v;
+    if (k === "vel" && medios[el.media]) { el.dur = +Math.max(.1, el.dur * viejo / v).toFixed(3); const m = medios[el.media]; if (m.dur) el.dur = Math.min(el.dur, +((m.dur - (el.recorte || 0)) / v).toFixed(3)); }
+    $$("[data-v]", h).forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.v === v)));
+    sincronizarMedios(null); pedirRender(); pedirTimeline(); registrarLuego();
+  };
+  $("#rapR").oninput = e => fijar(+e.target.value);
+  $$("[data-v]", h).forEach(b => b.onclick = () => fijar(+b.dataset.v));
+}
+function hojaFiltros(el) {
+  const ops = [["ninguno", "Original"], ["vivo", "Vivo"], ["calido", "Cálido"], ["frio", "Frío"], ["contraste", "Contraste"], ["drama", "Drama"], ["vintage", "Vintage"], ["bn", "B/N"]];
+  const h = hojaRapida("Filtros", `<div class="chips">${ops.map(([v, n]) => `<button data-f="${v}" aria-pressed="${(el.filtro || "ninguno") === v}">${n}</button>`).join("")}</div>
+    <label class="chk"><input type="checkbox" id="filtroTodos"> Aplicar a todos los clips</label>`);
+  $$("[data-f]", h).forEach(b => b.onclick = () => {
+    const todos = $("#filtroTodos").checked;
+    for (const e of todos ? proy.elementos.filter(x => x.tipo === "video" || x.tipo === "foto") : [el]) { e.filtro = b.dataset.f; e.bn = false; }
+    $$("[data-f]", h).forEach(x => x.setAttribute("aria-pressed", String(x === b))); pedirRender(); registrarLuego();
+  });
+}
+function hojaFormato() {
+  const h = hojaRapida("Formato", `<div class="chips">${[["9:16", "9:16 Reels y TikTok"], ["4:5", "4:5 Feed"], ["1:1", "1:1 Cuadrado"], ["16:9", "16:9 YouTube"]].map(([v, n]) => `<button data-fmt2="${v}" aria-pressed="${proy.formato === v}">${n}</button>`).join("")}</div>`);
+  $$("[data-fmt2]", h).forEach(b => b.onclick = () => { proy.formato = b.dataset.fmt2; ajustarLienzo(); pintarTodo(); registrar(); cerrarHojas(); });
+}
+function pintarBarra() {
+  if (!modoApp()) { barra.innerHTML = ""; return; }
+  const el = elPorId(est.sel), b = (id, ico, txt, cls = "") => `<button data-h="${id}" class="${cls}">${svg(ico)}<span>${txt}</span></button>`;
+  if (!el) {
+    barra.innerHTML = [b("agregar", "mas", "Agregar"), b("texto", "texto", "Texto"), b("sticker", "sticker", "Stickers"), b("plantillas", "plantilla", "Plantillas"),
+      b("efectos", "efecto", "Efectos"), b("audio", "mic", "Voz"), b("subs", "subs", "Subtítulos"), b("ia", "ia", "IA"), b("marca", "marca", "Identidad"),
+      b("camara", "camara", "Cámara"), b("formato", "formato", "Formato"), b("revisar", "revisar", "Revisar")].join("");
+  } else {
+    const media = el.tipo === "video" || el.tipo === "audio", visual = !ES_AUDIO(el) && el.tipo !== "fondo";
+    barra.innerHTML = [b("volver", "volver", "Listo", "volver"), b("dividir", "dividir", "Dividir"),
+      el.tipo === "texto" ? b("editartxt", "texto", "Editar texto") : "",
+      media ? b("velocidad", "velocidad", "Velocidad") : "", media ? b("volumen", "volumen", "Volumen") : "",
+      visual ? b("animacion", "animacion", "Animación") : "", el.tipo === "video" || el.tipo === "foto" ? b("filtros", "filtro", "Filtros") : "",
+      el.tipo === "video" || el.tipo === "foto" || el.tipo === "audio" ? b("reemplazar", "reemplazar", "Reemplazar") : "",
+      b("editar", "editar", "Ajustes"), b("duplicar", "duplicar", "Duplicar"), b("borrar", "borrar", "Borrar", "peligro")].join("");
+  }
+}
+barra.addEventListener("click", e => {
+  const bt = e.target.closest("[data-h]"); if (!bt) return;
+  const el = elPorId(est.sel);
+  ({
+    agregar: () => $("#archivoMedios").click(),
+    texto: () => { agregar("texto", { texto: "TU TEXTO", fuente: Ft(), tam: 130, y: .3 }); abrirHoja("props", "elem"); setTimeout(() => { const t = $("#f-texto"); if (t) { t.focus(); t.select(); } }, 250); },
+    sticker: () => abrirHoja("lib", "ilus"), plantillas: () => abrirHoja("lib", "plantillas"), efectos: () => abrirHoja("lib", "elementos"),
+    audio: () => abrirHoja("lib", "grabar"), subs: () => { abrirHoja("lib", "grabar"); setTimeout(() => { const s = $("#subGuion"); if (s) s.scrollIntoView({ block: "center" }); }, 250); },
+    ia: () => abrirHoja("lib", "asis"), marca: () => abrirHoja("lib", "estilo"), camara: () => abrirHoja("props", "cam"), formato: hojaFormato, revisar: abrirRevision,
+    volver: () => seleccionar(null), dividir: cortar, duplicar, borrar,
+    editartxt: () => { abrirHoja("props", "elem"); setTimeout(() => { const t = $("#f-texto"); if (t) t.focus(); }, 250); },
+    velocidad: () => sliderRapido(el, "vel", "Velocidad", .25, 4, .05, [.5, 1, 1.5, 2, 3], v => (+v).toFixed(2).replace(/\.?0+$/, "") + "×"),
+    volumen: () => sliderRapido(el, "volumen", "Volumen", 0, 1, .01, [0, .3, .6, 1], v => Math.round(v * 100) + "%"),
+    animacion: () => { abrirHoja("props", "elem"); setTimeout(() => { const a = $("#f-entrada"); if (a) a.scrollIntoView({ block: "center" }); }, 250); },
+    filtros: () => hojaFiltros(el), editar: () => abrirHoja("props", "elem"),
+    reemplazar: () => { const i = Object.assign(document.createElement("input"), { type: "file", accept: el.tipo === "audio" ? "audio/*" : el.tipo === "foto" ? "image/*" : "video/*" });
+      i.onchange = async () => { if (!i.files[0]) return; const antes = new Set(Object.keys(medios)); await importarArchivos([i.files[0]]); const n = Object.keys(medios).find(k => !antes.has(k));
+        if (n) { el.media = n; el.nombre = medios[n].nombre; el.recorte = 0; el.hueco = false; if (medios[n].dur && el.tipo !== "foto") el.dur = Math.min(el.dur, medios[n].dur); registrar(); pintarTimeline(); sincronizarMedios(null); pedirRender(); } };
+      i.click(); },
+  })[bt.dataset.h]?.();
+});
+const seleccionarBase = seleccionar;
+seleccionar = (id, abrir = true) => { seleccionarBase(id, modoApp() ? false : abrir); pintarBarra(); };
+
+// Línea de tiempo con el cabezal al centro
+let scrollProgramatico = false;
+const tlBody = $("#tlBody");
+function ajustarScrollApp() {
+  if (!modoApp()) return;
+  scrollProgramatico = true; tlBody.scrollLeft = est.t * est.pps;
+  requestAnimationFrame(() => { scrollProgramatico = false; });
+}
+const moverCabezalBase = moverCabezal;
+moverCabezal = () => { moverCabezalBase(); ajustarScrollApp(); };
+tlBody.addEventListener("scroll", () => {
+  if (!modoApp() || scrollProgramatico) return;
+  if (est.play) reproducir(false);
+  est.t = clamp(tlBody.scrollLeft / est.pps, 0, duracionProyecto());
+  sincronizarMedios(null); pedirRender();
+}, { passive: true });
+// En modo app, tocar un clip que no está seleccionado solo lo selecciona (y deja deslizar la línea de tiempo)
+let toque = null;
+$("#tlPistas").addEventListener("pointerdown", e => {
+  if (!modoApp() || e.pointerType === "mouse") return;
+  const c = e.target.closest(".clip");
+  if (c && c.classList.contains("sel")) return; // el clip seleccionado sí se arrastra y recorta
+  e.stopImmediatePropagation(); toque = { x: e.clientX, y: e.clientY, id: c ? c.dataset.id : null };
+}, true);
+$("#tlPistas").addEventListener("pointerup", e => {
+  if (!toque) return;
+  if (Math.hypot(e.clientX - toque.x, e.clientY - toque.y) < 10) { seleccionar(toque.id); pedirTimeline(); }
+  toque = null;
+}, true);
+$("#tlPistas").addEventListener("pointercancel", () => { toque = null; }, true);
+// Pellizcar para acercar la línea de tiempo (dedos) y Ctrl/⌘ + rueda (trackpad)
+let pellizco = null;
+const zoomTl = (pps, tCentro) => { est.pps = clamp(pps, 8, 420); $("#zoomTl").value = Math.min(300, est.pps); pintarTimeline(); if (!modoApp() && tCentro != null) tlBody.scrollLeft = tCentro * est.pps - tlBody.clientWidth / 2; };
+tlBody.addEventListener("touchstart", e => { if (e.touches.length === 2) { const [a, b] = e.touches; pellizco = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), pps: est.pps }; } }, { passive: true });
+tlBody.addEventListener("touchmove", e => {
+  if (!pellizco || e.touches.length !== 2) return;
+  e.preventDefault();
+  const [a, b] = e.touches, d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  zoomTl(pellizco.pps * d / pellizco.d, est.t);
+}, { passive: false });
+tlBody.addEventListener("touchend", () => { pellizco = null; });
+tlBody.addEventListener("wheel", e => { if (!(e.ctrlKey || e.metaKey)) return; e.preventDefault(); zoomTl(est.pps * Math.exp(-e.deltaY * .01), est.t); }, { passive: false });
+
+// Rendimiento: en celulares la vista previa no pasa de 1280 px y el reproductor no repinta paneles
+const ajustarLienzoBase = ajustarLienzo;
+ajustarLienzo = () => {
+  ajustarLienzoBase();
+  if (modoApp() || consultaMovil.matches) {
+    const f = Math.min(1, 1280 / Math.max(lienzo.width, lienzo.height));
+    if (f < 1) { lienzo.width = Math.round(lienzo.width * f); lienzo.height = Math.round(lienzo.height * f); pedirRender(); }
+  }
+};
+const importarAntesApp = importarArchivos;
+importarArchivos = async lista => { const antes = new Set(Object.keys(medios)); await importarAntesApp(lista);
+  // En modo app lo importado entra directo al video en el cabezal, como en CapCut
+  if (modoApp()) { const nuevos = Object.keys(medios).filter(k => !antes.has(k) && medios[k].tipo !== "audio"); for (const id of nuevos) { agregarMedio(id); est.t = elPorId(est.sel) ? elPorId(est.sel).inicio + elPorId(est.sel).dur : est.t; } if (nuevos.length) { pintarTimeline(); irA(est.t); } } };
+const reproducirBase = reproducir;
+reproducir = (on = !est.play) => { reproducirBase(on); $("#btnPlay").textContent = modoApp() ? (est.play ? "❚❚" : "▶") : (est.play ? "❚❚ Pausa" : "▶ Play"); };
+aplicarModo();
 </script>

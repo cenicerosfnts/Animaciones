@@ -26,6 +26,14 @@ se escribe un `.yaml` y el programa renderiza el video. Dos estilos:
 - **Claude**: describe una escena o pega tu narración y arma las animaciones (al abrirlo dentro de Claude).
 - **Exportar MP4** H.264 + AAC en 720p, 1080p, 2K o 4K a 24/30/60 fps (Chrome, Edge o Safari).
 
+### Vista app (tipo CapCut)
+
+En el celular (o con el botón **Vista app**) el editor cambia a una app: vista previa arriba, cabezal fijo al
+centro (deslizas la línea de tiempo para moverte, pellizcas para acercar), miniaturas del video y ondas de audio
+en los clips, barra de herramientas abajo (Agregar, Texto, Stickers, Plantillas, Efectos, Voz, Subtítulos, IA…)
+y, con un clip seleccionado: Dividir, Velocidad, Volumen, Animación, Filtros, Reemplazar, Duplicar y Borrar.
+Lo que importas entra directo al video en el cabezal. En la computadora: Ctrl/⌘ + rueda para hacer zoom.
+
 ### Estructura recomendada para Reels y TikTok
 
 1. **Avance** (1–2 s): la escena más fuerte, sin logo → plantilla *Avance al inicio*.
