@@ -5,3 +5,5 @@ __pycache__/
 *_sonidos.wav
 *.png
 guiones/*.mp4
+!marca/*.png
+!herramientas/**/*.png

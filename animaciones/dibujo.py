@@ -37,6 +37,9 @@ FUENTES = {
     "barlow-medium": ("BarlowCondensed-Medium.ttf", None),
     "barlow-light": ("BarlowCondensed-Regular.ttf", None),
     "mano": ("GochiHand-Regular.ttf", None),
+    # Fuentes propias de Angel Ceniceros
+    "angel-cond": ("AngelCondensada.otf", None),
+    "angel-mano": ("AngelMano.otf", None),
 }
 
 
