@@ -663,7 +663,8 @@ function estadoAnim(el, lt, u, W, H) {
     case "revelar": st.rev = E.suave(p); break;
     case "dibujar": st.dib = E.suave(p); break;
   }
-  const q = el.tSalida > 0 ? clamp((lt - (el.dur - el.tSalida)) / el.tSalida) : 0;
+  const durA = el.durAnim ?? el.dur;
+  const q = el.tSalida > 0 ? clamp((lt - (durA - el.tSalida)) / el.tSalida) : 0;
   if (q > 0) switch (el.salida) {
     case "desvanecer": st.a *= 1 - q; break;
     case "encoger": st.s *= 1 - E.entrada(q); break;
@@ -673,7 +674,7 @@ function estadoAnim(el, lt, u, W, H) {
     case "derecha": st.dx += E.entrada(q) * W * .35; st.a *= 1 - q; break;
     case "zoom": st.s *= 1 + E.entrada(q) * .4; st.a *= 1 - q; break;
   }
-  const k = clamp(lt / el.dur), f = el.fuerzaMov ?? 1;
+  const k = clamp(lt / durA), f = el.fuerzaMov ?? 1;
   switch (el.mov) {
     case "acercar": st.s *= 1 + .12 * f * k; break;
     case "alejar": st.s *= 1 + .12 * f * (1 - k); break;
@@ -870,7 +871,7 @@ function dibujarContador(ctx, el, lt, u, W, H, medir) {
 }
 function dibujarFondo(ctx, el, lt, W, H) {
   const p = el.transicion === "corte" ? 1 : E.suave(el.tEntrada > 0 ? lt / el.tEntrada : 1);
-  const q = el.salida !== "ninguna" && el.tSalida > 0 ? clamp((lt - (el.dur - el.tSalida)) / el.tSalida) : 0;
+  const q = el.salida !== "ninguna" && el.tSalida > 0 ? clamp((lt - ((el.durAnim ?? el.dur) - el.tSalida)) / el.tSalida) : 0;
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = el.opacidad * (el.salida === "desvanecer" ? 1 - q : 1);
   if (el.salida === "barrido" && q > 0) { ctx.beginPath(); ctx.rect(W * E.suave(q), 0, W, H); ctx.clip(); }
@@ -889,7 +890,7 @@ function dibujarFondo(ctx, el, lt, W, H) {
 }
 const lupaTmp = document.createElement("canvas");
 function dibujarLupa(ctx, el, lt, u, W, H, st) {
-  const k = E.suave(clamp((lt - el.tEntrada * .6) / Math.max(.1, el.dur - el.tEntrada - el.tSalida)));
+  const k = E.suave(clamp((lt - el.tEntrada * .6) / Math.max(.1, (el.durAnim ?? el.dur) - el.tEntrada - el.tSalida)));
   const x = lerp(el.x, el.x2, k) * W + st.dx, y = lerp(el.y, el.y2, k) * H + st.dy;
   const R = el.radio * u * st.s * el.escala;
   if (R < 2) return [x - 1, y - 1, x + 1, y + 1];
@@ -923,7 +924,7 @@ function renderizar(ctx, W, H, t, preview) {
   const visibles = proy.elementos.filter(e => !ES_AUDIO(e) && t >= e.inicio && t < e.inicio + e.dur)
     .sort((a, b) => b.pista - a.pista || a.inicio - b.inicio);
   for (const el of visibles) {
-    const lt = t - el.inicio, st = estadoAnim(el, lt, u, W, H);
+    const lt = t - el.inicio + (el.desfase || 0), st = estadoAnim(el, lt, u, W, H);
     if (el.tipo === "fondo") { dibujarFondo(ctx, el, lt, W, H); if (preview) cajas.push({ id: el.id, pts: [[0, 0], [W, 0], [W, H], [0, H]], fondo: true }); continue; }
     if (el.tipo === "lupa") { const b = dibujarLupa(ctx, el, lt, u, W, H, st); if (preview) cajas.push({ id: el.id, pts: [[b[0], b[1]], [b[2], b[1]], [b[2], b[3]], [b[0], b[3]]] }); continue; }
     const fn = DIBUJAR[el.tipo]; if (!fn) continue;
@@ -1402,6 +1403,7 @@ function insertarGrupo(defs, durTotal, t0 = est.t, cam = null) {
   return els;
 }
 function insertarPlantilla(pl) {
+  if (pl.accion) return pl.accion();
   const els = insertarGrupo(pl.gen(), pl.dur, est.t, pl.cam);
   seleccionar(els[0] && els[0].id); registrar(); pintarTimeline();
   aviso(`“${pl.n}” agregada en ${fmtTiempo(est.t)}. Cambia los textos en Propiedades.`);
@@ -2729,14 +2731,14 @@ const nombreMarca = () => (identidad.nombre || "Angel Ceniceros").toUpperCase();
 PLANTILLAS.unshift(
   { id: "firma", n: "Firma de entrada", d: "Tu logo se dibuja y aparece tu nombre (1.8 s). Ponla después del gancho, nunca en el segundo cero.", dur: 1.8, gen: () => [
     Fo({ color: "@fondo", transicion: "circulo", tEntrada: .35, salida: "barrido", tSalida: .3, sonido: "whoosh" }),
-    I({ ilus: "logo-ac", tam: 260, y: .42, entrada: "dibujar", tEntrada: .7, salida: "ninguna" }, 1),
-    T({ texto: nombreMarca(), tam: 96, y: .6, inicio: .45, ritmo: .1, salida: "ninguna" }, 0) ] },
+    I({ ilus: "logo-ac", camara: false, tam: 260, y: .42, entrada: "dibujar", tEntrada: .7, salida: "ninguna" }, 1),
+    T({ camara: false, texto: nombreMarca(), tam: 96, y: .6, inicio: .45, ritmo: .1, salida: "ninguna" }, 0) ] },
   { id: "cierre", n: "Cierre del canal", d: "Logo, tu nombre, tu usuario y tu frase para que te sigan (3.5 s).", dur: 3.5, gen: () => [
     Fo({ color: "@fondo", transicion: "barrido-arriba", tEntrada: .45, sonido: "whoosh" }),
-    I({ ilus: "logo-ac", tam: 230, y: .3, inicio: .15, entrada: "dibujar", tEntrada: .8 }, 1),
-    T({ texto: nombreMarca(), tam: 112, y: .47, inicio: .55, ritmo: .14 }, 0),
-    T({ texto: identidad.canal || "@angelceniceros", mayus: false, fuente: Fn(), color: "@acento", tam: 58, y: .555, inicio: 1, animTexto: "ninguna", entrada: "pop", sonido: "pop" }, 0),
-    T({ texto: identidad.cierre || "Sígueme para más historias", fuente: Fm(), tam: 62, y: .7, inicio: 1.4, animTexto: "letras", ritmo: .14, color: "@gris" }, 0) ] },
+    I({ ilus: "logo-ac", camara: false, tam: 230, y: .3, inicio: .15, entrada: "dibujar", tEntrada: .8 }, 1),
+    T({ camara: false, texto: nombreMarca(), tam: 112, y: .47, inicio: .55, ritmo: .14 }, 0),
+    T({ camara: false, texto: identidad.canal || "@angelceniceros", mayus: false, fuente: Fn(), color: "@acento", tam: 58, y: .555, inicio: 1, animTexto: "ninguna", entrada: "pop", sonido: "pop" }, 0),
+    T({ camara: false, texto: identidad.cierre || "Sígueme para más historias", fuente: Fm(), tam: 62, y: .7, inicio: 1.4, animTexto: "letras", ritmo: .14, color: "@gris" }, 0) ] },
 );
 
 /* ===================================================================
@@ -2905,6 +2907,83 @@ pintarProyecto = p => {
     <div class="nota"><b>El chile 300 veces más picante</b> · Reel/TikTok de ~50 s. Ya trae las animaciones, tu cierre, el guion en el teleprompter y dos huecos para tus tomas a cámara.</div>
     <button class="btn prim" id="cargarPrimero">Abrir mi primer video</button></div>`);
   $("#cargarPrimero", p).onclick = () => { est.t = 0; cargarProyecto(proyectoPrimerVideo()); aviso("Listo. Graba tus 2 tomas a cámara y tu voz (pestaña Narración); el guion ya está en el teleprompter."); };
+};
+pintarLib();
+</script>
+
+<script>
+"use strict";
+/* ===================================================================
+   28. Avance (gancho al inicio): copia la escena más fuerte al principio,
+       agrega una firma relámpago y recorre todo lo demás hacia atrás.
+   =================================================================== */
+PLANTILLAS.splice(2, 0, { id: "relampago", n: "Firma relámpago", d: "Tu logo como golpe de transición en 0.7 s. Ideal justo después del avance o del gancho.", dur: .7, gen: () => [
+  Fo({ color: "@acento", transicion: "circulo", tEntrada: .2, salida: "barrido", tSalida: .18, sonido: "whoosh" }),
+  I({ ilus: "logo-ac", camara: false, tam: 320, y: .46, entrada: "pop", tEntrada: .25, salida: "ninguna", mov: "acercar", fuerzaMov: 1.5 }, 0) ] });
+PLANTILLAS.unshift({ id: "avance", n: "Avance al inicio (gancho)", d: "Pon el cabezal en el momento más fuerte de tu video: se copia al principio como adelanto, sigue tu firma y luego el video completo.", accion: () => abrirAvance() });
+
+function crearAvance(a, largo, firma, texto, golpe) {
+  const b = a + largo, firmaDur = firma === "relampago" ? .7 : firma === "firma" ? 1.8 : 0, L = largo + firmaDur;
+  const camA = camaraEn(a), camB = camaraEn(b), cam0 = camaraEn(0);
+  const kfsVentana = proy.camara.filter(k => k.t > a && k.t < b).map(k => ({ ...k, id: uid(), t: +(k.t - a).toFixed(3) }));
+  const copias = [];
+  for (const e of proy.elementos) {
+    const ini = Math.max(e.inicio, a), fin = Math.min(e.inicio + e.dur, b);
+    if (fin - ini < .05) continue;
+    const c = { ...copia(e), id: uid(), inicio: +(ini - a).toFixed(3), dur: +(fin - ini).toFixed(3), avance: true, nombre: "Avance · " + e.nombre };
+    if (e.tipo === "video" || e.tipo === "audio") { c.recorte = +((e.recorte || 0) + ini - e.inicio).toFixed(3); c.fadeIn = 0; c.fadeOut = 0; }
+    else { c.desfase = +((e.desfase || 0) + ini - e.inicio).toFixed(3); c.durAnim = e.durAnim ?? e.dur; }
+    if (ini > e.inicio) { c.sonido = c.tipo === "efecto" ? c.sonido : "ninguno"; c.entrada = "ninguna"; }
+    if (fin < e.inicio + e.dur) c.salida = "ninguna";
+    copias.push(c);
+  }
+  // Todo lo demás se recorre hacia atrás
+  for (const e of proy.elementos) e.inicio = +(e.inicio + L).toFixed(3);
+  for (const k of proy.camara) k.t = +(k.t + L).toFixed(3);
+  proy.elementos.push(...copias);
+  if (proy.camara.length) {
+    proy.camara.push({ id: uid(), t: 0, z: camA.z, x: camA.x, y: camA.y, curva: "corte" }, ...kfsVentana,
+      { id: uid(), t: +largo.toFixed(3), z: camB.z, x: camB.x, y: camB.y, curva: "suave" },
+      { id: uid(), t: +(L - .001).toFixed(3), z: cam0.z, x: cam0.x, y: cam0.y, curva: "corte" });
+    ordenarCamara();
+  }
+  const extra = [];
+  if (texto) extra.push(T({ texto, tam: 74, y: .13, color: "#FFFFFF", borde: 6, colorBorde: "#000000", sombra: true, camara: false, animTexto: "ninguna", entrada: "pop", tEntrada: .2, salida: "ninguna", dur: largo }, 0));
+  if (golpe) extra.push({ _t: "efecto", _p: 0, sonido: "golpe", inicio: 0, dur: .4 });
+  if (extra.length) insertarGrupo(extra, largo, 0);
+  if (firmaDur) insertarGrupo(PLANTILLAS.find(x => x.id === firma).gen(), firmaDur, largo);
+  compactarPistas();
+  return L;
+}
+function abrirAvance() {
+  const dur = duracionProyecto();
+  const m = abrirModal(`<h2>Avance al inicio</h2>
+    <div class="nota">El avance es lo primero que ve la gente: la escena más impactante de tu video (un dato enorme, una reacción, el momento más visual), de 1 a 2.5 segundos y sin logo. Pon el cabezal rojo justo antes de ese momento.</div>
+    <div class="fila">
+      <div class="campo"><label for="av-a">Empieza en (segundo del video)</label><input type="number" id="av-a" step=".1" min="0" max="${dur.toFixed(1)}" value="${est.t.toFixed(1)}"></div>
+      <div class="campo"><label for="av-l">Duración del avance</label><select id="av-l"><option value="1.5">1.5 s</option><option value="2" selected>2 s</option><option value="2.5">2.5 s</option><option value="3">3 s</option></select></div>
+    </div>
+    <div class="campo"><label for="av-f">Después del avance</label><select id="av-f"><option value="relampago" selected>Firma relámpago (0.7 s), recomendado para Reels y TikTok</option><option value="firma">Firma completa (1.8 s), mejor para YouTube</option><option value="nada">Nada: corte directo al video</option></select></div>
+    <div class="campo"><label for="av-t">Texto encima (opcional)</label><input type="text" id="av-t" placeholder="Ej: NO VAS A CREER ESTE NÚMERO"></div>
+    <label class="chk"><input type="checkbox" id="av-g" checked> Golpe de sonido al empezar</label>
+    <div class="estado" id="av-e"></div>
+    <div class="acciones" style="justify-content:flex-end"><button class="btn" id="av-c">Cancelar</button><button class="btn prim" id="av-ok">Crear avance</button></div>`);
+  $("#av-c", m).onclick = cerrarModal;
+  $("#av-ok", m).onclick = () => {
+    const a = clamp(+$("#av-a").value || 0, 0, dur), l = +$("#av-l").value;
+    if (a + l > dur + .01) { $("#av-e").textContent = "El avance se sale del video; empieza antes."; $("#av-e").classList.add("error"); return; }
+    const L = crearAvance(a, l, $("#av-f").value, $("#av-t").value.trim(), $("#av-g").checked);
+    cerrarModal(); registrar(); pintarTimeline(); irA(0);
+    aviso(`Avance creado: ${l} s al inicio. Todo tu video se recorrió ${L.toFixed(1)} s. Dale play.`);
+  };
+}
+
+// El primer video ya trae su avance: el récord del Pepper X
+const primerVideoBase = proyectoPrimerVideo;
+proyectoPrimerVideo = () => {
+  const p = primerVideoBase(), prev = proy; proy = p;
+  crearAvance(36.9, 2.3, "relampago", "", true);
+  const r = proy; proy = prev; return r;
 };
 pintarLib();
 </script>

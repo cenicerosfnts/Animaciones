@@ -26,6 +26,16 @@ se escribe un `.yaml` y el programa renderiza el video. Dos estilos:
 - **Claude**: describe una escena o pega tu narración y arma las animaciones (al abrirlo dentro de Claude).
 - **Exportar MP4** H.264 + AAC en 720p, 1080p, 2K o 4K a 24/30/60 fps (Chrome, Edge o Safari).
 
+### Estructura recomendada para Reels y TikTok
+
+1. **Avance** (1–2 s): la escena más fuerte, sin logo → plantilla *Avance al inicio*.
+2. **Gancho a cámara** (2–3 s): la pregunta o el dato.
+3. **Firma relámpago** (0.7 s): tu logo como golpe de transición.
+4. **Historia**: un cambio visual cada 2–3 s.
+5. **Remate + pregunta** para comentarios, y **cierre** corto.
+
+En YouTube: avance de 15–30 s y firma completa de 1.8 s.
+
 ### Dónde abrirlo
 
 | | Dentro de Claude | Tu página (GitHub Pages) o `--editor` |

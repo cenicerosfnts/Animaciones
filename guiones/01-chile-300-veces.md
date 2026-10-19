@@ -1,9 +1,11 @@
 # Video 1 · El chile 300 veces más picante
 
-**Para:** Reels de Instagram y TikTok (9:16) · **Duración:** ~50 s · **Formato:** mezcla de a cámara + voz con animaciones.
+**Para:** Reels de Instagram y TikTok (9:16) · **Duración:** ~54 s · **Formato:** mezcla de a cámara + voz con animaciones.
 En el editor: pestaña **Proyecto → Abrir mi primer video** (ya trae animaciones, cierre y este guion en el teleprompter).
 
-| Tiempo | Qué se ve | Qué dices |
+**Estructura:** avance (2.3 s, el récord del Pepper X) → firma relámpago (0.7 s) → todo lo de abajo, recorrido 3 s más tarde.
+
+| Tiempo (sin contar el avance) | Qué se ve | Qué dices |
 |---|---|---|
 | 0:00–0:03 | **TOMA 1 a cámara** (cerca, buena luz de ventana) + texto “UN CHILE 300 VECES MÁS PICANTE…” | “¿Sabías que existe un chile más de 300 veces más picante que un jalapeño?” |
 | 0:03–0:11 | Animación: 1912, Wilbur Scoville | (voz) “En 1912, un químico llamado Wilbur Scoville se hizo una pregunta muy simple: ¿qué chiles son los más picantes? El problema es que no había forma de medirlo.” |
