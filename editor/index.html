@@ -283,6 +283,37 @@ body.capcut .asa b { font-family: var(--f-display); font-size: 15px; letter-spac
 .hoja-rapida input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; }
 @media (prefers-reduced-motion: reduce) { body.capcut .lib, body.capcut .props { transition: none; } }
 
+/* ============ App sencilla ============ */
+#btnMenu { display: none; }
+body.capcut #btnMenu { display: inline-flex; order: -3; font-size: 18px; padding: 4px 10px; }
+body.capcut .top > :not(#btnMenu):not(.nombre):not(#btnExportar):not(#btnDeshacer):not(#btnRehacer) { display: none; }
+body.capcut .top { justify-content: space-between; }
+body.capcut .top .nombre { flex: 1; width: auto; min-width: 0; font-weight: 600; }
+body.capcut #btnExportar { order: 5; border-radius: 999px; padding: 7px 14px; }
+body.capcut .barra-herr { justify-content: space-around; }
+body.capcut .barra-herr button { width: auto; min-width: 58px; flex: 1; max-width: 86px; }
+.menu-lista { display: grid; gap: 6px; }
+.menu-lista button { display: flex; align-items: center; gap: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; font-size: 15px; text-align: left; }
+.menu-lista svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.cuadricula-mas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.cuadricula-mas button { display: grid; justify-items: center; gap: 6px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 4px; font-size: 12px; }
+.cuadricula-mas svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.inicio { position: fixed; inset: 0; z-index: 25; background: var(--bg); overflow-y: auto; padding: calc(20px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); display: grid; align-content: start; gap: 14px; }
+.inicio header { display: flex; align-items: center; gap: 12px; }
+.inicio header canvas { width: 46px; height: 46px; }
+.inicio h1 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 30px; text-transform: uppercase; line-height: 1; }
+.inicio h1 small { display: block; font-size: 14px; color: var(--muted); font-family: var(--f-ui); font-weight: 500; text-transform: none; margin-top: 4px; }
+.tarjeta { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 14px; align-items: center; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.tarjeta:active { transform: scale(.985); }
+.tarjeta .ico-t { width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center; background: var(--panel-3); }
+.tarjeta .ico-t svg { width: 28px; height: 28px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tarjeta.principal { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tarjeta.principal .ico-t { background: rgba(255,255,255,.18); }
+.tarjeta b { display: block; font-size: 17px; }
+.tarjeta small { color: inherit; opacity: .75; font-size: 13px; line-height: 1.35; }
+.guia { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tl-h-app, 36vh) + 120px); z-index: 14; background: #fff; color: #111; border-radius: 12px; padding: 12px 14px; width: min(320px, calc(100% - 32px)); box-shadow: 0 10px 30px rgba(0,0,0,.45); font-size: 14px; line-height: 1.4; display: grid; gap: 8px; }
+.guia button { justify-self: end; background: #111; color: #fff; border: 0; border-radius: 8px; padding: 6px 12px; }
+
 /* Teléfono / pantallas angostas: todo en una columna */
 @media (max-width: 900px) {
   body { overflow: auto; }
@@ -309,6 +340,7 @@ body.capcut .asa b { font-family: var(--f-display); font-size: 15px; letter-spac
       <button id="fmt-4x5" data-fmt="4:5" aria-pressed="false">4:5</button>
     </div>
     <span class="esp"></span>
+    <button class="btn icon" id="btnMenu" aria-label="Menú">☰</button>
     <button class="btn icon" id="btnDeshacer" title="Deshacer (Ctrl+Z)" aria-label="Deshacer">↶</button>
     <button class="btn icon" id="btnRehacer" title="Rehacer (Ctrl+Shift+Z)" aria-label="Rehacer">↷</button>
     <button class="btn" id="btnModoApp" title="Cambiar entre vista de app (celular) y vista de computadora">Vista app</button>
@@ -3336,4 +3368,200 @@ importarArchivos = async lista => { const antes = new Set(Object.keys(medios)); 
 const reproducirBase = reproducir;
 reproducir = (on = !est.play) => { reproducirBase(on); $("#btnPlay").textContent = modoApp() ? (est.play ? "❚❚" : "▶") : (est.play ? "❚❚ Pausa" : "▶ Play"); };
 aplicarModo();
+</script>
+
+<script>
+"use strict";
+/* ===================================================================
+   31. Exportar en tiempo real (iPhone/Safari): graba la vista y el sonido
+       con MediaRecorder cuando el navegador no puede codificar el audio.
+   =================================================================== */
+const rt = { ac: null, dest: null, monitor: null, activo: false, cancelar: false };
+function contextoRT() {
+  if (!rt.ac) {
+    rt.ac = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+    rt.dest = rt.ac.createMediaStreamDestination();
+    rt.monitor = rt.ac.createGain(); rt.monitor.connect(rt.ac.destination);
+  }
+  if (rt.ac.state === "suspended") rt.ac.resume();
+  return rt.ac;
+}
+function rutear(m) { // el audio del video pasa por nuestro mezclador (se graba) y también se sigue oyendo
+  if (!m || m._ruta) return m && m._ruta;
+  const ac = contextoRT(), src = ac.createMediaElementSource(m), g = ac.createGain();
+  src.connect(g); g.connect(rt.dest); g.connect(rt.monitor); m._ruta = g; return g;
+}
+function necesitaAudio() {
+  return proy.elementos.some(e => ((e.tipo === "video" && (e.volumen ?? 1) > 0) || e.tipo === "audio") && medios[e.media]) ||
+    proy.elementos.some(e => e.tipo === "efecto" || (!ES_AUDIO(e) && e.sonido && e.sonido !== "ninguno"));
+}
+async function puedeExportarRapido() {
+  if (!("VideoEncoder" in window) || !window.Mp4Muxer) return false;
+  if (!necesitaAudio()) return true;
+  if (!("AudioEncoder" in window)) return false;
+  let codifica = false;
+  for (const c of [{ codec: "mp4a.40.2", sampleRate: 48000, numberOfChannels: 2, bitrate: 192000 }, { codec: "opus", sampleRate: 48000, numberOfChannels: 2, bitrate: 192000 }]) {
+    try { if ((await AudioEncoder.isConfigSupported(c)).supported) { codifica = true; break; } } catch (e) { /* siguiente */ }
+  }
+  if (!codifica) return false;
+  const oac = new OfflineAudioContext(2, 1, 48000);
+  for (const id of new Set(proy.elementos.filter(e => (e.tipo === "video" || e.tipo === "audio") && medios[e.media]).map(e => e.media))) {
+    if (!(await bufferAudio(id, oac))) return false; // no pudo leer el audio de un clip: mejor en tiempo real
+  }
+  return true;
+}
+async function exportarTiempoReal() {
+  const estado = $("#expEstado"), barra = $("#expBarra"), boton = $("#expIniciar");
+  estado.classList.remove("error");
+  if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { estado.textContent = "Este navegador no puede grabar el video. Actualiza tu iPhone o usa Chrome en la computadora."; estado.classList.add("error"); return; }
+  if (est.play) reproducir(false);
+  boton.disabled = true; rt.cancelar = false; rt.activo = true;
+  const alto = +$("#expRes").value, fps = +$("#expFps").value, { W, H } = dimensiones(Math.min(alto, 2160)), dur = duracionProyecto();
+  const ac = contextoRT(); rt.monitor.gain.value = 0;
+  const lz = document.createElement("canvas"); lz.width = W; lz.height = H; lz.style.cssText = "position:fixed;left:-99999px;top:0;width:10px;height:10px";
+  document.body.appendChild(lz);
+  const cx = lz.getContext("2d");
+  const medias = proy.elementos.filter(e => (e.tipo === "video" || e.tipo === "audio") && medios[e.media]).map(e => ({ e, m: e.tipo === "video" ? videoDe(e) : audioDe(e) })).filter(x => x.m);
+  for (const x of medias) { x.g = rutear(x.m); x.m.muted = false; x.m.volume = 1; x.m.pause(); }
+  // Efectos de sonido programados en el reloj del audio
+  const sfx = proy.elementos.map(e => [e, e.tipo === "efecto" ? e.sonido : (!ES_AUDIO(e) && e.sonido && e.sonido !== "ninguno" ? e.sonido : null)]).filter(([, s]) => s && s !== "ninguno");
+  const stream = lz.captureStream(fps);
+  for (const tr of rt.dest.stream.getAudioTracks()) stream.addTrack(tr);
+  const tipo = ["video/mp4;codecs=avc1.640028,mp4a.40.2", "video/mp4;codecs=avc1,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(t => MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(stream, { ...(tipo ? { mimeType: tipo } : {}), videoBitsPerSecond: Math.round(W * H * fps * .22), audioBitsPerSecond: 192000 });
+  const trozos = []; rec.ondataavailable = e => { if (e.data.size) trozos.push(e.data); };
+  let bloqueo = null; try { bloqueo = await navigator.wakeLock?.request("screen"); } catch (e) { bloqueo = null; }
+  renderizar(cx, W, H, 0, false);
+  rec.start(1000);
+  const t0 = performance.now(), t0a = ac.currentTime + .05;
+  for (const [e, s] of sfx) {
+    const d = sintetizar(s, ac.sampleRate), b = ac.createBuffer(1, d.length, ac.sampleRate); b.copyToChannel(d, 0);
+    const n = ac.createBufferSource(), g = ac.createGain(); g.gain.value = e.tipo === "efecto" ? (e.volumen ?? 1) * .8 : .8; n.buffer = b; n.connect(g); g.connect(rt.dest); n.start(t0a + e.inicio);
+  }
+  estado.textContent = "Grabando tu video con sonido… deja esta pantalla abierta hasta que termine.";
+  await new Promise(fin => {
+    const paso = () => {
+      const t = (performance.now() - t0) / 1000;
+      if (rt.cancelar || t >= dur) return fin();
+      for (const x of medias) {
+        const e = x.e, activo = t >= e.inicio && t < e.inicio + e.dur, objetivo = (e.recorte || 0) + (t - e.inicio) * (e.vel || 1);
+        if (activo) {
+          let vol = clamp(e.volumen ?? 1, 0, 1); const lt = t - e.inicio;
+          if (e.fadeIn > 0) vol *= clamp(lt / e.fadeIn); if (e.fadeOut > 0) vol *= clamp((e.dur - lt) / e.fadeOut);
+          x.g.gain.value = vol; x.m.playbackRate = e.vel || 1;
+          if (x.m.paused) { try { x.m.currentTime = objetivo; } catch (er) { /* cargando */ } x.m.play().catch(() => {}); }
+          else if (Math.abs(x.m.currentTime - objetivo) > .2) x.m.currentTime = objetivo;
+        } else if (!x.m.paused) x.m.pause();
+      }
+      renderizar(cx, W, H, t, false);
+      barra.style.width = (t / dur * 100).toFixed(1) + "%";
+      estado.textContent = `Grabando con sonido… ${fmtTiempo(t)} de ${fmtTiempo(dur)}. Deja esta pantalla abierta.`;
+      requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+  });
+  renderizar(cx, W, H, Math.min(dur, dur - .001), false);
+  await new Promise(r => setTimeout(r, 250));
+  await new Promise(r => { rec.onstop = r; rec.stop(); });
+  for (const x of medias) x.m.pause();
+  for (const tr of stream.getVideoTracks()) tr.stop();
+  rt.monitor.gain.value = 1; rt.activo = false; lz.remove();
+  try { bloqueo && bloqueo.release(); } catch (e) { /* nada */ }
+  boton.disabled = false;
+  if (rt.cancelar) { estado.textContent = "Exportación cancelada."; barra.style.width = "0"; return; }
+  const ext = (rec.mimeType || tipo).includes("mp4") ? "mp4" : "webm";
+  const blob = new Blob(trozos, { type: rec.mimeType || tipo || "video/mp4" });
+  const nombre = (proy.nombre || "video").replace(/[^\w\- áéíóúñ]/gi, "").trim() + ` ${Math.min(W, H)}p.${ext}`;
+  barra.style.width = "100%";
+  estado.textContent = `Listo con sonido: ${(blob.size / 1048576).toFixed(1)} MB. Guardando…`;
+  const r = await ofrecerArchivo(nombre, blob);
+  estado.textContent = r === "cancelado" ? "No se guardó. Puedes intentarlo otra vez." : `Video listo con sonido: ${nombre} (${(blob.size / 1048576).toFixed(1)} MB). En el iPhone, ábrelo y toca Compartir → Guardar video.`;
+  pedirRender();
+}
+$("#expIniciar").onclick = async () => {
+  const modo = $("#expModo") ? $("#expModo").value : "auto";
+  const rapido = modo === "rapido" || (modo === "auto" && await puedeExportarRapido());
+  try { if (rapido) await exportar(); else await exportarTiempoReal(); }
+  catch (e) { $("#expEstado").textContent = "Error: " + e.message; $("#expEstado").classList.add("error"); $("#expIniciar").disabled = false; rt.activo = false; }
+};
+$("#expCancelar").onclick = () => { cancelarExport = true; rt.cancelar = true; $("#modalExport").hidden = true; };
+$("#expInfo").insertAdjacentHTML("beforebegin", `<div class="campo"><label for="expModo">Método</label><select id="expModo">
+  <option value="auto" selected>Automático (elige el mejor para tu equipo)</option><option value="tiempo">En tiempo real: siempre con sonido (iPhone)</option><option value="rapido">Rápido cuadro por cuadro (computadora con Chrome)</option></select></div>`);
+// Mientras el audio pasa por el mezclador, las vistas previas siguen sonando
+const sincronizarRT = sincronizarMedios;
+sincronizarMedios = prevT => { if (rt.activo) return; sincronizarRT(prevT); };
+</script>
+
+<script>
+"use strict";
+/* ===================================================================
+   32. App sencilla: inicio con botones grandes, menú, barra corta y guía
+   =================================================================== */
+Object.assign(ICON, { menu: '<path d="M4 7h16M4 12h16M4 17h16"/>', casa: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>', nube: '<path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 7 18z"/>',
+  guardar: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>', abrir: '<path d="M3 7h6l2 2h10v10H3z"/>', estrella: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  play: '<path d="M7 4v16l13-8z"/>', compu: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>', puntos: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' });
+const pintarBarraBase = pintarBarra;
+pintarBarra = () => {
+  if (!modoApp() || elPorId(est.sel)) return pintarBarraBase();
+  const b = (id, ico, txt) => `<button data-h="${id}">${svg(ico)}<span>${txt}</span></button>`;
+  barra.innerHTML = b("agregar", "mas", "Clips") + b("texto", "texto", "Texto") + b("plantillas", "plantilla", "Animar") + b("audio", "mic", "Voz") + b("subs", "subs", "Subtítulos") + b("mas2", "puntos", "Más");
+};
+barra.addEventListener("click", e => {
+  const bt = e.target.closest('[data-h="mas2"]'); if (!bt) return;
+  const items = [["sticker", "sticker", "Stickers"], ["efectos", "efecto", "Efectos"], ["ia", "ia", "IA"], ["marca", "marca", "Mi marca"], ["camara", "camara", "Cámara"], ["formato", "formato", "Formato"], ["revisar", "revisar", "Revisar"], ["musica", "audio", "Música"]];
+  const h = hojaRapida("Más herramientas", `<div class="cuadricula-mas">${items.map(([id, ico, n]) => `<button data-h2="${id}">${svg(ico)}<span>${n}</span></button>`).join("")}</div>`);
+  $$("[data-h2]", h).forEach(x => x.onclick = () => {
+    cerrarHojas();
+    if (x.dataset.h2 === "musica") { const i = Object.assign(document.createElement("input"), { type: "file", accept: "audio/*" }); i.onchange = async () => { if (!i.files[0]) return; const antes = new Set(Object.keys(medios)); await importarArchivos([i.files[0]]); const n = Object.keys(medios).find(k => !antes.has(k)); if (n) { const t = est.t; agregar("audio", { media: n, nombre: medios[n].nombre, inicio: t, dur: +(medios[n].dur || 10).toFixed(3), volumen: .25, fadeIn: 1, fadeOut: 2 }); aviso("Música agregada bajita (25%) para que se oiga tu voz."); } }; i.click(); return; }
+    const fake = document.createElement("button"); fake.dataset.h = x.dataset.h2; barra.appendChild(fake); fake.click(); fake.remove();
+  });
+});
+function abrirMenu() {
+  const items = [["inicio", "casa", "Inicio"], ["nuevo", "mas", "Crear video nuevo"], ["nube", "nube", "Mis proyectos en la nube"], ["guardar", "guardar", "Guardar proyecto como archivo"], ["abrir", "abrir", "Abrir proyecto de archivo"],
+    ["ia", "ia", "Conectar la IA"], ["revisar", "revisar", "Revisar antes de publicar"], ["compu", "compu", "Vista de computadora"]];
+  const h = hojaRapida("Menú", `<div class="menu-lista">${items.map(([id, ico, n]) => `<button data-m="${id}">${svg(ico)}<span>${n}</span></button>`).join("")}</div>`);
+  $$("[data-m]", h).forEach(x => x.onclick = () => { cerrarHojas(); ({ inicio: mostrarInicio, nuevo: () => $("#btnNuevo").click(), nube: () => $("#btnNube").click(), guardar: () => $("#btnGuardar").click(),
+    abrir: () => $("#btnAbrir").click(), ia: () => $("#btnIA").click(), revisar: () => $("#btnRevisar").click(), compu: () => $("#btnModoApp").click() })[x.dataset.m](); });
+}
+$("#btnMenu").onclick = abrirMenu;
+
+// Pantalla de inicio
+function mostrarInicio() {
+  let i = $("#inicio"); if (i) i.remove();
+  i = document.createElement("section"); i.className = "inicio"; i.id = "inicio"; i.setAttribute("aria-label", "Inicio");
+  const hay = proy.elementos.length > 0;
+  i.innerHTML = `<header><canvas width="92" height="92" aria-hidden="true"></canvas><h1>${escapar(identidad.nombre || "Mi estudio")}<small>${escapar(identidad.canal || "")} · ¿Qué hacemos hoy?</small></h1></header>
+    <button class="tarjeta principal" data-i="nuevo"><span class="ico-t">${svg("mas")}</span><span><b>Crear video nuevo</b><small>Elige tus clips, di de qué trata y se arma solo</small></span></button>
+    ${hay ? `<button class="tarjeta" data-i="seguir"><span class="ico-t">${svg("play")}</span><span><b>Seguir editando</b><small>${escapar(proy.nombre)} · ${fmtTiempo(duracionProyecto())}</small></span></button>` : ""}
+    <button class="tarjeta" data-i="primero"><span class="ico-t">${svg("estrella")}</span><span><b>Mi primer video</b><small>El chile 300 veces más picante, listo para grabar tus tomas</small></span></button>
+    <button class="tarjeta" data-i="nube"><span class="ico-t">${svg("nube")}</span><span><b>Mis proyectos</b><small>Guardados en tu cuenta</small></span></button>
+    <button class="tarjeta" data-i="vacio"><span class="ico-t">${svg("video")}</span><span><b>Editar libremente</b><small>Proyecto vertical en blanco</small></span></button>`;
+  document.body.appendChild(i);
+  const c = $("canvas", i), x = c.getContext("2d"); x.translate(46, 46); dibujarIlus(x, "logo-ac", 88);
+  $$("[data-i]", i).forEach(b => b.onclick = () => {
+    i.remove();
+    ({ nuevo: () => { nv.plataforma = "reel"; $("#btnNuevo").click(); }, seguir: () => mostrarGuia(), primero: () => { est.t = 0; cargarProyecto(proyectoPrimerVideo()); mostrarGuia(); },
+      nube: () => $("#btnNube").click(), vacio: () => { const p = proyectoVacio(); p.formato = "9:16"; p.plataforma = "reel"; p.estilo = { ...p.estilo, ...estiloDeIdentidad() }; est.t = 0; cargarProyecto(p); mostrarGuia(); } })[b.dataset.i]();
+  });
+}
+// Guía de 3 pasos, solo la primera vez
+function mostrarGuia() {
+  let visto = false; try { visto = localStorage.getItem("estudio-guia") === "1"; } catch (e) { /* nada */ }
+  if (visto || !modoApp() || $(".guia")) return;
+  const pasos = ["👆 <b>Desliza</b> la línea de tiempo para moverte por el video. Pellizca con dos dedos para acercar.", "✂️ <b>Toca un clip</b> para editarlo: dividir, velocidad, volumen, filtros…", "✨ Toca <b>Animar</b> para poner animaciones y <b>Exportar</b> (arriba) cuando termines."];
+  let n = 0; const g = document.createElement("div"); g.className = "guia"; g.setAttribute("role", "dialog"); document.body.appendChild(g);
+  const pintar = () => { g.innerHTML = `<div>${pasos[n]}</div><button>${n < pasos.length - 1 ? "Siguiente" : "¡Listo!"}</button>`; $("button", g).onclick = () => { n++; if (n < pasos.length) pintar(); else { g.remove(); try { localStorage.setItem("estudio-guia", "1"); } catch (e) { /* nada */ } } }; };
+  pintar();
+}
+// Al terminar el asistente de video nuevo, enseña la guía
+const cargarConGuia = cargarProyecto;
+cargarProyecto = p => { cargarConGuia(p); if (modoApp() && !$("#inicio")) setTimeout(mostrarGuia, 400); };
+// En la app, menos filas vacías: solo las que se usan y una libre
+const numPistasBase = numPistas, numPistasAudioBase = numPistasAudio;
+numPistas = () => modoApp() ? Math.max(1, ...proy.elementos.filter(e => !ES_AUDIO(e)).map(e => e.pista + 1)) : numPistasBase();
+numPistasAudio = () => modoApp() ? Math.max(1, ...proy.elementos.filter(ES_AUDIO).map(e => e.pistaAudio + 2)) : numPistasAudioBase();
+pintarTimeline();
+pintarBarra();
+// La pantalla de inicio aparece en cuanto termina de cargar tu proyecto guardado
+(function esperarCarga() { if (hist.pila.length) { if (modoApp()) mostrarInicio(); } else setTimeout(esperarCarga, 50); })();
 </script>
