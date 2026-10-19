@@ -23,7 +23,11 @@ def main(argv=None):
     ap.add_argument("--hasta", type=float, help="renderiza hasta este segundo")
     ap.add_argument("--sin-sonido", action="store_true", help="no agrega efectos de sonido")
     ap.add_argument("--lista", action="store_true", help="muestra las animaciones disponibles")
+    ap.add_argument("--editor", action="store_true", help="abre el editor visual en tu navegador")
     a = ap.parse_args(argv)
+
+    if a.editor:
+        return abrir_editor()
 
     if a.lista or not a.guion:
         print("Animaciones disponibles (tipo: descripción):")
@@ -51,6 +55,36 @@ def main(argv=None):
         escena.render(salida, a.fondo, a.sin_sonido, a.desde, a.hasta)
     print(f"Listo: {salida}")
     return 0
+
+
+def abrir_editor(puerto=8765):
+    """Sirve editor/index.html (que no trae <html>/<head> propios) envuelto en un documento completo."""
+    import http.server
+    import webbrowser
+
+    ruta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "editor", "index.html")
+
+    class Manejador(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            with open(ruta, encoding="utf-8") as f:
+                cuerpo = f.read()
+            html = ('<!doctype html><html lang="es"><head><meta charset="utf-8">'
+                    '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+                    '<style>body{margin:0}[hidden]{display:none!important}</style></head><body>'
+                    + cuerpo + "</body></html>").encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(html)))
+            self.end_headers()
+            self.wfile.write(html)
+
+        def log_message(self, *args):
+            pass
+
+    url = f"http://localhost:{puerto}/"
+    print(f"Editor abierto en {url}  (Ctrl+C para cerrar)")
+    webbrowser.open(url)
+    http.server.ThreadingHTTPServer(("localhost", puerto), Manejador).serve_forever()
 
 
 if __name__ == "__main__":

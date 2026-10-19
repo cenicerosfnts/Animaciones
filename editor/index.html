@@ -1,0 +1,1993 @@
+<title>Estudio de Animaciones</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:ital,wght@0,400;0,600;0,800;1,800&family=Bebas+Neue&family=Caveat:wght@700&family=DM+Serif+Display&family=Gochi+Hand&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Montserrat:wght@900&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,800;1,700&family=Special+Elite&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js"></script>
+<style>
+/* Editor de video oscuro tipo NLE: biblioteca | escenario | propiedades, con línea de tiempo abajo. */
+:root {
+  --bg: #121110;
+  --panel: #1a1917;
+  --panel-2: #23211e;
+  --panel-3: #2d2a26;
+  --line: #3a3631;
+  --fg: #ede8e1;
+  --muted: #9b948a;
+  --accent: #e2231a;
+  --accent-ink: #ffffff;
+  --amber: #f2b544;
+  --ok: #4fbf7a;
+  --clip-anim: #6d5bd0;
+  --clip-texto: #c9772b;
+  --clip-media: #2f7fb8;
+  --clip-audio: #3f9a6b;
+  --clip-fondo: #a83a3a;
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --f-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--f-ui); font-size: 13px;
+  padding-left: max(0px, env(safe-area-inset-left, 0px)); padding-right: max(0px, env(safe-area-inset-right, 0px));
+  overflow: hidden;
+}
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+
+.app { height: 100%; display: grid; grid-template-rows: 46px minmax(0, 1fr) var(--tl-h, 250px);
+  grid-template-columns: 290px minmax(0, 1fr) 300px;
+  grid-template-areas: "top top top" "lib stage props" "tl tl tl"; }
+
+/* Barra superior */
+.top { grid-area: top; display: flex; align-items: center; gap: 10px; padding-inline: max(12px, env(safe-area-inset-left, 0px)) max(12px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid var(--line); background: var(--panel); min-width: 0; }
+.marca { font-family: var(--f-display); font-weight: 800; font-size: 20px; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; }
+.marca b { color: var(--accent); }
+.top .nombre { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 4px 6px; min-width: 0; width: 200px; color: var(--fg); }
+.top .nombre:hover, .top .nombre:focus { border-color: var(--line); }
+.top .esp { flex: 1; }
+.btn { background: var(--panel-3); border: 1px solid var(--line); border-radius: 5px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn.prim { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.prim:hover { filter: brightness(1.1); }
+.btn.icon { padding: 6px 8px; }
+.btn:disabled { opacity: .45; cursor: default; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+.seg button { background: var(--panel-2); border: 0; padding: 5px 9px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--panel-3); color: var(--fg); }
+
+/* Paneles laterales */
+.lib, .props { background: var(--panel); min-height: 0; display: flex; flex-direction: column; }
+.lib { grid-area: lib; border-right: 1px solid var(--line); }
+.props { grid-area: props; border-left: 1px solid var(--line); }
+.tabs { display: flex; border-bottom: 1px solid var(--line); overflow-x: auto; flex: none; }
+.lib .tabs { flex-wrap: wrap; overflow: visible; }
+.lib .tabs button { padding: 8px 8px 6px; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 9px 8px; color: var(--muted); white-space: nowrap; font-weight: 500; }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.scroll { overflow-y: auto; min-height: 0; flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.h { font-family: var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 4px 0 -4px; }
+.nota { color: var(--muted); font-size: 12px; line-height: 1.45; }
+.buscar { width: 100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 7px 9px; }
+
+.grid-ilus { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ilu { aspect-ratio: 1; background: #f4f1ec; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px 18px; display: grid; place-items: center; position: relative; }
+.ilu canvas { width: 100%; height: 100%; }
+.ilu span { position: absolute; bottom: 3px; left: 2px; right: 2px; text-align: center; font-size: 10px; color: #6b655d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ilu:hover { outline: 2px solid var(--accent); }
+
+.plantillas { display: grid; gap: 8px; }
+.plantilla { text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; display: grid; gap: 3px; }
+.plantilla:hover { border-color: var(--accent); }
+.plantilla b { font-family: var(--f-display); font-size: 17px; font-weight: 800; text-transform: uppercase; letter-spacing: .01em; }
+.plantilla small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+
+.elem-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.elem-btns button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 10px 8px; text-align: left; display: grid; gap: 2px; }
+.elem-btns button:hover { border-color: var(--accent); }
+.elem-btns small { color: var(--muted); font-size: 11px; }
+
+.drop { border: 1.5px dashed var(--line); border-radius: 8px; padding: 16px; text-align: center; color: var(--muted); display: grid; gap: 8px; justify-items: center; }
+.drop.sobre { border-color: var(--accent); color: var(--fg); }
+.medios { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.medio { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; text-align: left; padding: 0; display: grid; }
+.medio:hover { border-color: var(--accent); }
+.medio .mini { aspect-ratio: 16/9; background: #000 center/cover no-repeat; display: grid; place-items: center; color: var(--muted); font-size: 22px; }
+.medio span { padding: 4px 6px; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.paletas { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.paleta { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 8px; display: grid; gap: 6px; text-align: left; }
+.paleta:hover { border-color: var(--accent); }
+.paleta .sw { display: flex; height: 16px; border-radius: 3px; overflow: hidden; }
+.paleta .sw i { flex: 1; }
+
+/* Escenario */
+.stage { grid-area: stage; display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--bg); }
+.lienzo-wrap { flex: 1; min-height: 0; display: grid; place-items: center; padding: 14px; position: relative; }
+#lienzo { background: #000; box-shadow: 0 0 0 1px var(--line), 0 12px 40px rgba(0,0,0,.5); max-width: 100%; max-height: 100%; touch-action: none; }
+.transporte { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+.tc { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; min-width: 150px; }
+.tc b { color: var(--fg); font-weight: 600; } .tc span { color: var(--muted); }
+
+/* Propiedades */
+.campo { display: grid; gap: 5px; }
+.campo > label, .campo > .lbl { color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; gap: 8px; }
+.campo input[type=text], .campo input[type=number], .campo select, .campo textarea {
+  width: 100%; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; min-width: 0; }
+.campo textarea { resize: vertical; min-height: 64px; line-height: 1.4; }
+.campo input[type=range] { width: 100%; accent-color: var(--accent); }
+.fila { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fila3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.rng { display: grid; grid-template-columns: 1fr 64px; gap: 6px; align-items: center; }
+.chk { display: flex; align-items: center; gap: 8px; color: var(--fg); }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+.colores { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.colores button { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); padding: 0; }
+.colores button[aria-pressed="true"] { border-color: var(--amber); box-shadow: 0 0 0 2px var(--bg) inset; }
+.colores input[type=color] { width: 30px; height: 26px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel-2); padding: 1px; }
+.grupo { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 10px; }
+.acciones { display: flex; gap: 6px; flex-wrap: wrap; }
+.kfs { display: grid; gap: 4px; }
+.kf { display: flex; justify-content: space-between; align-items: center; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 4px 4px 4px 8px; font-family: var(--f-mono); font-size: 12px; }
+.kf.aqui { border-color: var(--amber); }
+
+/* Asistente */
+.asis textarea { width: 100%; min-height: 110px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 9px; line-height: 1.45; resize: vertical; }
+.estado { font-size: 12px; color: var(--muted); min-height: 1.2em; }
+.estado.error { color: #ff8a80; }
+
+/* Línea de tiempo */
+.tl { grid-area: tl; border-top: 1px solid var(--line); background: var(--panel); display: grid; grid-template-rows: 34px minmax(0, 1fr); min-height: 0; position: relative; }
+.tl-resize { position: absolute; top: -4px; left: 0; right: 0; height: 8px; cursor: ns-resize; z-index: 5; }
+.tl-bar { display: flex; align-items: center; gap: 8px; padding-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tl-bar label { color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.tl-body { display: grid; grid-template-columns: 96px minmax(0, 1fr); min-height: 0; overflow: auto; position: relative; }
+.tl-heads { position: sticky; left: 0; z-index: 4; background: var(--panel); border-right: 1px solid var(--line); }
+.tl-head { height: var(--row-h, 34px); display: flex; align-items: center; padding: 0 8px; color: var(--muted); font-size: 11px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tl-head.regla { height: 24px; }
+.tl-pistas { position: relative; }
+.regla { height: 24px; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 3; background: var(--panel-2); cursor: pointer; }
+.regla i { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); font-style: normal; font-family: var(--f-mono); font-size: 10px; color: var(--muted); padding: 5px 0 0 4px; }
+.pista { height: var(--row-h, 34px); border-bottom: 1px solid var(--line); position: relative; }
+.pista.cam { background: rgba(242,181,68,.04); }
+.pista.audio { background: rgba(63,154,107,.05); }
+.clip { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; background: var(--clip-anim); color: #fff; font-size: 11px; padding: 0 8px; display: flex; align-items: center; overflow: hidden; white-space: nowrap; cursor: grab; border: 1px solid rgba(255,255,255,.18); user-select: none; touch-action: none; }
+.clip.texto { background: var(--clip-texto); } .clip.media { background: var(--clip-media); } .clip.audio { background: var(--clip-audio); } .clip.fondo { background: var(--clip-fondo); }
+.clip.sel { outline: 2px solid var(--amber); outline-offset: 0; z-index: 2; }
+.clip .borde { position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize; }
+.clip .borde.i { left: 0; } .clip .borde.d { right: 0; }
+.clip .borde::after { content: ""; position: absolute; top: 30%; bottom: 30%; left: 3px; width: 2px; background: rgba(255,255,255,.5); border-radius: 1px; }
+.diamante { position: absolute; top: 50%; width: 12px; height: 12px; background: var(--amber); transform: translate(-50%, -50%) rotate(45deg); border: 1px solid #000; cursor: pointer; }
+.diamante.sel { background: #fff; }
+.cabezal { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px solid var(--accent); z-index: 3; pointer-events: none; }
+.cabezal::before { content: ""; position: absolute; top: 0; left: -7px; border: 6px solid transparent; border-top: 8px solid var(--accent); }
+
+/* Modal de exportación */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: grid; place-items: center; z-index: 20; padding: 16px; }
+.caja { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; width: min(440px, 100%); padding: 18px; display: grid; gap: 14px; }
+.caja h2 { margin: 0; font-family: var(--f-display); font-size: 26px; font-weight: 800; text-transform: uppercase; }
+.barra { height: 8px; background: var(--panel-3); border-radius: 4px; overflow: hidden; }
+.barra i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.toast { position: fixed; left: 50%; bottom: calc(var(--tl-h, 250px) + 16px); transform: translateX(-50%); background: var(--panel-3); border: 1px solid var(--line); padding: 8px 14px; border-radius: 6px; z-index: 30; }
+
+/* Teléfono / pantallas angostas: todo en una columna */
+@media (max-width: 900px) {
+  body { overflow: auto; }
+  .app { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto auto;
+    grid-template-areas: "top" "stage" "tl" "props" "lib"; }
+  .top { flex-wrap: wrap; padding-block: 8px; }
+  .top .nombre { width: 140px; }
+  .lienzo-wrap { height: 52vh; }
+  .tl { height: 260px; }
+  .lib, .props { max-height: 70vh; border: 0; border-top: 1px solid var(--line); }
+  .toast { bottom: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .barra i { transition: none; } }
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="marca">Estudio <b>de Animaciones</b></div>
+    <input class="nombre" id="nombreProyecto" type="text" aria-label="Nombre del proyecto" value="Mi primer video">
+    <div class="seg" role="group" aria-label="Formato">
+      <button id="fmt-16x9" data-fmt="16:9" aria-pressed="true">16:9</button>
+      <button id="fmt-9x16" data-fmt="9:16" aria-pressed="false">9:16</button>
+      <button id="fmt-1x1" data-fmt="1:1" aria-pressed="false">1:1</button>
+    </div>
+    <span class="esp"></span>
+    <button class="btn icon" id="btnDeshacer" title="Deshacer (Ctrl+Z)" aria-label="Deshacer">↶</button>
+    <button class="btn icon" id="btnRehacer" title="Rehacer (Ctrl+Shift+Z)" aria-label="Rehacer">↷</button>
+    <button class="btn" id="btnNuevo">Nuevo</button>
+    <button class="btn" id="btnAbrir">Abrir</button>
+    <button class="btn" id="btnGuardar">Guardar proyecto</button>
+    <input type="file" id="archivoProyecto" accept=".json,application/json" hidden>
+    <button class="btn prim" id="btnExportar">Exportar video</button>
+  </header>
+
+  <aside class="lib" aria-label="Biblioteca">
+    <div class="tabs" role="tablist" id="tabsLib">
+      <button role="tab" id="tab-plantillas" aria-selected="true" data-tab="plantillas">Plantillas</button>
+      <button role="tab" id="tab-elementos" aria-selected="false" data-tab="elementos">Elementos</button>
+      <button role="tab" id="tab-ilus" aria-selected="false" data-tab="ilus">Ilustraciones</button>
+      <button role="tab" id="tab-medios" aria-selected="false" data-tab="medios">Medios</button>
+      <button role="tab" id="tab-estilo" aria-selected="false" data-tab="estilo">Mi estilo</button>
+      <button role="tab" id="tab-asis" aria-selected="false" data-tab="asis">Claude</button>
+    </div>
+    <div class="scroll" id="panelLib"></div>
+  </aside>
+
+  <main class="stage">
+    <div class="lienzo-wrap" id="lienzoWrap"><canvas id="lienzo" width="1280" height="720" aria-label="Vista previa del video"></canvas></div>
+    <div class="transporte">
+      <button class="btn icon" id="btnInicio" title="Ir al inicio" aria-label="Ir al inicio">⏮</button>
+      <button class="btn prim" id="btnPlay" title="Reproducir (espacio)" style="min-width:84px">▶ Play</button>
+      <div class="tc" id="tc"><b>00:00.00</b> <span>/ 00:00.00</span></div>
+      <span class="esp" style="flex:1"></span>
+      <button class="btn" id="btnCortar" title="Cortar el clip seleccionado en el cabezal (S)">✂ Cortar</button>
+      <button class="btn" id="btnDuplicar" title="Duplicar (Ctrl+D)">Duplicar</button>
+      <button class="btn" id="btnBorrar" title="Borrar (Supr)">Borrar</button>
+    </div>
+  </main>
+
+  <aside class="props" aria-label="Propiedades">
+    <div class="tabs" role="tablist" id="tabsProps">
+      <button role="tab" id="tabp-elem" aria-selected="true" data-tab="elem">Propiedades</button>
+      <button role="tab" id="tabp-cam" aria-selected="false" data-tab="cam">Cámara</button>
+      <button role="tab" id="tabp-proy" aria-selected="false" data-tab="proy">Proyecto</button>
+    </div>
+    <div class="scroll" id="panelProps"></div>
+  </aside>
+
+  <section class="tl" aria-label="Línea de tiempo">
+    <div class="tl-resize" id="tlResize" title="Arrastra para cambiar la altura"></div>
+    <div class="tl-bar">
+      <label for="zoomTl">Zoom <input type="range" id="zoomTl" min="15" max="300" value="70"></label>
+      <label><input type="checkbox" id="imanTl" checked> Imán</label>
+      <span class="nota">Arrastra los clips para moverlos, sus bordes para recortarlos y súbelos o bájalos de pista. La pista de arriba se ve encima.</span>
+    </div>
+    <div class="tl-body" id="tlBody">
+      <div class="tl-heads" id="tlHeads"></div>
+      <div class="tl-pistas" id="tlPistas"></div>
+    </div>
+  </section>
+</div>
+
+<div class="modal" id="modalExport" hidden>
+  <div class="caja" role="dialog" aria-modal="true" aria-labelledby="tituloExport">
+    <h2 id="tituloExport">Exportar video</h2>
+    <div class="fila">
+      <div class="campo"><label for="expRes">Calidad</label>
+        <select id="expRes"><option value="1080">1080p (Full HD)</option><option value="1440">1440p (2K)</option><option value="2160">2160p (4K)</option><option value="720">720p (rápido)</option></select></div>
+      <div class="campo"><label for="expFps">Cuadros por segundo</label>
+        <select id="expFps"><option value="30">30</option><option value="60">60</option><option value="24">24 (cine)</option></select></div>
+    </div>
+    <div class="nota" id="expInfo">Se renderiza cuadro por cuadro en tu navegador, con el audio mezclado, en MP4 (H.264) de alta calidad. Funciona mejor en Chrome o Edge.</div>
+    <div class="barra" aria-hidden="true"><i id="expBarra"></i></div>
+    <div class="estado" id="expEstado" role="status"></div>
+    <div class="acciones" style="justify-content:flex-end">
+      <button class="btn" id="expCancelar">Cerrar</button>
+      <button class="btn prim" id="expIniciar">Exportar MP4</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+"use strict";
+/* ===================================================================
+   1. Utilidades, curvas de animación y estilo
+   =================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const uid = () => Math.random().toString(36).slice(2, 10);
+const copia = o => JSON.parse(JSON.stringify(o));
+const E = {
+  lineal: t => clamp(t),
+  suave: t => { t = clamp(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; },
+  salida: t => 1 - Math.pow(1 - clamp(t), 3),
+  entrada: t => Math.pow(clamp(t), 3),
+  pop: (t, s = 1.9) => { t = clamp(t); const c = s + 1; return 1 + c * Math.pow(t - 1, 3) + s * Math.pow(t - 1, 2); },
+  rebote: t => { t = clamp(t); const n = 7.5625, d = 2.75;
+    if (t < 1 / d) return n * t * t; if (t < 2 / d) return n * (t -= 1.5 / d) * t + .75;
+    if (t < 2.5 / d) return n * (t -= 2.25 / d) * t + .9375; return n * (t -= 2.625 / d) * t + .984375; },
+  resorte: t => { t = clamp(t); return 1 - Math.exp(-6 * t) * Math.cos(2.4 * Math.PI * t); },
+};
+function fmtTiempo(t) {
+  t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m * 60;
+  return String(m).padStart(2, "0") + ":" + s.toFixed(2).padStart(5, "0");
+}
+
+// Estilos de color: los elementos guardan "@acento", "@texto"... o un #hex propio.
+const TOKENS = [
+  ["acento", "Acento"], ["texto", "Texto"], ["gris", "Narración"], ["tinta", "Línea"], ["papel", "Relleno"], ["fondo", "Fondo"],
+];
+const PALETAS = {
+  "Documental rojo": { fondo: "#FFFFFF", texto: "#111111", gris: "#B9B9B9", acento: "#C8161D", tinta: "#111111", papel: "#FFFFFF" },
+  "Museo": { fondo: "#F2ECDF", texto: "#1E1B16", gris: "#A79F8F", acento: "#B8892B", tinta: "#1E1B16", papel: "#FBF7EE" },
+  "Noche": { fondo: "#0F0F12", texto: "#F5F2EA", gris: "#7C7A80", acento: "#FFC531", tinta: "#F5F2EA", papel: "#1C1C22" },
+  "Selva": { fondo: "#EEF2E6", texto: "#14261A", gris: "#93A291", acento: "#2F8F4E", tinta: "#14261A", papel: "#FFFFFF" },
+  "Océano": { fondo: "#EAF2F7", texto: "#0D2233", gris: "#8FA4B3", acento: "#1F6FD1", tinta: "#0D2233", papel: "#FFFFFF" },
+  "México": { fondo: "#FFF8EE", texto: "#2A1A12", gris: "#B5A28F", acento: "#E0336F", tinta: "#2A1A12", papel: "#FFFFFF" },
+};
+function col(v) {
+  if (!v) return "transparent";
+  if (v[0] === "@") return proy.estilo[v.slice(1)] || "#ff00ff";
+  return v;
+}
+function conAlfa(c, a) {
+  c = col(c);
+  if (c.startsWith("#") && (c.length === 7 || c.length === 4)) {
+    const h = c.length === 4 ? c.slice(1).split("").map(x => x + x).join("") : c.slice(1);
+    return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
+  }
+  return c;
+}
+
+const FUENTES = [
+  { id: "barlow", nombre: "Barlow Condensada (títulos)", css: '"Barlow Condensed"', peso: 800 },
+  { id: "barlow-it", nombre: "Barlow Condensada itálica", css: '"Barlow Condensed"', peso: 800, estilo: "italic" },
+  { id: "barlow-light", nombre: "Barlow Condensada ligera", css: '"Barlow Condensed"', peso: 400 },
+  { id: "barlow-semi", nombre: "Barlow Condensada media", css: '"Barlow Condensed"', peso: 600 },
+  { id: "bebas", nombre: "Bebas Neue", css: '"Bebas Neue"', peso: 400 },
+  { id: "anton", nombre: "Anton (impacto)", css: '"Anton"', peso: 400 },
+  { id: "montserrat", nombre: "Montserrat Black", css: '"Montserrat"', peso: 900 },
+  { id: "playfair", nombre: "Playfair (elegante)", css: '"Playfair Display"', peso: 800 },
+  { id: "playfair-it", nombre: "Playfair itálica", css: '"Playfair Display"', peso: 700, estilo: "italic" },
+  { id: "dmserif", nombre: "DM Serif (clásica)", css: '"DM Serif Display"', peso: 400 },
+  { id: "maquina", nombre: "Máquina de escribir", css: '"Special Elite"', peso: 400 },
+  { id: "mano", nombre: "A mano (Gochi)", css: '"Gochi Hand"', peso: 400 },
+  { id: "marcador", nombre: "Marcador", css: '"Permanent Marker"', peso: 400 },
+  { id: "caveat", nombre: "Caveat (nota)", css: '"Caveat"', peso: 700 },
+];
+const fuentePorId = id => FUENTES.find(f => f.id === id) || FUENTES[0];
+function cssFuente(id, px) { const f = fuentePorId(id); return `${f.estilo || "normal"} ${f.peso} ${px}px ${f.css}, "Arial Narrow", sans-serif`; }
+
+/* ===================================================================
+   2. Ilustraciones vectoriales (trazo negro, relleno blanco, acento rojo).
+      #111 -> color de línea, #fff -> relleno, #D0161B -> acento del estilo.
+   =================================================================== */
+const CHILE_PATH = `<path d="M118 78 C155 84 166 128 156 176 C145 226 104 272 52 288 C38 292 34 280 44 274 C86 242 100 202 99 152 C98 112 96 84 118 78 Z" fill="#D0161B"/><path d="M96 86 C104 66 138 64 150 86 C138 80 108 80 96 86 Z" fill="#fff"/><path d="M123 72 C120 52 126 36 142 26" fill="none"/>`;
+const G = (vb, cuerpo, sw = 7) => `<svg viewBox="${vb}"><g stroke="#111" stroke-width="${sw}" fill="#fff">${cuerpo}</g></svg>`;
+const ILUS = [
+  { id: "hombre", n: "Hombre", t: "persona señor historia científico bigote", svg: G("0 0 300 340", `<path d="M30 340 C34 262 74 232 150 228 C226 232 266 262 270 340 Z"/><path d="M150 236 L116 290 L134 300 L122 340" fill="none"/><path d="M150 236 L184 290 L166 300 L178 340" fill="none"/><path d="M126 196 L126 236 L150 250 L174 236 L174 196"/><path d="M136 244 L150 252 L136 262 Z M164 244 L150 252 L164 262 Z" fill="#111"/><ellipse cx="104" cy="150" rx="12" ry="20"/><ellipse cx="196" cy="150" rx="12" ry="20"/><path d="M106 112 C106 70 194 70 194 112 L194 170 C194 206 174 226 150 226 C126 226 106 206 106 170 Z"/><path d="M96 120 C82 64 124 26 166 40 C204 30 226 74 204 116 C196 92 178 84 158 92 C138 80 112 92 102 128 Z" fill="#111"/><path d="M124 128 L140 124 M160 124 L176 128" fill="none"/><circle cx="133" cy="142" r="4.5" fill="#111"/><circle cx="167" cy="142" r="4.5" fill="#111"/><path d="M150 146 L146 170 L154 172" fill="none"/><path d="M150 180 C140 176 126 180 120 192 C132 188 142 190 150 186 C158 190 168 188 180 192 C174 180 160 176 150 180 Z" fill="#111"/>`, 6) },
+  { id: "mujer", n: "Mujer", t: "persona señora historia científica", svg: G("0 0 300 340", `<path d="M92 120 C80 60 120 30 150 32 C190 30 222 64 210 126 L218 230 C190 240 110 240 84 230 Z" fill="#111"/><path d="M30 340 C34 262 74 236 150 232 C226 236 266 262 270 340 Z"/><path d="M128 196 L128 240 C140 250 160 250 172 240 L172 196"/><path d="M108 112 C108 72 192 72 192 112 L192 168 C192 204 172 222 150 222 C128 222 108 204 108 168 Z"/><path d="M104 126 C104 76 140 58 170 66 C196 74 200 100 196 124 C180 102 150 96 130 98 C118 104 110 114 104 126 Z" fill="#111"/><circle cx="133" cy="148" r="4.5" fill="#111"/><circle cx="167" cy="148" r="4.5" fill="#111"/><path d="M150 152 L146 172 L154 174" fill="none"/><path d="M136 190 C144 198 156 198 164 190" fill="none" stroke="#D0161B"/><circle cx="150" cy="262" r="8" fill="#D0161B"/>`, 6) },
+  { id: "sombrero", n: "Persona con sombrero", t: "público gente multitud misterio espía", svg: G("0 0 200 240", `<path d="M20 240 C24 190 60 170 100 168 C140 170 176 190 180 240 Z"/><path d="M60 90 L60 140 C60 160 80 172 100 172 C120 172 140 160 140 140 L140 90 Z"/><path d="M58 112 L142 112 L138 132 C130 140 112 140 104 126 L96 126 C88 140 70 140 62 132 Z" fill="#111"/><rect x="66" y="20" width="68" height="64" rx="6"/><rect x="66" y="60" width="68" height="14" fill="#111"/><path d="M34 94 C34 80 166 80 166 94 C166 100 34 100 34 94 Z"/>`, 6) },
+  { id: "chile", n: "Chile", t: "comida picante méxico", svg: G("0 0 200 300", CHILE_PATH) },
+  { id: "campana", n: "Campana de vidrio", t: "museo exhibición laboratorio chile", svg: G("0 0 200 300", `<path d="M28 258 L28 110 C28 30 172 30 172 110 L172 258 Z"/><g transform="translate(62 92) scale(0.52)" stroke-width="12">${CHILE_PATH}</g><circle cx="62" cy="102" r="11" fill="none"/><rect x="14" y="258" width="172" height="20" rx="4"/>`) },
+  { id: "vaso", n: "Vaso", t: "agua bebida líquido experimento", svg: G("0 0 240 300", `<path d="M30 24 L210 24 L192 284 L48 284 Z"/><path d="M38 78 Q58 68 78 78 T118 78 T158 78 T202 78 L188 276 L52 276 Z" fill="#D0161B" stroke-width="5"/><path d="M22 18 L218 18" fill="none" stroke-width="9"/>`) },
+  { id: "vaso-chile", n: "Vaso con chile", t: "agua picante experimento escala", svg: G("0 0 240 300", `<path d="M30 24 L210 24 L192 284 L48 284 Z"/><path d="M38 78 Q58 68 78 78 T118 78 T158 78 T202 78 L188 276 L52 276 Z" fill="#EBCFCF" stroke-width="5"/><g transform="translate(70 92) scale(0.55)" stroke-width="12">${CHILE_PATH}</g><path d="M22 18 L218 18" fill="none" stroke-width="9"/>`) },
+  { id: "morron", n: "Pimiento morrón", t: "comida verdura", svg: G("0 0 240 240", `<path d="M120 62 C80 46 32 62 30 116 C28 168 52 214 86 218 C104 220 112 208 120 200 C128 208 136 220 154 218 C188 214 212 168 210 116 C208 62 160 46 120 62 Z" fill="#D0161B"/><path d="M120 70 C110 110 110 170 120 200 M80 74 C66 110 70 170 86 210 M160 74 C174 110 170 170 154 210" fill="none" stroke-width="5"/><path d="M96 64 C104 50 136 50 144 64 C132 58 108 58 96 64 Z" fill="#2E8B3A"/><path d="M120 56 C118 40 126 26 140 20" fill="none"/>`) },
+  { id: "jalapeno", n: "Jalapeño", t: "chile comida verde picante", svg: G("0 0 320 180", `<path d="M232 70 C200 52 120 56 68 82 C34 98 22 122 30 134 C40 148 70 140 110 132 C170 120 222 112 244 100 C256 92 248 78 232 70 Z" fill="#2E9B3E"/><path d="M90 104 C130 94 180 88 214 86" fill="none" stroke="#9AD38F"/><path d="M228 66 C244 58 262 66 264 84 C252 78 240 78 236 86 Z" fill="#2E7D32"/><path d="M258 70 C276 52 286 30 280 12" fill="none"/>`) },
+  { id: "habanero", n: "Habanero", t: "chile comida naranja picante", svg: G("0 0 220 240", `<path d="M110 58 C62 50 34 84 40 130 C46 172 74 206 102 222 C112 228 120 220 118 210 C140 214 176 190 182 146 C190 92 160 58 110 58 Z" fill="#F57C00"/><path d="M100 74 C82 100 80 150 104 206 M140 78 C160 110 158 160 128 200" fill="none" stroke-width="5"/><path d="M90 62 C98 46 128 46 136 62 C124 56 102 56 90 62 Z" fill="#2E8B3A"/><path d="M112 52 C110 36 118 22 132 16" fill="none"/>`) },
+  { id: "fuego", n: "Fuego", t: "picante calor llama", svg: G("0 0 200 240", `<path d="M100 228 C44 228 22 186 34 140 C42 108 66 92 70 60 C88 76 92 96 90 112 C108 90 112 52 104 16 C148 44 180 96 172 150 C168 196 140 228 100 228 Z" fill="#D0161B"/><path d="M100 216 C72 216 62 192 70 170 C76 154 90 146 92 128 C114 146 132 166 128 190 C126 206 116 216 100 216 Z" fill="#FFB300" stroke-width="5"/>`) },
+  { id: "globo", n: "Planeta", t: "mundo tierra mapa viaje geografía", svg: G("0 0 200 200", `<circle cx="100" cy="100" r="80"/><path d="M58 52 C74 44 92 52 88 66 C84 80 66 76 60 88 C54 96 44 86 46 74 C48 64 50 58 58 52 Z M118 110 C134 104 152 112 148 130 C144 146 128 150 120 140 C112 130 108 116 118 110 Z M120 40 C134 40 150 50 152 62 C140 64 126 58 120 40 Z" fill="#D0161B" stroke-width="5"/><path d="M100 20 C60 50 60 150 100 180 M100 20 C140 50 140 150 100 180 M24 76 L176 76 M24 124 L176 124" fill="none" stroke-width="4"/>`) },
+  { id: "pin", n: "Ubicación", t: "mapa lugar viaje ciudad", svg: G("0 0 200 200", `<path d="M100 190 C70 150 40 120 40 82 C40 46 68 20 100 20 C132 20 160 46 160 82 C160 120 130 150 100 190 Z" fill="#D0161B"/><circle cx="100" cy="82" r="24"/>`) },
+  { id: "libro", n: "Libro", t: "historia leer cultura estudio", svg: G("0 0 240 190", `<path d="M120 40 C90 20 50 20 20 30 L20 160 C50 150 90 150 120 170 Z"/><path d="M120 40 C150 20 190 20 220 30 L220 160 C190 150 150 150 120 170 Z"/><path d="M40 60 C60 55 85 56 102 64 M40 85 C60 80 85 81 102 89 M40 110 C60 105 85 106 102 114 M138 64 C155 56 180 55 200 60 M138 89 C155 81 180 80 200 85" fill="none" stroke-width="4"/><path d="M170 24 L170 70 L182 60 L194 70 L194 22 Z" fill="#D0161B" stroke-width="5"/>`) },
+  { id: "arena", n: "Reloj de arena", t: "tiempo historia espera", svg: G("0 0 160 220", `<path d="M40 24 C40 80 70 95 80 110 C90 95 120 80 120 24 Z"/><path d="M40 196 C40 140 70 125 80 110 C90 125 120 140 120 196 Z"/><path d="M58 60 L102 60 C98 80 86 92 80 104 C74 92 62 80 58 60 Z" fill="#D0161B" stroke-width="4"/><path d="M50 192 C56 168 70 160 80 158 C90 160 104 168 110 192 Z" fill="#D0161B" stroke-width="4"/><path d="M26 20 L134 20 M26 200 L134 200" fill="none" stroke-width="10"/>`) },
+  { id: "piramide", n: "Pirámide", t: "méxico maya azteca cultura historia templo", svg: G("0 0 260 200", `<path d="M20 190 L240 190 L220 150 L40 150 Z M50 150 L210 150 L192 112 L68 112 Z M78 112 L182 112 L166 78 L94 78 Z M104 78 L156 78 L150 50 L110 50 Z"/><rect x="112" y="24" width="36" height="26" fill="#D0161B"/><path d="M118 190 L124 50 M142 190 L136 50" fill="none" stroke-width="5"/><path d="M120 170 L140 170 M121 150 L139 150 M121 130 L139 130 M122 110 L138 110 M123 90 L137 90 M124 70 L136 70" fill="none" stroke-width="4"/>`) },
+  { id: "templo", n: "Templo clásico", t: "grecia roma historia museo banco cultura", svg: G("0 0 260 230", `<path d="M20 70 L130 20 L240 70 Z"/><rect x="26" y="70" width="208" height="16"/><rect x="44" y="86" width="22" height="100"/><rect x="96" y="86" width="22" height="100"/><rect x="142" y="86" width="22" height="100"/><rect x="194" y="86" width="22" height="100"/><rect x="20" y="186" width="220" height="14"/><rect x="10" y="200" width="240" height="14"/><circle cx="130" cy="52" r="9" fill="#D0161B"/>`) },
+  { id: "foco", n: "Idea", t: "foco bombilla idea descubrimiento", svg: G("0 0 160 210", `<path d="M80 20 C40 20 20 50 20 80 C20 110 44 124 50 150 L110 150 C116 124 140 110 140 80 C140 50 120 20 80 20 Z"/><rect x="52" y="150" width="56" height="16" rx="4"/><rect x="56" y="166" width="48" height="16" rx="4"/><path d="M66 192 L94 192" fill="none" stroke-width="10"/><path d="M64 120 L64 96 C64 84 76 84 76 96 C76 108 88 108 88 96 C88 84 96 84 96 96 L96 120" fill="none" stroke="#D0161B" stroke-width="6"/>`) },
+  { id: "lupa", n: "Lupa", t: "buscar investigar detalle", svg: G("0 0 200 200", `<path d="M128 128 L184 184" fill="none" stroke-width="18"/><circle cx="84" cy="84" r="62" stroke-width="8"/><path d="M50 70 C56 52 70 44 86 42" fill="none" stroke="#D0161B"/>`) },
+  { id: "pregunta", n: "Pregunta", t: "duda signo misterio", svg: G("0 0 200 200", `<circle cx="100" cy="100" r="84" fill="#D0161B"/><path d="M72 76 C72 50 128 46 128 78 C128 100 100 100 100 124" fill="none" stroke="#fff" stroke-width="16"/><circle cx="100" cy="152" r="10" fill="#fff" stroke="none"/>`) },
+  { id: "exclamacion", n: "Alerta", t: "importante exclamación ojo", svg: G("0 0 200 200", `<circle cx="100" cy="100" r="84" fill="#D0161B"/><path d="M100 48 L100 118" fill="none" stroke="#fff" stroke-width="18"/><circle cx="100" cy="150" r="11" fill="#fff" stroke="none"/>`) },
+  { id: "corona", n: "Corona", t: "rey reina imperio poder historia", svg: G("0 0 240 190", `<path d="M30 150 L20 50 L76 96 L120 30 L164 96 L220 50 L210 150 Z" fill="#FFC21A"/><rect x="28" y="150" width="184" height="20" rx="4" fill="#FFC21A"/><circle cx="120" cy="110" r="12" fill="#D0161B"/><circle cx="70" cy="122" r="8"/><circle cx="170" cy="122" r="8"/>`) },
+  { id: "moneda", n: "Moneda", t: "dinero precio economía pesos", svg: G("0 0 200 200", `<circle cx="100" cy="100" r="84" fill="#FFC21A"/><circle cx="100" cy="100" r="64" fill="none" stroke-width="5"/><path d="M124 74 C118 62 82 60 80 80 C78 100 124 96 122 120 C120 142 82 140 76 126 M100 52 L100 148" fill="none" stroke-width="9"/>`) },
+  { id: "calendario", n: "Calendario", t: "fecha año día historia", svg: G("0 0 200 200", `<rect x="24" y="40" width="152" height="140" rx="12"/><path d="M24 52 C24 45 30 40 36 40 L164 40 C170 40 176 45 176 52 L176 80 L24 80 Z" fill="#D0161B"/><path d="M64 24 L64 54 M136 24 L136 54" fill="none" stroke-width="10"/><path d="M50 108 L66 108 M92 108 L108 108 M134 108 L150 108 M50 140 L66 140 M92 140 L108 140 M134 140 L150 140" fill="none" stroke-width="10"/>`) },
+  { id: "reloj", n: "Reloj", t: "tiempo hora", svg: G("0 0 200 200", `<circle cx="100" cy="100" r="84"/><path d="M100 24 L100 36 M100 164 L100 176 M24 100 L36 100 M164 100 L176 100" fill="none" stroke-width="6"/><path d="M100 100 L100 46 M100 100 L140 120" fill="none" stroke-width="9"/><circle cx="100" cy="100" r="8" fill="#D0161B"/>`) },
+  { id: "avion", n: "Avión", t: "viaje vuelo transporte", svg: G("0 0 240 200", `<path d="M120 16 C130 16 134 30 134 44 L134 82 L220 120 L220 140 L134 118 L132 160 L160 178 L160 190 L120 180 L80 190 L80 178 L108 160 L106 118 L20 140 L20 120 L106 82 L106 44 C106 30 110 16 120 16 Z"/><path d="M114 40 L126 40" fill="none" stroke="#D0161B" stroke-width="8"/>`) },
+  { id: "montana", n: "Montañas", t: "paisaje naturaleza viaje sol", svg: G("0 0 260 180", `<circle cx="190" cy="50" r="26" fill="#D0161B"/><path d="M10 170 L90 50 L140 120 L170 84 L250 170 Z"/><path d="M70 80 L90 50 L110 80 L100 74 L90 84 L80 74 Z" fill="#111" stroke-width="4"/>`) },
+  { id: "sol", n: "Sol", t: "calor día clima", svg: G("0 0 200 200", `<circle cx="100" cy="100" r="44" fill="#FFC21A"/><path d="M100 20 L100 40 M100 160 L100 180 M20 100 L40 100 M160 100 L180 100 M43 43 L57 57 M143 143 L157 157 M157 43 L143 57 M57 143 L43 157" fill="none" stroke-width="9"/>`) },
+  { id: "periodico", n: "Periódico", t: "noticia prensa documento historia", svg: G("0 0 200 220", `<rect x="24" y="20" width="152" height="184" rx="6"/><rect x="40" y="36" width="120" height="24" fill="#111"/><path d="M40 76 L160 76 M40 92 L160 92" fill="none" stroke-width="5"/><rect x="40" y="106" width="56" height="50" fill="#D0161B" stroke-width="4"/><path d="M108 112 L160 112 M108 128 L160 128 M108 144 L160 144 M40 172 L160 172 M40 188 L130 188" fill="none" stroke-width="5"/>`) },
+  { id: "camara", n: "Cámara", t: "foto video grabar", svg: G("0 0 240 180", `<path d="M80 46 L92 24 L148 24 L160 46"/><rect x="20" y="46" width="200" height="120" rx="16"/><circle cx="120" cy="106" r="40"/><circle cx="120" cy="106" r="24" fill="#D0161B"/><rect x="176" y="62" width="24" height="12" rx="3" fill="#111"/>`) },
+  { id: "casa", n: "Casa", t: "hogar familia lugar", svg: G("0 0 220 200", `<rect x="40" y="86" width="140" height="104"/><rect x="92" y="126" width="36" height="64" fill="#D0161B"/><rect x="56" y="110" width="26" height="26"/><rect x="140" y="110" width="26" height="26"/><path d="M20 96 L110 20 L200 96" fill="none" stroke-width="9"/>`) },
+  { id: "dialogo", n: "Globo de diálogo", t: "hablar decir conversación", svg: G("0 0 240 200", `<path d="M40 20 L200 20 C214 20 224 30 224 44 L224 120 C224 134 214 144 200 144 L100 144 L56 184 L64 144 L40 144 C26 144 16 134 16 120 L16 44 C16 30 26 20 40 20 Z"/><circle cx="80" cy="82" r="10" fill="#111" stroke="none"/><circle cx="120" cy="82" r="10" fill="#111" stroke="none"/><circle cx="160" cy="82" r="10" fill="#D0161B" stroke="none"/>`) },
+  { id: "corazon", n: "Corazón", t: "amor salud", svg: G("0 0 200 200", `<path d="M100 176 C40 130 16 100 16 66 C16 40 36 22 60 22 C78 22 92 32 100 48 C108 32 122 22 140 22 C164 22 184 40 184 66 C184 100 160 130 100 176 Z" fill="#D0161B"/>`) },
+  { id: "estrella", n: "Estrella", t: "fama mejor premio", svg: G("0 0 200 200", `<path d="M100 14 L124 74 L188 78 L138 118 L154 182 L100 146 L46 182 L62 118 L12 78 L76 74 Z" fill="#FFC21A"/>`) },
+  { id: "rayo", n: "Rayo", t: "energía rápido poder", svg: G("0 0 160 220", `<path d="M96 10 L24 124 L74 124 L58 210 L136 88 L86 88 Z" fill="#FFC21A"/>`) },
+];
+
+// Convierte un SVG en formas Path2D para dibujarlo en canvas (y poder animar su trazo).
+const svgMedidor = (() => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("width", "0"); s.setAttribute("height", "0"); s.style.position = "absolute"; s.style.visibility = "hidden"; document.body.appendChild(s); return s; })();
+function matrizDe(tr) {
+  let m = new DOMMatrix();
+  if (!tr) return m;
+  const re = /(\w+)\(([^)]*)\)/g; let x;
+  while ((x = re.exec(tr))) {
+    const v = x[2].split(/[\s,]+/).filter(Boolean).map(Number);
+    if (x[1] === "translate") m = m.translate(v[0], v[1] || 0);
+    else if (x[1] === "scale") m = m.scale(v[0], v[1] ?? v[0]);
+    else if (x[1] === "rotate") m = v.length > 1 ? m.translate(v[1], v[2]).rotate(v[0]).translate(-v[1], -v[2]) : m.rotate(v[0]);
+    else if (x[1] === "matrix") m = m.multiply(new DOMMatrix(v));
+  }
+  return m;
+}
+function largoDe(d) { const p = document.createElementNS("http://www.w3.org/2000/svg", "path"); p.setAttribute("d", d); svgMedidor.appendChild(p); const l = p.getTotalLength(); p.remove(); return l; }
+function parsearSVG(texto) {
+  const doc = new DOMParser().parseFromString(texto.replace(/<svg\b(?![^>]*xmlns=)/, '<svg xmlns="http://www.w3.org/2000/svg"'), "image/svg+xml");
+  const svg = doc.documentElement;
+  if (!svg || svg.nodeName !== "svg") throw new Error("SVG no válido");
+  let vb = (svg.getAttribute("viewBox") || "").split(/[\s,]+/).map(Number);
+  if (vb.length !== 4 || vb.some(isNaN)) vb = [0, 0, parseFloat(svg.getAttribute("width")) || 100, parseFloat(svg.getAttribute("height")) || 100];
+  const formas = [];
+  const estiloAttr = (el, k) => { const st = el.getAttribute("style"); if (st) { const m = new RegExp("(?:^|;)\\s*" + k + "\\s*:\\s*([^;]+)").exec(st); if (m) return m[1].trim(); } return el.getAttribute(k); };
+  const recorrer = (el, her) => {
+    const h = { ...her };
+    for (const k of ["fill", "stroke", "stroke-width", "opacity"]) { const v = estiloAttr(el, k); if (v != null) h[k] = v; }
+    h.m = her.m.multiply(matrizDe(el.getAttribute("transform")));
+    const tag = el.nodeName.toLowerCase();
+    let d = null;
+    const n = k => parseFloat(el.getAttribute(k)) || 0;
+    if (tag === "path") d = el.getAttribute("d");
+    else if (tag === "circle" || tag === "ellipse") {
+      const cx = n("cx"), cy = n("cy"), rx = tag === "circle" ? n("r") : n("rx"), ry = tag === "circle" ? n("r") : n("ry");
+      d = `M${cx} ${cy - ry} A${rx} ${ry} 0 1 1 ${cx - 0.01} ${cy - ry} Z`;
+    } else if (tag === "rect") {
+      const x = n("x"), y = n("y"), w = n("width"), hh = n("height"), r = Math.min(n("rx") || n("ry"), w / 2, hh / 2);
+      d = r ? `M${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 ${x + w} ${y + r} V${y + hh - r} A${r} ${r} 0 0 1 ${x + w - r} ${y + hh} H${x + r} A${r} ${r} 0 0 1 ${x} ${y + hh - r} V${y + r} A${r} ${r} 0 0 1 ${x + r} ${y} Z`
+            : `M${x} ${y} H${x + w} V${y + hh} H${x} Z`;
+    } else if (tag === "line") d = `M${n("x1")} ${n("y1")} L${n("x2")} ${n("y2")}`;
+    else if (tag === "polyline" || tag === "polygon") { const p = (el.getAttribute("points") || "").trim().split(/[\s,]+/).map(Number); d = "M" + p.join(" ") + (tag === "polygon" ? " Z" : ""); }
+    if (d) {
+      const base = new Path2D(d), path = new Path2D();
+      path.addPath(base, h.m);
+      const esc = Math.sqrt(Math.abs(h.m.a * h.m.d - h.m.b * h.m.c)) || 1;
+      const fill = h.fill === undefined ? "#000" : h.fill, stroke = h.stroke && h.stroke !== "none" ? h.stroke : null;
+      const sw = (parseFloat(h["stroke-width"]) || 1) * esc;
+      formas.push({ path, fill: fill === "none" ? null : fill, stroke, sw, largo: stroke ? largoDe(d) * esc : 0, op: parseFloat(h.opacity) || 1 });
+    }
+    for (const c of el.children) if (!["defs", "title", "desc", "style", "clippath", "mask"].includes(c.nodeName.toLowerCase())) recorrer(c, h);
+  };
+  recorrer(svg, { m: new DOMMatrix() });
+  return { vb, formas, total: formas.reduce((a, f) => a + f.largo, 0) };
+}
+const cacheIlus = {};
+function ilustracion(id) {
+  if (cacheIlus[id]) return cacheIlus[id];
+  const def = ILUS.find(i => i.id === id) || (proy && proy.ilusPropias || []).find(i => i.id === id);
+  if (!def) return null;
+  try { return (cacheIlus[id] = parsearSVG(def.svg)); } catch (e) { console.warn(e); return null; }
+}
+function mapearColorIlus(c, recolor) {
+  if (!c) return null;
+  const k = c.toLowerCase();
+  if (!recolor) return c;
+  if (k === "#111" || k === "#111111" || k === "#000" || k === "#000000") return proy.estilo.tinta;
+  if (k === "#fff" || k === "#ffffff") return proy.estilo.papel;
+  if (k === "#d0161b") return proy.estilo.acento;
+  return c;
+}
+// Dibuja la ilustración centrada en (0,0) con ancho `w`. `p` = avance del trazo (1 = completa).
+function dibujarIlus(ctx, id, w, p = 1, recolor = true) {
+  const il = ilustracion(id);
+  if (!il) return { w: 10, h: 10 };
+  const [vx, vy, vw, vh] = il.vb, s = w / vw, a0 = ctx.globalAlpha;
+  ctx.save();
+  ctx.scale(s, s); ctx.translate(-vx - vw / 2, -vy - vh / 2);
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+  let acumulado = 0;
+  const pFill = p >= 1 ? 1 : clamp((p - .55) / .45);
+  for (const f of il.formas) {
+    if (f.fill && pFill > 0) { ctx.globalAlpha = f.op * pFill * a0; ctx.fillStyle = mapearColorIlus(f.fill, recolor); ctx.fill(f.path); }
+    if (f.stroke) {
+      ctx.globalAlpha = f.op * a0;
+      ctx.strokeStyle = mapearColorIlus(f.stroke, recolor); ctx.lineWidth = f.sw;
+      if (p < 1) {
+        const lim = p * il.total, local = clamp((lim - acumulado) / (f.largo || 1));
+        acumulado += f.largo;
+        if (local <= 0) continue;
+        ctx.setLineDash([f.largo * local, f.largo + 1]); ctx.lineDashOffset = 0;
+      } else ctx.setLineDash([]);
+      ctx.stroke(f.path);
+    }
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
+  return { w, h: w * vh / vw };
+}
+
+/* ===================================================================
+   3. Efectos de sonido sintetizados (sin archivos)
+   =================================================================== */
+const SONIDOS = ["ninguno", "pop", "whoosh", "ding", "golpe", "click", "tecleo"];
+function sintetizar(nombre, sr) {
+  const dur = { pop: .18, whoosh: .5, ding: .9, golpe: .4, click: .05, tecleo: .9 }[nombre] || .3;
+  const n = Math.floor(dur * sr), d = new Float32Array(n);
+  let fase = 0, acc = 0, sem = 7;
+  const rnd = () => ((sem = (sem * 16807) % 2147483647) / 2147483647) * 2 - 1;
+  for (let i = 0; i < n; i++) {
+    const t = i / sr; let v = 0;
+    if (nombre === "pop") { fase += 2 * Math.PI * (900 * Math.exp(-t * 28) + 180) / sr; v = Math.sin(fase) * Math.min(1, t / .002) * Math.exp(-t / .04) * .7; }
+    else if (nombre === "whoosh") { const k = t / dur, c = .02 + .25 * Math.sin(Math.PI * k) ** 2; acc += c * (rnd() - acc); v = acc * Math.pow(Math.sin(Math.PI * k), 1.5) * 1.6; }
+    else if (nombre === "ding") { v = (Math.sin(2 * Math.PI * 1568 * t) + .35 * Math.sin(2 * Math.PI * 3136 * t)) * Math.exp(-t / .25) * .3; }
+    else if (nombre === "golpe") { fase += 2 * Math.PI * (120 * Math.exp(-t * 12) + 45) / sr; v = Math.sin(fase) * Math.exp(-t / .12) * .8 + rnd() * Math.exp(-t / .02) * .4; }
+    else if (nombre === "click") { v = rnd() * Math.exp(-t / .006) * .5; }
+    else if (nombre === "tecleo") { const per = .09, tl = t % per; v = rnd() * Math.exp(-tl / .006) * .35 * (Math.floor(t / per) % 5 === 3 ? 0 : 1); }
+    d[i] = v;
+  }
+  return d;
+}
+
+/* ===================================================================
+   4. Modelo del proyecto
+   =================================================================== */
+const TIPOS = {
+  texto: "Texto", ilustracion: "Ilustración", foto: "Foto", video: "Video", fondo: "Fondo de color",
+  forma: "Forma", linea: "Línea / flecha", contador: "Contador", lupa: "Lupa", audio: "Audio", efecto: "Efecto de sonido",
+};
+const ES_AUDIO = el => el.tipo === "audio" || el.tipo === "efecto";
+const BASE = { x: .5, y: .5, escala: 1, rot: 0, opacidad: 1, camara: true, entrada: "aparecer", tEntrada: .4,
+  salida: "desvanecer", tSalida: .3, mov: "ninguno", fuerzaMov: 1, sonido: "ninguno" };
+const DEF = {
+  texto: { texto: "TU TEXTO", fuente: "barlow", tam: 90, color: "@texto", alinear: "centro", mayus: true, animTexto: "palabras",
+    ritmo: .2, efectoPalabra: "subir", resaltar: "", colorResalte: "@acento", estiloResalte: "color", interlineado: 1.0,
+    anchoMax: .8, borde: 0, colorBorde: "#000000", sombra: false, caja: "", entrada: "ninguna" },
+  ilustracion: { ilus: "hombre", tam: 380, recolor: true, entrada: "pop" },
+  foto: { media: null, tam: 620, marco: "blanco", bn: false, sombra: true, entrada: "pop", mov: "acercar" },
+  video: { media: null, recorte: 0, volumen: 1, ajuste: "cubrir", tam: 1080, bn: false, marco: "ninguno", camara: false,
+    entrada: "ninguna", salida: "ninguna", tEntrada: .3 },
+  fondo: { color: "@acento", transicion: "v", entrada: "ninguna", tEntrada: .6, salida: "ninguna", camara: false },
+  forma: { figura: "pildora", w: 520, h: 110, color: "@acento", radio: 20, borde: 0, colorBorde: "@tinta", entrada: "revelar" },
+  linea: { x: .3, y: .5, x2: .7, y2: .5, color: "@acento", grosor: 8, flecha: true, punteada: false, curva: 0, entrada: "dibujar", tEntrada: .7 },
+  contador: { desde: 0, hasta: 1000, decimales: 0, prefijo: "", sufijo: "", tConteo: 1.5, fuente: "barlow", tam: 170, color: "@texto", entrada: "pop" },
+  lupa: { x: .35, y: .45, x2: .6, y2: .5, radio: 170, aumento: 2.2, camara: false, entrada: "pop", salida: "encoger" },
+  audio: { media: null, recorte: 0, volumen: 1, fadeIn: 0, fadeOut: .5 },
+  efecto: { sonido: "whoosh", volumen: 1 },
+};
+function nombrePara(el) {
+  if (el.tipo === "texto") return el.texto.replace(/\s+/g, " ").slice(0, 28) || "Texto";
+  if (el.tipo === "ilustracion") { const d = ILUS.find(i => i.id === el.ilus) || (proy.ilusPropias || []).find(i => i.id === el.ilus); return d ? d.n : "Ilustración"; }
+  if (el.tipo === "contador") return (el.prefijo || "") + el.hasta + (el.sufijo || "");
+  if (el.tipo === "efecto") return "♪ " + el.sonido;
+  return TIPOS[el.tipo];
+}
+function nuevoElemento(tipo, props = {}) {
+  const el = { id: uid(), tipo, nombre: "", pista: 0, pistaAudio: 0, inicio: 0, dur: tipo === "efecto" ? .6 : 3, ...copia(BASE), ...copia(DEF[tipo] || {}), ...props };
+  if (!el.nombre) el.nombre = nombrePara(el);
+  return el;
+}
+function proyectoVacio() {
+  return { v: 1, nombre: "Mi primer video", formato: "16:9", duracion: 0, estilo: { ...PALETAS["Documental rojo"] },
+    camara: [], elementos: [], ilusPropias: [] };
+}
+let proy = proyectoVacio();
+const est = { t: 0, play: false, sel: null, selKf: null, pps: 70, iman: true, tabLib: "plantillas", tabProps: "elem" };
+const medios = {}; // id -> {id, nombre, tipo, url, img|null, dur, w, h}
+
+function duracionProyecto() {
+  const fin = proy.elementos.reduce((m, e) => Math.max(m, e.inicio + e.dur), 0);
+  return Math.max(1, proy.duracion > 0 ? proy.duracion : fin);
+}
+function dimensiones(alto) {
+  const [a, b] = proy.formato.split(":").map(Number);
+  if (a >= b) return { W: Math.round(alto * a / b / 2) * 2, H: alto };
+  return { W: alto, H: Math.round(alto * b / a / 2) * 2 }; // vertical: `alto` es el lado corto
+}
+
+/* ===================================================================
+   5. Cámara y animaciones
+   =================================================================== */
+function camaraEn(t) {
+  const k = proy.camara;
+  if (!k.length) return { z: 1, x: .5, y: .5 };
+  if (t <= k[0].t) return k[0];
+  for (let i = 1; i < k.length; i++) {
+    const a = k[i - 1], b = k[i];
+    if (t < b.t) {
+      const curva = b.curva === "corte" ? (() => 0) : E[b.curva] || E.suave;
+      const f = curva((t - a.t) / Math.max(1e-4, b.t - a.t));
+      return { z: Math.exp(lerp(Math.log(a.z), Math.log(b.z), f)), x: lerp(a.x, b.x, f), y: lerp(a.y, b.y, f) };
+    }
+  }
+  return k[k.length - 1];
+}
+function ordenarCamara() { proy.camara.sort((a, b) => a.t - b.t); }
+
+function estadoAnim(el, lt, u, W, H) {
+  const st = { dx: 0, dy: 0, s: 1, r: 0, a: 1, rev: 1, dib: 1 };
+  const p = el.tEntrada > 0 ? clamp(lt / el.tEntrada) : 1;
+  switch (el.entrada) {
+    case "aparecer": st.a *= E.salida(p); break;
+    case "subir": st.dy += (1 - E.salida(p)) * 70 * u; st.a *= E.salida(p); break;
+    case "bajar": st.dy -= (1 - E.salida(p)) * 70 * u; st.a *= E.salida(p); break;
+    case "izquierda": st.dx -= (1 - E.salida(p)) * W * .3; st.a *= clamp(p * 2); break;
+    case "derecha": st.dx += (1 - E.salida(p)) * W * .3; st.a *= clamp(p * 2); break;
+    case "pop": st.s *= E.pop(p); st.a *= clamp(p * 3); break;
+    case "zoom": st.s *= 1 + .35 * (1 - E.salida(p)); st.a *= E.salida(p); break;
+    case "girar": st.r += (1 - E.salida(p)) * -30; st.s *= .5 + .5 * E.pop(p); st.a *= clamp(p * 2); break;
+    case "caer": st.dy -= (1 - E.rebote(p)) * H * .4; st.a *= clamp(p * 5); break;
+    case "revelar": st.rev = E.suave(p); break;
+    case "dibujar": st.dib = E.suave(p); break;
+  }
+  const q = el.tSalida > 0 ? clamp((lt - (el.dur - el.tSalida)) / el.tSalida) : 0;
+  if (q > 0) switch (el.salida) {
+    case "desvanecer": st.a *= 1 - q; break;
+    case "encoger": st.s *= 1 - E.entrada(q); break;
+    case "subir": st.dy -= E.entrada(q) * 90 * u; st.a *= 1 - q; break;
+    case "bajar": st.dy += E.entrada(q) * 90 * u; st.a *= 1 - q; break;
+    case "izquierda": st.dx -= E.entrada(q) * W * .35; st.a *= 1 - q; break;
+    case "derecha": st.dx += E.entrada(q) * W * .35; st.a *= 1 - q; break;
+    case "zoom": st.s *= 1 + E.entrada(q) * .4; st.a *= 1 - q; break;
+  }
+  const k = clamp(lt / el.dur), f = el.fuerzaMov ?? 1;
+  switch (el.mov) {
+    case "acercar": st.s *= 1 + .12 * f * k; break;
+    case "alejar": st.s *= 1 + .12 * f * (1 - k); break;
+    case "flotar": st.dy += Math.sin(lt * 2.2) * 9 * u * f; st.r += Math.sin(lt * 1.7) * 1.2 * f; break;
+    case "derecha": st.dx += k * 80 * u * f; break;
+    case "izquierda": st.dx -= k * 80 * u * f; break;
+    case "latido": st.s *= 1 + .05 * f * Math.pow(Math.sin(lt * 5), 2); break;
+    case "balanceo": st.r += Math.sin(lt * 3) * 4 * f; break;
+    case "temblor": st.dx += Math.sin(lt * 53) * 4 * u * f; st.dy += Math.sin(lt * 61 + 1) * 4 * u * f; break;
+  }
+  return st;
+}
+
+/* ===================================================================
+   6. Dibujo de cada tipo de elemento. Cada función dibuja alrededor de (0,0)
+      y devuelve su caja local [x0, y0, x1, y1] (con medir=true no dibuja).
+   =================================================================== */
+const normal = w => w.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\w]/g, "");
+function rrect(ctx, x, y, w, h, r) {
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function maquetarTexto(ctx, el, u, W) {
+  const fs = el.tam * u;
+  ctx.font = cssFuente(el.fuente, fs);
+  const txt = el.mayus ? el.texto.toUpperCase() : el.texto;
+  const esp = ctx.measureText(" ").width, maxW = el.anchoMax * W;
+  const lineas = [];
+  for (const par of txt.split("\n")) {
+    let act = [], ancho = 0;
+    for (const w of par.split(/\s+/).filter(Boolean)) {
+      const ww = ctx.measureText(w).width;
+      if (act.length && ancho + esp + ww > maxW) { lineas.push({ ws: act, ancho }); act = []; ancho = 0; }
+      ancho += (act.length ? esp : 0) + ww; act.push({ w, ww });
+    }
+    lineas.push({ ws: act, ancho });
+  }
+  const lh = fs * el.interlineado * 1.05, alto = lh * lineas.length;
+  let maxAncho = 0;
+  lineas.forEach((l, i) => {
+    l.y = -alto / 2 + lh * (i + .5);
+    l.x = el.alinear === "izquierda" ? 0 : el.alinear === "derecha" ? -l.ancho : -l.ancho / 2;
+    let x = l.x; for (const w of l.ws) { w.x = x; x += w.ww + esp; }
+    maxAncho = Math.max(maxAncho, l.ancho);
+  });
+  const x0 = el.alinear === "izquierda" ? 0 : el.alinear === "derecha" ? -maxAncho : -maxAncho / 2;
+  return { lineas, fs, esp, caja: [x0, -alto / 2, x0 + maxAncho, alto / 2] };
+}
+function dibujarTexto(ctx, el, lt, u, W, H, medir) {
+  const m = maquetarTexto(ctx, el, u, W);
+  if (medir) return m.caja;
+  const res = new Set(el.resaltar.split(",").map(normal).filter(Boolean));
+  const pad = m.fs * .25;
+  if (el.caja) { ctx.fillStyle = col(el.caja); rrect(ctx, m.caja[0] - pad * 1.4, m.caja[1] - pad, m.caja[2] - m.caja[0] + pad * 2.8, m.caja[3] - m.caja[1] + pad * 2, pad); ctx.fill(); }
+  ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+  const a0 = ctx.globalAlpha;
+  let idx = 0, letra = 0;
+  const totalLetras = m.lineas.reduce((a, l) => a + l.ws.reduce((b, w) => b + w.w.length + 1, 0), 0);
+  for (const l of m.lineas) for (const w of l.ws) {
+    let visible = w.w, pp = 1;
+    if (el.animTexto === "palabras") { pp = clamp((lt - idx * el.ritmo) / .16); if (pp <= 0) { idx++; letra += w.w.length + 1; continue; } }
+    else if (el.animTexto === "letras") {
+      const n = Math.floor(lt / (el.ritmo / 4)) - letra;
+      if (n <= 0) { idx++; letra += w.w.length + 1; continue; }
+      visible = w.w.slice(0, n);
+    }
+    const esRes = res.has(normal(w.w));
+    ctx.save();
+    let a = 1, dy = 0, s = 1;
+    if (el.animTexto === "palabras") {
+      if (el.efectoPalabra === "subir") { a = E.salida(pp); dy = (1 - E.salida(pp)) * m.fs * .22; }
+      else if (el.efectoPalabra === "pop") { s = E.pop(pp, 2.2); a = clamp(pp * 3); }
+      else if (el.efectoPalabra === "aparecer") a = E.salida(pp);
+    }
+    ctx.globalAlpha = a0 * a;
+    const cx = w.x + w.ww / 2;
+    ctx.translate(cx, l.y + dy); ctx.scale(s, s); ctx.translate(-cx, -l.y);
+    if (esRes && el.estiloResalte === "caja") {
+      ctx.fillStyle = col(el.colorResalte); rrect(ctx, w.x - pad * .6, l.y - m.fs * .55, w.ww + pad * 1.2, m.fs * 1.08, pad * .5); ctx.fill();
+    }
+    if (esRes && el.estiloResalte === "subrayado") {
+      const k = E.salida(clamp((lt - idx * (el.animTexto === "palabras" ? el.ritmo : 0) - .1) / .35));
+      ctx.fillStyle = conAlfa(el.colorResalte, .85);
+      rrect(ctx, w.x - pad * .3, l.y + m.fs * .05, (w.ww + pad * .6) * k, m.fs * .38, m.fs * .08); ctx.fill();
+    }
+    ctx.font = cssFuente(el.fuente, m.fs);
+    if (el.sombra) { ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 18 * u; ctx.shadowOffsetY = 6 * u; }
+    if (el.borde > 0) { ctx.strokeStyle = col(el.colorBorde); ctx.lineWidth = el.borde * u * 2; ctx.strokeText(visible, w.x, l.y); ctx.shadowColor = "transparent"; }
+    ctx.fillStyle = esRes && el.estiloResalte === "color" ? col(el.colorResalte) : esRes && el.estiloResalte === "caja" ? col("@fondo") : col(el.color);
+    ctx.fillText(visible, w.x, l.y);
+    if (esRes && el.estiloResalte === "circulo") {
+      const k = E.suave(clamp((lt - idx * (el.animTexto === "palabras" ? el.ritmo : 0) - .1) / .5));
+      ctx.strokeStyle = col(el.colorResalte); ctx.lineWidth = m.fs * .07; ctx.lineCap = "round"; ctx.beginPath();
+      const rx = w.ww / 2 + pad * 1.2, ry = m.fs * .7;
+      for (let i = 0; i <= 60 * k; i++) { const th = -2 + i / 60 * Math.PI * 2.15, kk = 1 + .04 * Math.sin(3 * th) + .06 * i / 60;
+        ctx.lineTo(cx + Math.cos(th) * rx * kk, l.y + Math.sin(th) * ry * kk); }
+      ctx.stroke();
+    }
+    ctx.restore();
+    idx++; letra += w.w.length + 1;
+  }
+  void totalLetras;
+  return m.caja;
+}
+function dibujarIlusEl(ctx, el, lt, u, W, H, medir, st) {
+  const il = ilustracion(el.ilus); const w = el.tam * u;
+  const h = il ? w * il.vb[3] / il.vb[2] : w;
+  if (!medir) dibujarIlus(ctx, el.ilus, w, st.dib, el.recolor);
+  return [-w / 2, -h / 2, w / 2, h / 2];
+}
+function medidaMedia(el, u, W, H) {
+  const m = medios[el.media];
+  const iw = m ? m.w || 16 : 16, ih = m ? m.h || 9 : 9;
+  if (el.tipo === "video" && el.ajuste !== "libre") {
+    const k = el.ajuste === "cubrir" ? Math.max(W / iw, H / ih) : Math.min(W / iw, H / ih);
+    return [iw * k, ih * k];
+  }
+  const w = el.tam * u; return [w, w * ih / iw];
+}
+function dibujarMedia(ctx, el, lt, u, W, H, medir) {
+  const [w, h] = medidaMedia(el, u, W, H);
+  const caja = [-w / 2, -h / 2, w / 2, h / 2];
+  if (medir) return caja;
+  const fuente = el.tipo === "video" ? videoDe(el) : medios[el.media] && medios[el.media].img;
+  ctx.save();
+  const marco = el.marco || "ninguno";
+  if (el.sombra && marco !== "ovalo") { ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 30 * u; ctx.shadowOffsetY = 12 * u; }
+  if (marco === "blanco") { const b = Math.max(w, h) * .035; ctx.fillStyle = "#fff"; ctx.fillRect(-w / 2 - b, -h / 2 - b, w + 2 * b, h + 2 * b * 1.8); ctx.shadowColor = "transparent"; }
+  ctx.beginPath();
+  if (marco === "redondo") { const r = Math.min(w, h) / 2; ctx.arc(0, 0, r, 0, Math.PI * 2); }
+  else if (marco === "ovalo") ctx.ellipse(0, 0, w / 2, h / 2, 0, 0, Math.PI * 2);
+  else if (marco === "esquinas") rrect(ctx, -w / 2, -h / 2, w, h, 26 * u);
+  else ctx.rect(-w / 2, -h / 2, w, h);
+  if (marco === "ninguno" || marco === "blanco") { /* sin recorte especial */ } else { if (el.sombra) { ctx.fillStyle = "#000"; ctx.fill(); ctx.shadowColor = "transparent"; } ctx.clip(); }
+  if (el.bn && "filter" in ctx) ctx.filter = "grayscale(1) contrast(1.05)";
+  if (fuente && (fuente.naturalWidth || fuente.videoWidth)) {
+    let dw = w, dh = h;
+    if (marco === "redondo") { const r = Math.min(w, h); dw = w * r / Math.min(w, h); dh = h * r / Math.min(w, h); }
+    ctx.drawImage(fuente, -dw / 2, -dh / 2, dw, dh);
+  } else { ctx.fillStyle = "#3a3631"; ctx.fillRect(-w / 2, -h / 2, w, h); ctx.fillStyle = "#9b948a"; ctx.font = `500 ${28 * u}px "IBM Plex Sans", sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(el.media ? "Cargando…" : "Elige un archivo en Propiedades", 0, 0); ctx.textAlign = "left"; }
+  ctx.restore();
+  if (marco === "ovalo") {
+    ctx.save(); ctx.lineWidth = 16 * u; ctx.strokeStyle = "#8a6420"; ctx.beginPath(); ctx.ellipse(0, 0, w / 2 + 4 * u, h / 2 + 4 * u, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = 7 * u; ctx.strokeStyle = "#e3bd5d"; ctx.stroke();
+    ctx.setLineDash([4 * u, 9 * u]); ctx.lineWidth = 4 * u; ctx.strokeStyle = "#fff1c4"; ctx.beginPath(); ctx.ellipse(0, 0, w / 2 + 14 * u, h / 2 + 14 * u, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  }
+  return caja;
+}
+function dibujarForma(ctx, el, lt, u, W, H, medir) {
+  const w = el.w * u, h = el.h * u, caja = [-w / 2, -h / 2, w / 2, h / 2];
+  if (medir) return caja;
+  ctx.beginPath();
+  if (el.figura === "circulo") ctx.ellipse(0, 0, w / 2, h / 2, 0, 0, Math.PI * 2);
+  else rrect(ctx, -w / 2, -h / 2, w, h, el.figura === "pildora" ? h / 2 : el.radio * u);
+  ctx.fillStyle = col(el.color); ctx.fill();
+  if (el.borde > 0) { ctx.lineWidth = el.borde * u; ctx.strokeStyle = col(el.colorBorde); ctx.stroke(); }
+  return caja;
+}
+function dibujarLinea(ctx, el, lt, u, W, H, medir, st) {
+  const ex = (el.x2 - el.x) * W, ey = (el.y2 - el.y) * H;
+  const caja = [Math.min(0, ex) - 20 * u, Math.min(0, ey) - 20 * u, Math.max(0, ex) + 20 * u, Math.max(0, ey) + 20 * u];
+  if (medir) return caja;
+  const L = Math.hypot(ex, ey) || 1, nx = -ey / L, ny = ex / L, cx = ex / 2 + nx * el.curva * L, cy = ey / 2 + ny * el.curva * L;
+  const p = st.dib, pts = [];
+  for (let i = 0; i <= 50 * p; i++) { const s = i / 50; pts.push([(1 - s) * (1 - s) * 0 + 2 * (1 - s) * s * cx + s * s * ex, 2 * (1 - s) * s * cy + s * s * ey]); }
+  if (pts.length < 2) return caja;
+  const g = el.grosor * u;
+  ctx.strokeStyle = ctx.fillStyle = col(el.color); ctx.lineWidth = g; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  if (el.punteada) ctx.setLineDash([g * 2, g * 2]);
+  const [bx, by] = pts[pts.length - 1], [ax, ay] = pts[Math.max(0, pts.length - 4)];
+  const ang = Math.atan2(by - ay, bx - ax), cab = el.flecha ? g * 4 : 0;
+  ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+  if (cab) { ctx.lineTo(bx - Math.cos(ang) * cab * .5, by - Math.sin(ang) * cab * .5); }
+  ctx.stroke(); ctx.setLineDash([]);
+  if (cab && p > .05) {
+    ctx.beginPath(); ctx.moveTo(bx + Math.cos(ang) * g * .4, by + Math.sin(ang) * g * .4);
+    ctx.lineTo(bx - Math.cos(ang - .5) * cab, by - Math.sin(ang - .5) * cab);
+    ctx.lineTo(bx - Math.cos(ang + .5) * cab, by - Math.sin(ang + .5) * cab); ctx.closePath(); ctx.fill();
+  }
+  return caja;
+}
+function dibujarContador(ctx, el, lt, u, W, H, medir) {
+  const k = el.tConteo > 0 ? E.salida(lt / el.tConteo) : 1;
+  const v = lerp(+el.desde, +el.hasta, k);
+  const txt = el.prefijo + v.toLocaleString("es-MX", { minimumFractionDigits: el.decimales, maximumFractionDigits: el.decimales }) + el.sufijo;
+  const fs = el.tam * u; ctx.font = cssFuente(el.fuente, fs);
+  const w = ctx.measureText(txt).width, caja = [-w / 2, -fs * .55, w / 2, fs * .55];
+  if (medir) return caja;
+  const golpe = lt > el.tConteo ? 1 + .12 * Math.sin(clamp((lt - el.tConteo) / .3) * Math.PI) : 1;
+  ctx.save(); ctx.scale(golpe, golpe); ctx.textBaseline = "middle"; ctx.textAlign = "center"; ctx.fillStyle = col(el.color);
+  ctx.fillText(txt, 0, 0); ctx.restore();
+  return caja;
+}
+function dibujarFondo(ctx, el, lt, W, H) {
+  const p = el.transicion === "corte" ? 1 : E.suave(el.tEntrada > 0 ? lt / el.tEntrada : 1);
+  const q = el.salida !== "ninguna" && el.tSalida > 0 ? clamp((lt - (el.dur - el.tSalida)) / el.tSalida) : 0;
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = el.opacidad * (el.salida === "desvanecer" ? 1 - q : 1);
+  if (el.salida === "barrido" && q > 0) { ctx.beginPath(); ctx.rect(W * E.suave(q), 0, W, H); ctx.clip(); }
+  ctx.fillStyle = col(el.color); ctx.beginPath();
+  switch (el.transicion) {
+    case "v": { const ap = p * H * 2.3, lado = Math.max(0, p - .3) / .7 * H * 1.15;
+      ctx.moveTo(0, 0); ctx.lineTo(W, 0); ctx.lineTo(W, lado); ctx.lineTo(W / 2, ap); ctx.lineTo(0, lado); break; }
+    case "barrido": ctx.rect(0, 0, W * p, H); break;
+    case "barrido-arriba": ctx.rect(0, H * (1 - p), W, H * p); break;
+    case "circulo": ctx.arc(el.x * W, el.y * H, Math.hypot(W, H) * p, 0, Math.PI * 2); break;
+    case "persianas": { const n = 6; for (let i = 0; i < n; i++) { const pi = E.suave(clamp(p * 1.6 - i * .1)); ctx.rect(0, H / n * i, W, H / n * pi + 1); } break; }
+    case "desvanecer": ctx.globalAlpha *= p; ctx.rect(0, 0, W, H); break;
+    default: ctx.rect(0, 0, W, H);
+  }
+  ctx.fill(); ctx.restore();
+}
+const lupaTmp = document.createElement("canvas");
+function dibujarLupa(ctx, el, lt, u, W, H, st) {
+  const k = E.suave(clamp((lt - el.tEntrada * .6) / Math.max(.1, el.dur - el.tEntrada - el.tSalida)));
+  const x = lerp(el.x, el.x2, k) * W + st.dx, y = lerp(el.y, el.y2, k) * H + st.dy;
+  const R = el.radio * u * st.s * el.escala;
+  if (R < 2) return [x - 1, y - 1, x + 1, y + 1];
+  const c = ctx.canvas;
+  if (lupaTmp.width !== c.width || lupaTmp.height !== c.height) { lupaTmp.width = c.width; lupaTmp.height = c.height; }
+  const t2 = lupaTmp.getContext("2d"); t2.setTransform(1, 0, 0, 1, 0, 0); t2.clearRect(0, 0, c.width, c.height); t2.drawImage(c, 0, 0);
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = st.a * el.opacidad;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 4); ctx.fillStyle = col("@tinta");
+  rrect(ctx, R * .95, -R * .13, R * .95, R * .26, R * .08); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.clip();
+  const sr = R / el.aumento; ctx.fillStyle = col("@fondo"); ctx.fillRect(x - R, y - R, 2 * R, 2 * R);
+  ctx.drawImage(lupaTmp, x - sr, y - sr, 2 * sr, 2 * sr, x - R, y - R, 2 * R, 2 * R);
+  const g = ctx.createRadialGradient(x - R * .4, y - R * .4, R * .1, x, y, R); g.addColorStop(0, "rgba(255,255,255,.25)"); g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g; ctx.fillRect(x - R, y - R, 2 * R, 2 * R); ctx.restore();
+  ctx.lineWidth = R * .09; ctx.strokeStyle = col("@tinta"); ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+  return [x - R, y - R, x + R * 1.9, y + R * 1.9];
+}
+const DIBUJAR = { texto: dibujarTexto, ilustracion: dibujarIlusEl, foto: dibujarMedia, video: dibujarMedia, forma: dibujarForma, linea: dibujarLinea, contador: dibujarContador };
+
+/* ===================================================================
+   7. Render de un cuadro
+   =================================================================== */
+let cajas = []; // para seleccionar en el escenario: {id, pts:[[x,y]x4]}
+function renderizar(ctx, W, H, t, preview) {
+  const u = Math.min(W, H) / 1080;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = "none";
+  ctx.fillStyle = col("@fondo"); ctx.fillRect(0, 0, W, H);
+  const cam = camaraEn(t);
+  if (preview) cajas = [];
+  const visibles = proy.elementos.filter(e => !ES_AUDIO(e) && t >= e.inicio && t < e.inicio + e.dur)
+    .sort((a, b) => b.pista - a.pista || a.inicio - b.inicio);
+  for (const el of visibles) {
+    const lt = t - el.inicio, st = estadoAnim(el, lt, u, W, H);
+    if (el.tipo === "fondo") { dibujarFondo(ctx, el, lt, W, H); if (preview) cajas.push({ id: el.id, pts: [[0, 0], [W, 0], [W, H], [0, H]], fondo: true }); continue; }
+    if (el.tipo === "lupa") { const b = dibujarLupa(ctx, el, lt, u, W, H, st); if (preview) cajas.push({ id: el.id, pts: [[b[0], b[1]], [b[2], b[1]], [b[2], b[3]], [b[0], b[3]]] }); continue; }
+    const fn = DIBUJAR[el.tipo]; if (!fn) continue;
+    ctx.save();
+    if (el.camara) { ctx.translate(W / 2, H / 2); ctx.scale(cam.z, cam.z); ctx.translate(-cam.x * W, -cam.y * H); }
+    ctx.translate(el.x * W + st.dx, el.y * H + st.dy);
+    ctx.rotate((el.rot + st.r) * Math.PI / 180);
+    const s = st.s * el.escala; ctx.scale(s, s);
+    ctx.globalAlpha = clamp(el.opacidad * st.a);
+    let caja = null;
+    if (st.rev < 1) { caja = fn(ctx, el, lt, u, W, H, true, st); ctx.beginPath(); ctx.rect(caja[0] - 40 * u, caja[1] - 40 * u, (caja[2] - caja[0] + 80 * u) * st.rev, caja[3] - caja[1] + 80 * u); ctx.clip(); }
+    if (ctx.globalAlpha > .002) caja = fn(ctx, el, lt, u, W, H, false, st); else caja = caja || fn(ctx, el, lt, u, W, H, true, st);
+    if (preview && caja) { const m = ctx.getTransform(); cajas.push({ id: el.id, pts: [[caja[0], caja[1]], [caja[2], caja[1]], [caja[2], caja[3]], [caja[0], caja[3]]].map(([x, y]) => [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]) }); }
+    ctx.restore();
+  }
+}
+
+/* ===================================================================
+   8. Medios (videos, fotos, audio) guardados en IndexedDB
+   =================================================================== */
+const BD = { db: null };
+function abrirBD() {
+  return new Promise(res => {
+    try {
+      const r = indexedDB.open("estudio-animaciones", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("medios", { keyPath: "id" });
+      r.onsuccess = () => { BD.db = r.result; res(BD.db); };
+      r.onerror = () => res(null);
+    } catch (e) { res(null); }
+  });
+}
+function bdGuardar(reg) { try { BD.db && BD.db.transaction("medios", "readwrite").objectStore("medios").put(reg); } catch (e) { /* sin almacenamiento */ } }
+function bdBorrar(id) { try { BD.db && BD.db.transaction("medios", "readwrite").objectStore("medios").delete(id); } catch (e) { /* nada */ } }
+function bdTodos() {
+  return new Promise(res => {
+    try { const r = BD.db.transaction("medios").objectStore("medios").getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => res([]); }
+    catch (e) { res([]); }
+  });
+}
+function registrarMedio(reg) {
+  const m = { id: reg.id, nombre: reg.nombre, tipo: reg.tipo, blob: reg.blob, url: URL.createObjectURL(reg.blob), dur: 0, w: 16, h: 9, img: null, mini: null };
+  medios[m.id] = m;
+  return new Promise(res => {
+    if (m.tipo === "imagen") {
+      const img = new Image(); img.onload = () => { m.img = img; m.w = img.naturalWidth; m.h = img.naturalHeight; m.mini = m.url; res(m); pedirRender(); }; img.onerror = () => res(m); img.src = m.url;
+    } else if (m.tipo === "video") {
+      // Resolvemos con los metadatos; la miniatura llega después (y si el formato no se puede leer, no bloquea).
+      const v = document.createElement("video"); v.preload = "auto"; v.muted = true; v.playsInline = true; v.src = m.url;
+      const listo = () => { clearTimeout(to); res(m); };
+      const to = setTimeout(() => { m.error = true; listo(); }, 6000);
+      v.onloadedmetadata = () => { m.dur = v.duration; m.w = v.videoWidth || 16; m.h = v.videoHeight || 9; if (!v.videoWidth) m.error = true; listo(); v.currentTime = Math.min(.5, v.duration / 3); };
+      v.onseeked = () => { try { const c = document.createElement("canvas"); c.width = 192; c.height = Math.round(192 * m.h / m.w) || 108; c.getContext("2d").drawImage(v, 0, 0, c.width, c.height); m.mini = c.toDataURL("image/jpeg", .7); } catch (e) { /* sin miniatura */ } pintarLib(); };
+      v.onerror = () => { m.error = true; listo(); };
+    } else {
+      const a = document.createElement("audio"); a.preload = "metadata"; a.src = m.url;
+      a.onloadedmetadata = () => { m.dur = a.duration; res(m); }; a.onerror = () => res(m);
+    }
+  });
+}
+async function importarArchivos(lista) {
+  const nuevos = [];
+  for (const f of [...lista]) { // copia: el input se vacía mientras importamos
+    if (/svg/.test(f.type) || /\.svg$/i.test(f.name)) {
+      const txt = await f.text();
+      try { parsearSVG(txt); } catch (e) { aviso("Ese SVG no se pudo leer: " + f.name); continue; }
+      const id = "propia-" + uid();
+      proy.ilusPropias.push({ id, n: f.name.replace(/\.svg$/i, ""), t: "mía propia", svg: txt });
+      nuevos.push({ ilus: id }); continue;
+    }
+    const tipo = f.type.startsWith("video") ? "video" : f.type.startsWith("image") ? "imagen" : f.type.startsWith("audio") ? "audio" : null;
+    if (!tipo) { aviso("Formato no compatible: " + f.name); continue; }
+    const reg = { id: uid(), nombre: f.name, tipo, blob: f };
+    bdGuardar(reg); const m = await registrarMedio(reg); nuevos.push({ media: reg.id });
+    if (m.error) aviso(`Este navegador no puede leer “${f.name}”. Si es un video de iPhone (HEVC), expórtalo como “Más compatible” o ábrelo en Safari.`);
+  }
+  pintarLib(); registrar();
+  if (nuevos.length && !nuevos.some(n => n.media && medios[n.media].error)) aviso(nuevos.length === 1 ? "Archivo importado. Haz clic para agregarlo al video." : nuevos.length + " archivos importados.");
+}
+const videosEl = {}, audiosEl = {};
+function videoDe(el) {
+  const m = medios[el.media]; if (!m) return null;
+  let v = videosEl[el.id];
+  if (!v || v._media !== el.media) {
+    v = document.createElement("video"); v.preload = "auto"; v.playsInline = true; v.src = m.url; v._media = el.media;
+    v.addEventListener("seeked", pedirRender); v.addEventListener("loadeddata", pedirRender);
+    videosEl[el.id] = v;
+  }
+  return v;
+}
+function audioDe(el) {
+  const m = medios[el.media]; if (!m) return null;
+  let a = audiosEl[el.id];
+  if (!a || a._media !== el.media) { a = document.createElement("audio"); a.preload = "auto"; a.src = m.url; a._media = el.media; audiosEl[el.id] = a; }
+  return a;
+}
+
+/* ===================================================================
+   9. Reproducción y vista previa
+   =================================================================== */
+const lienzo = $("#lienzo"), ctxL = lienzo.getContext("2d");
+let renderPendiente = false;
+function pedirRender() { if (!renderPendiente) { renderPendiente = true; requestAnimationFrame(() => { renderPendiente = false; dibujarPreview(); }); } }
+function ajustarLienzo() {
+  const wrap = $("#lienzoWrap"), r = wrap.getBoundingClientRect();
+  const { W: aw, H: ah } = dimensiones(1080);
+  const dispW = Math.max(100, r.width - 28), dispH = Math.max(100, r.height - 28);
+  const k = Math.min(dispW / aw, dispH / ah);
+  const cssW = Math.floor(aw * k), cssH = Math.floor(ah * k);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  let W = Math.round(cssW * dpr), H = Math.round(cssH * dpr);
+  const f = Math.min(1, 1920 / Math.max(W, H)); W = Math.round(W * f); H = Math.round(H * f);
+  if (lienzo.width !== W || lienzo.height !== H) { lienzo.width = W; lienzo.height = H; }
+  lienzo.style.width = cssW + "px"; lienzo.style.height = cssH + "px";
+  pedirRender();
+}
+function dibujarPreview() {
+  const W = lienzo.width, H = lienzo.height;
+  renderizar(ctxL, W, H, est.t, true);
+  // Selección
+  const c = est.sel && cajas.find(b => b.id === est.sel);
+  if (c && !est.play) {
+    const k = W / lienzo.clientWidth;
+    ctxL.save(); ctxL.setTransform(1, 0, 0, 1, 0, 0);
+    ctxL.strokeStyle = "#f2b544"; ctxL.lineWidth = 2 * k; ctxL.setLineDash([6 * k, 4 * k]);
+    ctxL.beginPath(); c.pts.forEach(([x, y], i) => i ? ctxL.lineTo(x, y) : ctxL.moveTo(x, y)); ctxL.closePath(); ctxL.stroke();
+    ctxL.setLineDash([]);
+    for (const h of manijas(c)) { ctxL.fillStyle = h.tipo === "escala" ? "#f2b544" : "#fff"; ctxL.strokeStyle = "#000"; ctxL.lineWidth = 1.5 * k;
+      ctxL.beginPath(); ctxL.arc(h.x, h.y, 7 * k, 0, Math.PI * 2); ctxL.fill(); ctxL.stroke(); }
+    ctxL.restore();
+  }
+  actualizarTC();
+}
+function aPantalla(el, x, y) {
+  const W = lienzo.width, H = lienzo.height;
+  if (!el.camara) return [x * W, y * H];
+  const cam = camaraEn(est.t);
+  return [(x * W - cam.x * W) * cam.z + W / 2, (y * H - cam.y * H) * cam.z + H / 2];
+}
+function aMundo(el, px, py) {
+  const W = lienzo.width, H = lienzo.height;
+  if (!el.camara) return [px / W, py / H];
+  const cam = camaraEn(est.t);
+  return [((px - W / 2) / cam.z + cam.x * W) / W, ((py - H / 2) / cam.z + cam.y * H) / H];
+}
+function manijas(c) {
+  const el = elPorId(c.id); if (!el || c.fondo) return [];
+  if (el.tipo === "linea" || el.tipo === "lupa") {
+    const [ax, ay] = aPantalla(el, el.x, el.y), [bx, by] = aPantalla(el, el.x2, el.y2);
+    return [{ tipo: "p1", x: ax, y: ay }, { tipo: "p2", x: bx, y: by }];
+  }
+  return [{ tipo: "escala", x: c.pts[2][0], y: c.pts[2][1] }];
+}
+function dentro(p, pts) {
+  let r = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, yi] = pts[i], [xj, yj] = pts[j];
+    if ((yi > p[1]) !== (yj > p[1]) && p[0] < (xj - xi) * (p[1] - yi) / (yj - yi) + xi) r = !r;
+  }
+  return r;
+}
+let audioCtx = null, buffersSfx = {};
+function ctxAudio() {
+  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function tocarSfx(nombre, vol = 1) {
+  const ac = ctxAudio(); if (!ac || !nombre || nombre === "ninguno") return;
+  if (!buffersSfx[nombre]) { const d = sintetizar(nombre, ac.sampleRate), b = ac.createBuffer(1, d.length, ac.sampleRate); b.copyToChannel(d, 0); buffersSfx[nombre] = b; }
+  const s = ac.createBufferSource(), g = ac.createGain(); g.gain.value = vol; s.buffer = buffersSfx[nombre]; s.connect(g).connect(ac.destination); s.start();
+}
+function sincronizarMedios(prevT) {
+  const t = est.t;
+  for (const el of proy.elementos) {
+    const activo = t >= el.inicio && t < el.inicio + el.dur;
+    if (el.tipo === "video" || el.tipo === "audio") {
+      const m = el.tipo === "video" ? videoDe(el) : audioDe(el); if (!m) continue;
+      const objetivo = el.recorte + (t - el.inicio);
+      if (activo) {
+        let vol = clamp(el.volumen ?? 1, 0, 1);
+        if (el.tipo === "audio") { const lt = t - el.inicio; if (el.fadeIn > 0) vol *= clamp(lt / el.fadeIn); if (el.fadeOut > 0) vol *= clamp((el.dur - lt) / el.fadeOut); }
+        m.volume = vol; m.muted = false;
+        if (est.play) {
+          if (m.paused) { try { m.currentTime = objetivo; } catch (e) { /* aún cargando */ } m.play().catch(() => {}); }
+          else if (Math.abs(m.currentTime - objetivo) > .25) m.currentTime = objetivo;
+        } else { if (!m.paused) m.pause(); if (Math.abs(m.currentTime - objetivo) > .02) { try { m.currentTime = objetivo; } catch (e) { /* nada */ } } }
+      } else if (!m.paused) m.pause();
+    }
+    if (est.play && prevT != null && el.inicio >= prevT && el.inicio < t) {
+      if (el.tipo === "efecto") tocarSfx(el.sonido, el.volumen);
+      else if (el.sonido && el.sonido !== "ninguno" && !ES_AUDIO(el)) tocarSfx(el.sonido, 1);
+    }
+  }
+}
+let relojInicio = 0, tInicio = 0;
+function reproducir(on = !est.play) {
+  est.play = on;
+  $("#btnPlay").textContent = on ? "❚❚ Pausa" : "▶ Play";
+  if (on) {
+    ctxAudio();
+    if (est.t >= duracionProyecto() - .02) est.t = 0;
+    relojInicio = performance.now(); tInicio = est.t;
+    sincronizarMedios(null);
+    let prev = est.t;
+    const paso = () => {
+      if (!est.play) return;
+      est.t = tInicio + (performance.now() - relojInicio) / 1000;
+      if (est.t >= duracionProyecto()) { est.t = duracionProyecto(); reproducir(false); }
+      sincronizarMedios(prev); prev = est.t;
+      dibujarPreview(); moverCabezal();
+      requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+  } else { sincronizarMedios(null); pedirRender(); }
+}
+function irA(t) {
+  est.t = clamp(t, 0, duracionProyecto());
+  if (est.play) { relojInicio = performance.now(); tInicio = est.t; }
+  sincronizarMedios(null); moverCabezal(); pedirRender();
+  if (est.tabProps === "cam") pintarProps();
+}
+function actualizarTC() { $("#tc").innerHTML = `<b>${fmtTiempo(est.t)}</b> <span>/ ${fmtTiempo(duracionProyecto())}</span>`; }
+
+// Mover / escalar en el escenario
+let arrastreEsc = null;
+lienzo.addEventListener("pointerdown", ev => {
+  if (est.play) reproducir(false);
+  const r = lienzo.getBoundingClientRect(), k = lienzo.width / r.width;
+  const p = [(ev.clientX - r.left) * k, (ev.clientY - r.top) * k];
+  const sel = est.sel && cajas.find(b => b.id === est.sel);
+  if (sel) for (const h of manijas(sel)) {
+    if (Math.hypot(h.x - p[0], h.y - p[1]) < 14 * k) {
+      const el = elPorId(sel.id), cx = (sel.pts[0][0] + sel.pts[2][0]) / 2, cy = (sel.pts[0][1] + sel.pts[2][1]) / 2;
+      arrastreEsc = { modo: h.tipo, el, p0: p, esc0: el.escala, c: [cx, cy] };
+      lienzo.setPointerCapture(ev.pointerId); return;
+    }
+  }
+  let hit = null;
+  for (let i = cajas.length - 1; i >= 0; i--) if (!cajas[i].fondo && dentro(p, cajas[i].pts)) { hit = cajas[i]; break; }
+  if (!hit) for (let i = cajas.length - 1; i >= 0; i--) if (cajas[i].fondo) { hit = cajas[i]; break; }
+  seleccionar(hit ? hit.id : null);
+  if (hit && !hit.fondo) {
+    const el = elPorId(hit.id);
+    arrastreEsc = { modo: "mover", el, p0: p, o: { x: el.x, y: el.y, x2: el.x2, y2: el.y2 } };
+    lienzo.setPointerCapture(ev.pointerId);
+  }
+});
+lienzo.addEventListener("pointermove", ev => {
+  if (!arrastreEsc) return;
+  const r = lienzo.getBoundingClientRect(), k = lienzo.width / r.width;
+  const p = [(ev.clientX - r.left) * k, (ev.clientY - r.top) * k], a = arrastreEsc, el = a.el;
+  if (a.modo === "mover") {
+    const z = el.camara ? camaraEn(est.t).z : 1;
+    const dx = (p[0] - a.p0[0]) / lienzo.width / z, dy = (p[1] - a.p0[1]) / lienzo.height / z;
+    el.x = +(a.o.x + dx).toFixed(4); el.y = +(a.o.y + dy).toFixed(4);
+    if (el.tipo === "linea" || el.tipo === "lupa") { el.x2 = +(a.o.x2 + dx).toFixed(4); el.y2 = +(a.o.y2 + dy).toFixed(4); }
+  } else if (a.modo === "escala") {
+    const d0 = Math.hypot(a.p0[0] - a.c[0], a.p0[1] - a.c[1]) || 1, d1 = Math.hypot(p[0] - a.c[0], p[1] - a.c[1]);
+    el.escala = +clamp(a.esc0 * d1 / d0, .05, 20).toFixed(3);
+  } else {
+    const [wx, wy] = aMundo(el, p[0], p[1]);
+    if (a.modo === "p1") { el.x = +wx.toFixed(4); el.y = +wy.toFixed(4); } else { el.x2 = +wx.toFixed(4); el.y2 = +wy.toFixed(4); }
+  }
+  pedirRender(); refrescarCamposPos();
+});
+lienzo.addEventListener("pointerup", () => { if (arrastreEsc) { arrastreEsc = null; registrar(); } });
+lienzo.addEventListener("dblclick", () => { const el = elPorId(est.sel); if (el && el.tipo === "texto") { const c = $("#f-texto"); if (c) { c.focus(); c.select(); } } });
+
+/* ===================================================================
+   10. Línea de tiempo
+   =================================================================== */
+const ALTO_FILA = 34;
+function numPistas() { return Math.max(4, ...proy.elementos.filter(e => !ES_AUDIO(e)).map(e => e.pista + 2)); }
+function numPistasAudio() { return Math.max(2, ...proy.elementos.filter(ES_AUDIO).map(e => e.pistaAudio + 2)); }
+function claseClip(el) { return { texto: "texto", contador: "texto", foto: "media", video: "media", audio: "audio", efecto: "audio", fondo: "fondo" }[el.tipo] || ""; }
+function pintarTimeline() {
+  const pps = est.pps, dur = duracionProyecto(), ancho = (dur + 15) * pps;
+  const nP = numPistas(), nA = numPistasAudio();
+  const heads = [`<div class="tl-head regla"></div>`, `<div class="tl-head">Cámara</div>`];
+  for (let i = 0; i < nP; i++) heads.push(`<div class="tl-head">${i === 0 ? "Capa 1 · frente" : "Capa " + (i + 1)}</div>`);
+  for (let i = 0; i < nA; i++) heads.push(`<div class="tl-head">${i === 0 ? "Audio 1 · voz" : "Audio " + (i + 1)}</div>`);
+  $("#tlHeads").innerHTML = heads.join("");
+  const paso = pps >= 60 ? 1 : pps >= 30 ? 2 : 5;
+  let regla = "";
+  for (let s = 0; s <= dur + 15; s += paso) regla += `<i style="left:${s * pps}px">${s % 60 === s ? s + "s" : fmtTiempo(s).slice(0, 5)}</i>`;
+  const filas = [`<div class="regla" id="regla" style="width:${ancho}px">${regla}</div>`];
+  filas.push(`<div class="pista cam" data-cam="1" style="width:${ancho}px">${proy.camara.map(k => `<div class="diamante${est.selKf === k.id ? " sel" : ""}" data-kf="${k.id}" style="left:${k.t * pps}px" title="Cámara ${fmtTiempo(k.t)} · zoom ${k.z.toFixed(2)}"></div>`).join("")}</div>`);
+  const clip = el => `<div class="clip ${claseClip(el)}${est.sel === el.id ? " sel" : ""}" data-id="${el.id}" style="left:${el.inicio * pps}px;width:${Math.max(6, el.dur * pps)}px" title="${escapar(el.nombre)}"><span class="borde i"></span>${escapar(el.nombre)}<span class="borde d"></span></div>`;
+  for (let i = 0; i < nP; i++) filas.push(`<div class="pista" data-pista="${i}" style="width:${ancho}px">${proy.elementos.filter(e => !ES_AUDIO(e) && e.pista === i).map(clip).join("")}</div>`);
+  for (let i = 0; i < nA; i++) filas.push(`<div class="pista audio" data-audio="${i}" style="width:${ancho}px">${proy.elementos.filter(e => ES_AUDIO(e) && e.pistaAudio === i).map(clip).join("")}</div>`);
+  filas.push(`<div class="cabezal" id="cabezal"></div>`);
+  $("#tlPistas").innerHTML = filas.join("");
+  $("#tlPistas").style.width = ancho + "px";
+  moverCabezal(); actualizarTC();
+}
+function moverCabezal() { const c = $("#cabezal"); if (c) c.style.left = est.t * est.pps + "px"; }
+const escapar = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function imanar(t, ignorar) {
+  if (!est.iman) return t;
+  const lim = 8 / est.pps;
+  const cand = [0, est.t, ...proy.elementos.filter(e => e.id !== ignorar).flatMap(e => [e.inicio, e.inicio + e.dur]), ...proy.camara.map(k => k.t)];
+  let mejor = t, d = lim;
+  for (const c of cand) if (Math.abs(c - t) < d) { d = Math.abs(c - t); mejor = c; }
+  return mejor;
+}
+let arrastreTl = null;
+$("#tlPistas").addEventListener("pointerdown", ev => {
+  const pistas = $("#tlPistas"), r = pistas.getBoundingClientRect();
+  const tAt = x => (x - r.left) / est.pps;
+  const kf = ev.target.closest(".diamante");
+  if (kf) { const k = proy.camara.find(c => c.id === kf.dataset.kf); est.selKf = k.id; seleccionar(null, false); abrirTabProps("cam"); irA(k.t);
+    arrastreTl = { modo: "kf", k, x0: ev.clientX, t0: k.t }; pistas.setPointerCapture(ev.pointerId); pintarTimeline(); return; }
+  const c = ev.target.closest(".clip");
+  if (c) {
+    const el = elPorId(c.dataset.id); seleccionar(el.id);
+    const modo = ev.target.classList.contains("i") ? "izq" : ev.target.classList.contains("d") ? "der" : "mover";
+    arrastreTl = { modo, el, x0: ev.clientX, y0: ev.clientY, o: { inicio: el.inicio, dur: el.dur, recorte: el.recorte || 0, pista: el.pista, pistaAudio: el.pistaAudio }, top: r.top };
+    pistas.setPointerCapture(ev.pointerId); return;
+  }
+  if (ev.target.closest(".regla") || ev.target.classList.contains("pista")) {
+    if (!ev.target.closest(".regla")) seleccionar(null);
+    irA(tAt(ev.clientX)); arrastreTl = { modo: "scrub", tAt }; pistas.setPointerCapture(ev.pointerId);
+  }
+});
+$("#tlPistas").addEventListener("pointermove", ev => {
+  const a = arrastreTl; if (!a) return;
+  if (a.modo === "scrub") { irA(a.tAt(ev.clientX)); return; }
+  const dt = (ev.clientX - a.x0) / est.pps;
+  if (a.modo === "kf") { a.k.t = +Math.max(0, imanar(a.t0 + dt)).toFixed(3); ordenarCamara(); const d = $(`[data-kf="${a.k.id}"]`); if (d) d.style.left = a.k.t * est.pps + "px"; pedirRender(); return; }
+  const el = a.el;
+  if (a.modo === "mover") {
+    let ini = Math.max(0, a.o.inicio + dt);
+    const s1 = imanar(ini, el.id), s2 = imanar(ini + el.dur, el.id) - el.dur;
+    ini = Math.abs(s1 - ini) <= Math.abs(s2 - ini) ? s1 : s2;
+    el.inicio = +Math.max(0, ini).toFixed(3);
+    const fila = Math.floor((ev.clientY - a.top - 24 - ALTO_FILA) / ALTO_FILA);
+    if (ES_AUDIO(el)) { const fa = fila - numPistas(); if (fa >= 0 && fa < numPistasAudio()) el.pistaAudio = fa; }
+    else if (fila >= 0 && fila < numPistas()) el.pista = fila;
+  } else if (a.modo === "izq") {
+    const fin = a.o.inicio + a.o.dur;
+    let ini = clamp(imanar(a.o.inicio + dt, el.id), 0, fin - .1);
+    if (el.tipo === "video" || el.tipo === "audio") ini = Math.max(ini, a.o.inicio - a.o.recorte);
+    el.inicio = +ini.toFixed(3); el.dur = +(fin - ini).toFixed(3);
+    if (el.tipo === "video" || el.tipo === "audio") el.recorte = +(a.o.recorte + (ini - a.o.inicio)).toFixed(3);
+  } else if (a.modo === "der") {
+    let fin = Math.max(a.o.inicio + .1, imanar(a.o.inicio + a.o.dur + dt, el.id));
+    const m = medios[el.media];
+    if ((el.tipo === "video" || el.tipo === "audio") && m && m.dur) fin = Math.min(fin, a.o.inicio + m.dur - (el.recorte || 0));
+    el.dur = +(fin - a.o.inicio).toFixed(3);
+  }
+  const d = $(`.clip[data-id="${el.id}"]`);
+  if (d) { d.style.left = el.inicio * est.pps + "px"; d.style.width = Math.max(6, el.dur * est.pps) + "px"; }
+  if (a.modo === "mover" && d && d.parentElement.dataset[ES_AUDIO(el) ? "audio" : "pista"] != String(ES_AUDIO(el) ? el.pistaAudio : el.pista)) pintarTimeline();
+  sincronizarMedios(null); pedirRender();
+});
+$("#tlPistas").addEventListener("pointerup", () => {
+  const a = arrastreTl; arrastreTl = null; if (!a || a.modo === "scrub") return;
+  pintarTimeline(); pintarProps(); registrar();
+});
+$("#zoomTl").addEventListener("input", e => { est.pps = +e.target.value; pintarTimeline(); });
+$("#imanTl").addEventListener("change", e => { est.iman = e.target.checked; });
+(() => { // altura de la línea de tiempo
+  let y0 = null, h0 = 0;
+  const r = $("#tlResize");
+  r.addEventListener("pointerdown", e => { y0 = e.clientY; h0 = $(".tl").getBoundingClientRect().height; r.setPointerCapture(e.pointerId); });
+  r.addEventListener("pointermove", e => { if (y0 == null) return; const h = clamp(h0 - (e.clientY - y0), 140, window.innerHeight * .7);
+    document.documentElement.style.setProperty("--tl-h", h + "px"); ajustarLienzo(); });
+  r.addEventListener("pointerup", () => { y0 = null; });
+})();
+
+/* ===================================================================
+   11. Plantillas (animaciones listas para editar)
+   =================================================================== */
+const Ft = () => proy.estilo.fuenteTitulo || "barlow";
+const T = (o, p = 0) => ({ _t: "texto", _p: p, fuente: Ft(), ...o });
+const I = (o, p = 1) => ({ _t: "ilustracion", _p: p, ...o });
+const Fo = (o, p = 3) => ({ _t: "fondo", _p: p, ...o });
+const Li = (o, p = 2) => ({ _t: "linea", _p: p, ...o });
+const Sh = (o, p = 1) => ({ _t: "forma", _p: p, ...o });
+const Co = (o, p = 0) => ({ _t: "contador", _p: p, fuente: Ft(), ...o });
+const PLANTILLAS = [
+  { id: "personaje", n: "Presentación de personaje", d: "Nombre, apellido gigante y un retrato que aparece encima. Para presentar a alguien.", dur: 4.6, gen: () => [
+    T({ texto: "WILBUR", tam: 70, alinear: "izquierda", x: .27, y: .33, inicio: .1, dur: 3.6, animTexto: "ninguna", entrada: "aparecer", tEntrada: .15 }),
+    T({ texto: "LINCOLN", tam: 70, alinear: "derecha", x: .73, y: .33, inicio: .6, dur: 3.1, animTexto: "ninguna", entrada: "aparecer", tEntrada: .15 }),
+    T({ texto: "SCOVILLE", tam: 270, y: .5, inicio: 1.1, dur: 2.6, animTexto: "ninguna", entrada: "zoom", tEntrada: .35, tSalida: .5, sonido: "golpe" }, 1),
+    I({ ilus: "hombre", tam: 230, x: .45, y: .5, inicio: 1.4, dur: 3.2, entrada: "pop", sonido: "pop" }, 0) ] },
+  { id: "pregunta", n: "Pregunta narrada", d: "Texto gris que aparece palabra por palabra al ritmo de tu voz. No se mueve con la cámara.", dur: 4, gen: () => [
+    T({ texto: "¿QUÉ CHILES ERAN LOS MÁS PICANTES DEL MUNDO?", color: "@gris", tam: 72, anchoMax: .55, y: .14, camara: false, ritmo: .24 }) ] },
+  { id: "golpe", n: "Golpe de color", d: "El fondo entra en “V” con tu color de acento y aparece un título de dos niveles.", dur: 3.6, gen: () => [
+    Fo({ color: "@acento", transicion: "v", sonido: "whoosh" }),
+    T({ texto: "LA ESCALA", color: "#FFFFFF", tam: 110, y: .37, inicio: .6, ritmo: .25 }),
+    T({ texto: "SCOVILLE", color: "#FFFFFF", tam: 250, y: .56, inicio: 1.1, animTexto: "ninguna", entrada: "zoom", tEntrada: .3 }) ] },
+  { id: "dato", n: "Dato con número", d: "Un número que cuenta hasta su valor, con una etiqueta debajo.", dur: 4, gen: () => [
+    Co({ desde: 0, hasta: 350000, tam: 190, y: .45, sonido: "ding" }),
+    T({ texto: "UNIDADES DE PICOR", fuente: "barlow-light", tam: 54, y: .6, inicio: .4 }) ] },
+  { id: "escala", n: "Escala vertical", d: "Una flecha sube y la cámara la sigue nivel por nivel. Para rankings y comparaciones.", dur: 8,
+    cam: [{ t: 0, z: 1, x: .5, y: .5 }, { t: 1.6, z: 1, x: .5, y: .5 }, { t: 3.2, z: 1, x: .5, y: -.25 }, { t: 4.6, z: 1, x: .5, y: -.25 }, { t: 6.2, z: 1, x: .5, y: -1 }], gen: () => [
+    Li({ x: .5, y: 1.2, x2: .5, y2: -1.45, grosor: 6, tEntrada: 5.5 }),
+    I({ ilus: "morron", tam: 210, y: .45, sonido: "pop" }), T({ texto: "PIMIENTO MORRÓN", fuente: "barlow-light", tam: 46, y: .7, inicio: .3, animTexto: "ninguna" }),
+    T({ texto: "0", tam: 110, y: .62, inicio: .7, animTexto: "ninguna", entrada: "aparecer" }),
+    I({ ilus: "jalapeno", tam: 300, y: -.32, inicio: 2.6, sonido: "pop" }), T({ texto: "JALAPEÑO", fuente: "barlow-light", tam: 46, y: -.08, inicio: 2.9, animTexto: "ninguna" }),
+    T({ texto: "3,500 - 8,000", tam: 110, y: -.16, inicio: 3.2 }),
+    I({ ilus: "habanero", tam: 210, y: -1.08, inicio: 5.6, sonido: "pop" }), T({ texto: "HABANERO", fuente: "barlow-light", tam: 46, y: -.83, inicio: 5.9, animTexto: "ninguna" }),
+    T({ texto: "100,000 - 350,000", tam: 110, y: -.91, inicio: 6.2 }) ] },
+  { id: "tiempo", n: "Línea del tiempo", d: "Fechas sobre una línea; la cámara avanza de una a otra.", dur: 9,
+    cam: [{ t: 0, z: 1.2, x: .3, y: .5 }, { t: 2.2, z: 1.2, x: .3, y: .5 }, { t: 3.4, z: 1.2, x: .7, y: .5 }, { t: 5.2, z: 1.2, x: .7, y: .5 }, { t: 6.4, z: 1.2, x: 1.1, y: .5 }], gen: () => {
+    const l = [Li({ x: .08, y: .55, x2: 1.35, y2: .55, color: "@tinta", grosor: 6, tEntrada: 7 })];
+    [["1492", "LLEGADA DE COLÓN", .3], ["1521", "CAÍDA DE TENOCHTITLAN", .7], ["1810", "INICIA LA INDEPENDENCIA", 1.1]].forEach(([a, d, x], i) => {
+      const t0 = [.4, 3.6, 6.6][i];
+      l.push(Sh({ figura: "circulo", w: 34, h: 34, color: "@acento", x, y: .55, inicio: t0, entrada: "pop", sonido: "pop" }));
+      l.push(T({ texto: a, tam: 130, x, y: .41, inicio: t0 + .2, animTexto: "ninguna", entrada: "subir" }));
+      l.push(T({ texto: d, fuente: "barlow-light", tam: 44, x, y: .66, inicio: t0 + .5, anchoMax: .3 }));
+    });
+    return l; } },
+  { id: "lupa", n: "Lupa sobre un detalle", d: "Una lupa recorre la pantalla y amplía lo que hay debajo. Ponla en una capa encima de tu foto o video.", dur: 4.5, gen: () => [
+    { _t: "lupa", _p: 0, x: .3, y: .4, x2: .62, y2: .55, sonido: "whoosh" } ] },
+  { id: "cita", n: "Cita célebre", d: "Comillas grandes, una frase con una palabra subrayada y el autor.", dur: 5.5, gen: () => [
+    T({ texto: "“", fuente: "playfair", tam: 300, color: "@acento", y: .27, animTexto: "ninguna", entrada: "pop", mayus: false }),
+    T({ texto: "La historia la escriben los que ganan", resaltar: "ganan", estiloResalte: "subrayado", tam: 96, anchoMax: .7, y: .5, ritmo: .22 }),
+    T({ texto: "— George Orwell", fuente: "barlow-light", tam: 44, color: "@gris", y: .7, inicio: 1.8, animTexto: "ninguna" }) ] },
+  { id: "lugar", n: "Lugar en el mapa", d: "Un pin cae rebotando y aparece el nombre del lugar en una etiqueta.", dur: 4, gen: () => [
+    I({ ilus: "pin", tam: 150, y: .4, entrada: "caer", tEntrada: .8, sonido: "pop" }),
+    Sh({ figura: "pildora", w: 560, h: 96, color: "@tinta", y: .62, inicio: .7, entrada: "revelar", tEntrada: .5 }, 2),
+    T({ texto: "TENOCHTITLAN, 1325", color: "@fondo", tam: 56, y: .62, inicio: .95, animTexto: "ninguna", entrada: "aparecer" }) ] },
+  { id: "vs", n: "Comparación", d: "Dos cosas lado a lado con un “VS” en medio.", dur: 4.5, gen: () => [
+    I({ ilus: "jalapeno", x: .27, y: .45, tam: 330, entrada: "izquierda" }), I({ ilus: "habanero", x: .73, y: .45, tam: 250, entrada: "derecha" }),
+    T({ texto: "VS", tam: 160, color: "@acento", y: .47, inicio: .5, animTexto: "ninguna", entrada: "pop", sonido: "golpe" }),
+    T({ texto: "JALAPEÑO", fuente: "barlow-light", tam: 50, x: .27, y: .72, inicio: .8, animTexto: "ninguna" }),
+    T({ texto: "HABANERO", fuente: "barlow-light", tam: 50, x: .73, y: .72, inicio: .9, animTexto: "ninguna" }) ] },
+  { id: "capitulo", n: "Título de capítulo", d: "Pantalla de color con el número de capítulo y un título grande.", dur: 4, gen: () => [
+    Fo({ color: "@tinta", transicion: "barrido", tEntrada: .5, salida: "barrido", tSalida: .5, sonido: "whoosh" }),
+    T({ texto: "CAPÍTULO 1", color: "@acento", tam: 56, y: .38, inicio: .5, ritmo: .15 }),
+    T({ texto: "EL ORIGEN DEL PICANTE", color: "@fondo", tam: 150, y: .53, anchoMax: .8, inicio: .8, ritmo: .18 }) ] },
+  { id: "mano", n: "Nota a mano", d: "Texto escrito letra por letra con letra a mano. Para frases de la gente.", dur: 2.6, gen: () => [
+    T({ texto: "¡ASUMAKINA, SÍ PICA!", fuente: "mano", tam: 84, animTexto: "letras", ritmo: .18, y: .2, camara: false, sonido: "tecleo" }) ] },
+  { id: "experimento", n: "Experimento", d: "Un vaso que se aclara poco a poco, con dos datos a los lados.", dur: 5, gen: () => [
+    Li({ x: .3, y: .8, x2: .7, y2: .8, color: "@tinta", grosor: 5, flecha: false, tEntrada: .5 }),
+    I({ ilus: "vaso", tam: 280, y: .62, dur: 2.6, entrada: "aparecer", tSalida: .8 }),
+    I({ ilus: "vaso-chile", tam: 280, y: .62, inicio: 1.8, entrada: "aparecer", tEntrada: .8 }),
+    T({ texto: "500 VECES", tam: 96, alinear: "derecha", x: .39, y: .6, inicio: 2.4, animTexto: "ninguna" }),
+    T({ texto: "500 PUNTOS", tam: 96, alinear: "izquierda", x: .61, y: .6, color: "@gris", inicio: 3, animTexto: "ninguna" }) ] },
+];
+function pistaLibre(pista, a, b, ignorar) {
+  return !proy.elementos.some(e => !ES_AUDIO(e) && e.id !== ignorar && e.pista === pista && e.inicio < b - 1e-3 && e.inicio + e.dur > a + 1e-3);
+}
+function pistaAudioLibre(p, a, b) { return !proy.elementos.some(e => ES_AUDIO(e) && e.pistaAudio === p && e.inicio < b - 1e-3 && e.inicio + e.dur > a + 1e-3); }
+// Lo nuevo va siempre al frente: si las capas de arriba están ocupadas, todo lo demás baja.
+function alFrente(els) {
+  const n = Math.max(...els.map(e => e._p ?? 0)) + 1;
+  const libre = els.every(e => pistaLibre(e._p ?? 0, e.inicio, e.inicio + e.dur));
+  if (!libre) for (const e of proy.elementos) if (!ES_AUDIO(e)) e.pista += n;
+  for (const e of els) { e.pista = e._p ?? 0; delete e._p; proy.elementos.push(e); }
+  compactarPistas();
+}
+function compactarPistas() {
+  const usadas = [...new Set(proy.elementos.filter(e => !ES_AUDIO(e)).map(e => e.pista))].sort((a, b) => a - b);
+  for (const e of proy.elementos) if (!ES_AUDIO(e)) e.pista = usadas.indexOf(e.pista);
+}
+function insertarGrupo(defs, durTotal, t0 = est.t, cam = null) {
+  const els = defs.map(d => {
+    const { _t, _p, ...props } = d;
+    const ini = props.inicio || 0;
+    const el = nuevoElemento(_t, { ...props, inicio: +(t0 + ini).toFixed(3), dur: +(props.dur || Math.max(.3, durTotal - ini)).toFixed(3) });
+    el._p = _p ?? 0; return el;
+  });
+  alFrente(els);
+  if (cam && cam.length) {
+    const fin = t0 + durTotal;
+    proy.camara = proy.camara.filter(k => k.t < t0 - .01 || k.t > fin + .01);
+    for (const k of cam) proy.camara.push({ id: uid(), curva: "suave", ...k, t: +(t0 + k.t).toFixed(3) });
+    proy.camara.push({ id: uid(), t: +(fin + .05).toFixed(3), z: 1, x: .5, y: .5, curva: "corte" });
+    ordenarCamara();
+  }
+  return els;
+}
+function insertarPlantilla(pl) {
+  const els = insertarGrupo(pl.gen(), pl.dur, est.t, pl.cam);
+  seleccionar(els[0] && els[0].id); registrar(); pintarTimeline();
+  aviso(`“${pl.n}” agregada en ${fmtTiempo(est.t)}. Cambia los textos en Propiedades.`);
+}
+function agregar(tipo, props = {}) {
+  const el = nuevoElemento(tipo, { inicio: +est.t.toFixed(3), ...props });
+  if (ES_AUDIO(el)) { let p = 0; while (!pistaAudioLibre(p, el.inicio, el.inicio + el.dur)) p++; el.pistaAudio = p; }
+  else if (tipo === "video") { let p = numPistas() - 1; while (p > 0 && !pistaLibre(p, el.inicio, el.inicio + el.dur)) p--; if (!pistaLibre(p, el.inicio, el.inicio + el.dur)) p = numPistas(); el.pista = p; }
+  else { el._p = 0; alFrente([el]); }
+  if (!proy.elementos.includes(el)) proy.elementos.push(el);
+  seleccionar(el.id); registrar(); pintarTimeline();
+  return el;
+}
+const AGREGAR = [
+  ["Título", "Grande, palabra por palabra", () => agregar("texto", { texto: "TU TÍTULO", fuente: Ft(), tam: 160 })],
+  ["Narración", "Texto gris al ritmo de la voz", () => agregar("texto", { texto: "LO QUE VAS DICIENDO APARECE AQUÍ", fuente: Ft(), color: "@gris", tam: 72, anchoMax: .6, y: .14, camara: false, ritmo: .24 })],
+  ["Texto a mano", "Se escribe letra por letra", () => agregar("texto", { texto: "¡NO PUEDE SER!", fuente: "mano", tam: 84, animTexto: "letras", ritmo: .18, camara: false, y: .2, sonido: "tecleo" })],
+  ["Subtítulo", "Abajo, con caja oscura", () => agregar("texto", { texto: "Escribe aquí lo que dices", fuente: "barlow-semi", mayus: false, tam: 54, color: "#FFFFFF", caja: "#000000B0", y: .86, camara: false, animTexto: "ninguna", entrada: "aparecer", tEntrada: .15, tSalida: .15 })],
+  ["Fondo de color", "Pantalla completa con transición", () => agregar("fondo", { sonido: "whoosh" })],
+  ["Etiqueta", "Forma de color para poner texto", () => agregar("forma", {})],
+  ["Línea o flecha", "Se dibuja sola", () => agregar("linea", {})],
+  ["Contador", "Número que va subiendo", () => agregar("contador", { fuente: Ft(), sonido: "ding" })],
+  ["Lupa", "Amplía lo que pasa debajo", () => agregar("lupa", { sonido: "whoosh" })],
+  ["Efecto de sonido", "Pop, whoosh, ding…", () => agregar("efecto", { nombre: "Whoosh" })],
+];
+
+/* ===================================================================
+   12. Panel izquierdo (biblioteca)
+   =================================================================== */
+let filtroIlus = "";
+function miniIlus(id) {
+  const c = document.createElement("canvas"); c.width = 160; c.height = 160;
+  const x = c.getContext("2d"); x.translate(80, 74);
+  const il = ilustracion(id); if (!il) return c;
+  const w = il.vb[2] >= il.vb[3] ? 130 : 130 * il.vb[2] / il.vb[3];
+  dibujarIlus(x, id, w, 1, true); return c;
+}
+function pintarLib() {
+  const p = $("#panelLib"); const tab = est.tabLib;
+  $$("#tabsLib button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+  if (tab === "plantillas") {
+    p.innerHTML = `<div class="nota">Animaciones completas listas para editar. Se agregan en el punto donde está el cabezal rojo y toman los colores de <b>Mi estilo</b>.</div>
+      <div class="plantillas">${PLANTILLAS.map(pl => `<button class="plantilla" data-pl="${pl.id}"><b>${pl.n}</b><small>${pl.d}</small></button>`).join("")}</div>`;
+    $$("[data-pl]", p).forEach(b => b.onclick = () => insertarPlantilla(PLANTILLAS.find(x => x.id === b.dataset.pl)));
+  } else if (tab === "elementos") {
+    p.innerHTML = `<div class="nota">Agrega piezas sueltas en el cabezal. Después muévelas en la vista previa y ajústalas en Propiedades.</div>
+      <div class="elem-btns">${AGREGAR.map((a, i) => `<button data-ag="${i}"><b>${a[0]}</b><small>${a[1]}</small></button>`).join("")}
+      <button data-ir="ilus"><b>Ilustración</b><small>De la biblioteca</small></button><button data-ir="medios"><b>Foto o video</b><small>Tus archivos</small></button></div>`;
+    $$("[data-ag]", p).forEach(b => b.onclick = () => AGREGAR[+b.dataset.ag][2]());
+    $$("[data-ir]", p).forEach(b => b.onclick = () => { est.tabLib = b.dataset.ir; pintarLib(); });
+  } else if (tab === "ilus") {
+    const sel = elPorId(est.sel);
+    p.innerHTML = `<input class="buscar" id="buscarIlus" type="search" placeholder="Buscar: persona, comida, viaje, historia…" value="${escapar(filtroIlus)}" aria-label="Buscar ilustraciones">
+      <div class="nota">${sel && sel.tipo === "ilustracion" ? "Haz clic en una para <b>reemplazar</b> la ilustración seleccionada." : "Haz clic para agregar. Se dibujan con los colores de Mi estilo."}</div>
+      <div class="grid-ilus" id="gridIlus"></div>
+      <button class="btn" id="btnSvgPropio">Importar mis propias ilustraciones (SVG)</button>
+      <div class="nota">Tip: dibuja en Illustrator, Figma o Procreate y exporta en SVG. Si usas negro #111, blanco y rojo #D0161B, tomarán los colores de tu estilo y podrán “dibujarse solas”.</div>`;
+    const pintarGrid = () => {
+      const q = normal(filtroIlus);
+      const lista = [...ILUS, ...proy.ilusPropias].filter(i => !q || normal(i.n + " " + i.t + " " + i.id).includes(q) || (i.n + " " + i.t).toLowerCase().split(/\s+/).some(w => normal(w).startsWith(q)));
+      const g = $("#gridIlus"); g.innerHTML = lista.length ? "" : `<div class="nota">Nada con “${escapar(filtroIlus)}”. Prueba otra palabra o importa tu SVG.</div>`;
+      for (const i of lista) { const b = document.createElement("button"); b.className = "ilu"; b.title = i.n; b.appendChild(miniIlus(i.id)); const s = document.createElement("span"); s.textContent = i.n; b.appendChild(s);
+        b.onclick = () => { const s2 = elPorId(est.sel); if (s2 && s2.tipo === "ilustracion") { s2.ilus = i.id; s2.nombre = i.n; registrar(); pintarTimeline(); pintarProps(); pedirRender(); } else agregar("ilustracion", { ilus: i.id, nombre: i.n }); };
+        g.appendChild(b); }
+    };
+    pintarGrid();
+    $("#buscarIlus").oninput = e => { filtroIlus = e.target.value; pintarGrid(); };
+    $("#btnSvgPropio").onclick = () => $("#archivoMedios").click();
+  } else if (tab === "medios") {
+    const lista = Object.values(medios);
+    p.innerHTML = `<div class="drop" id="zonaDrop"><b>Arrastra aquí tus videos, fotos, música o narración</b><span class="nota">MP4, MOV, JPG, PNG, MP3, M4A, WAV y SVG</span><button class="btn prim" id="btnImportar">Elegir archivos</button></div>
+      <div class="nota">Tus archivos se quedan en tu navegador; no se suben a ningún lado. Graba tu narración en el celular (notas de voz) y súbela aquí.</div>
+      <div class="medios">${lista.map(m => `<button class="medio" data-medio="${m.id}" title="Agregar ${escapar(m.nombre)}"><div class="mini" style="${m.mini ? `background-image:url('${m.mini}')` : ""}">${m.mini ? "" : m.tipo === "audio" ? "♪" : "▶"}</div><span>${escapar(m.nombre)}</span></button>`).join("")}</div>`;
+    $("#btnImportar").onclick = () => $("#archivoMedios").click();
+    $$("[data-medio]", p).forEach(b => b.onclick = () => agregarMedio(b.dataset.medio));
+    const z = $("#zonaDrop");
+    z.ondragover = e => { e.preventDefault(); z.classList.add("sobre"); };
+    z.ondragleave = () => z.classList.remove("sobre");
+    z.ondrop = e => { e.preventDefault(); z.classList.remove("sobre"); importarArchivos(e.dataTransfer.files); };
+  } else if (tab === "estilo") {
+    p.innerHTML = `<div class="nota">Tu identidad visual. Todo lo que use estos colores cambia al instante: textos, fondos e ilustraciones.</div>
+      <div class="h">Paletas</div>
+      <div class="paletas">${Object.entries(PALETAS).map(([n, c]) => `<button class="paleta" data-paleta="${n}"><span>${n}</span><span class="sw">${["fondo", "texto", "gris", "acento", "papel"].map(k => `<i style="background:${c[k]}"></i>`).join("")}</span></button>`).join("")}</div>
+      <div class="h">Mis colores</div>
+      ${TOKENS.map(([k, n]) => `<div class="campo"><label for="tok-${k}">${n} <span style="font-family:var(--f-mono)">${proy.estilo[k]}</span></label><input type="color" id="tok-${k}" data-tok="${k}" value="${proy.estilo[k]}" style="width:100%;height:30px;background:var(--panel-2);border:1px solid var(--line);border-radius:5px"></div>`).join("")}
+      <div class="h">Tipografía de títulos</div>
+      <div class="campo"><select id="fuenteTitulo" aria-label="Tipografía de títulos">${FUENTES.map(f => `<option value="${f.id}"${(proy.estilo.fuenteTitulo || "barlow") === f.id ? " selected" : ""}>${f.nombre}</option>`).join("")}</select></div>
+      <button class="btn" id="aplicarFuente">Usar esta tipografía en todos los títulos</button>`;
+    $$("[data-paleta]", p).forEach(b => b.onclick = () => { Object.assign(proy.estilo, PALETAS[b.dataset.paleta]); pintarLib(); pedirRender(); registrar(); });
+    $$("[data-tok]", p).forEach(i => i.oninput = () => { proy.estilo[i.dataset.tok] = i.value; i.previousElementSibling.querySelector("span").textContent = i.value; pedirRender(); registrarLuego(); });
+    $("#fuenteTitulo").onchange = e => { proy.estilo.fuenteTitulo = e.target.value; registrar(); };
+    $("#aplicarFuente").onclick = () => { const f = proy.estilo.fuenteTitulo || "barlow"; let n = 0;
+      for (const el of proy.elementos) if ((el.tipo === "texto" || el.tipo === "contador") && !["barlow-light", "mano", "marcador", "caveat", "maquina"].includes(el.fuente)) { el.fuente = f; n++; }
+      pedirRender(); registrar(); aviso(n + " títulos actualizados."); };
+  } else if (tab === "asis") pintarAsistente(p);
+}
+function agregarMedio(id) {
+  const m = medios[id]; if (!m) return;
+  if (m.tipo === "video") agregar("video", { media: id, nombre: m.nombre, dur: +(m.dur || 5).toFixed(3) });
+  else if (m.tipo === "imagen") agregar("foto", { media: id, nombre: m.nombre, dur: 4 });
+  else agregar("audio", { media: id, nombre: m.nombre, dur: +(m.dur || 5).toFixed(3) });
+}
+$("#tabsLib").addEventListener("click", e => { const b = e.target.closest("button"); if (b) { est.tabLib = b.dataset.tab; pintarLib(); } });
+const inputMedios = Object.assign(document.createElement("input"), { type: "file", multiple: true, id: "archivoMedios", accept: "video/*,image/*,audio/*,.svg" });
+inputMedios.hidden = true; document.body.appendChild(inputMedios);
+inputMedios.onchange = () => { importarArchivos(inputMedios.files); inputMedios.value = ""; };
+document.addEventListener("dragover", e => e.preventDefault());
+document.addEventListener("drop", e => { e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) importarArchivos(e.dataTransfer.files); });
+
+/* ===================================================================
+   13. Panel derecho (propiedades, cámara, proyecto)
+   =================================================================== */
+const ENTRADAS = [["ninguna", "Ninguna (corte)"], ["aparecer", "Aparecer"], ["subir", "Subir"], ["bajar", "Bajar"], ["izquierda", "Desde la izquierda"], ["derecha", "Desde la derecha"], ["pop", "Pop (rebote)"], ["zoom", "Zoom"], ["girar", "Girar"], ["caer", "Caer y rebotar"], ["revelar", "Revelar (barrido)"], ["dibujar", "Dibujarse (trazo)"]];
+const SALIDAS = [["ninguna", "Ninguna (corte)"], ["desvanecer", "Desvanecer"], ["encoger", "Encoger"], ["subir", "Subir"], ["bajar", "Bajar"], ["izquierda", "Hacia la izquierda"], ["derecha", "Hacia la derecha"], ["zoom", "Zoom hacia ti"]];
+const MOVS = [["ninguno", "Quieto"], ["acercar", "Acercar lento (Ken Burns)"], ["alejar", "Alejar lento"], ["flotar", "Flotar"], ["derecha", "Deslizar a la derecha"], ["izquierda", "Deslizar a la izquierda"], ["latido", "Latido"], ["balanceo", "Balanceo"], ["temblor", "Temblor"]];
+const R = (k, l, min, max, step = .01) => ({ k, l, tipo: "rango", min, max, step });
+const S = (k, l, op) => ({ k, l, tipo: "sel", op });
+const C = (k, l, ninguno) => ({ k, l, tipo: "color", ninguno });
+const X = (k, l) => ({ k, l, tipo: "chk" });
+const N = (k, l, step = .1) => ({ k, l, tipo: "num", step });
+const TX = (k, l, area) => ({ k, l, tipo: area ? "area" : "texto" });
+const ESQUEMAS = {
+  texto: [TX("texto", "Texto", true), { k: "fuente", l: "Tipografía", tipo: "fuente" }, R("tam", "Tamaño", 16, 420, 1), C("color", "Color"),
+    S("alinear", "Alineación", [["centro", "Centro"], ["izquierda", "Izquierda"], ["derecha", "Derecha"]]), X("mayus", "Todo en mayúsculas"),
+    S("animTexto", "Cómo aparece el texto", [["palabras", "Palabra por palabra"], ["letras", "Letra por letra"], ["ninguna", "Todo junto"]]),
+    R("ritmo", "Ritmo (segundos por palabra)", .03, 1.2), S("efectoPalabra", "Efecto de cada palabra", [["subir", "Subir suave"], ["pop", "Pop"], ["aparecer", "Aparecer"], ["corte", "Corte seco"]]),
+    TX("resaltar", "Palabras a resaltar (separadas por coma)"), S("estiloResalte", "Estilo del resaltado", [["color", "Color"], ["caja", "Caja de color"], ["subrayado", "Marcatextos"], ["circulo", "Círculo a mano"]]),
+    C("colorResalte", "Color del resaltado"), R("anchoMax", "Ancho máximo", .15, 1), R("interlineado", "Interlineado", .7, 2),
+    C("caja", "Caja detrás del texto", true), R("borde", "Contorno", 0, 20, .5), C("colorBorde", "Color del contorno"), X("sombra", "Sombra")],
+  ilustracion: [{ k: "ilus", l: "Ilustración", tipo: "ilus" }, R("tam", "Tamaño", 30, 1800, 1), X("recolor", "Usar los colores de Mi estilo")],
+  foto: [{ k: "media", l: "Foto", tipo: "media", mt: "imagen" }, R("tam", "Tamaño", 60, 2400, 1), S("marco", "Marco", [["ninguno", "Sin marco"], ["blanco", "Foto impresa (borde blanco)"], ["esquinas", "Esquinas redondas"], ["redondo", "Círculo"], ["ovalo", "Óvalo dorado (retrato)"]]), X("bn", "Blanco y negro"), X("sombra", "Sombra")],
+  video: [{ k: "media", l: "Video", tipo: "media", mt: "video" }, N("recorte", "Empieza en el segundo (del archivo)"), R("volumen", "Volumen", 0, 1),
+    S("ajuste", "Encuadre", [["cubrir", "Llenar la pantalla"], ["contener", "Completo (con bordes)"], ["libre", "Libre (tamaño manual)"]]), R("tam", "Tamaño (si es libre)", 60, 2400, 1),
+    S("marco", "Marco", [["ninguno", "Sin marco"], ["blanco", "Borde blanco"], ["esquinas", "Esquinas redondas"], ["redondo", "Círculo"]]), X("bn", "Blanco y negro")],
+  fondo: [C("color", "Color"), S("transicion", "Cómo entra", [["v", "En V (desde arriba)"], ["barrido", "Barrido lateral"], ["barrido-arriba", "Desde abajo"], ["circulo", "Círculo que crece"], ["persianas", "Persianas"], ["desvanecer", "Desvanecer"], ["corte", "Corte seco"]]),
+    N("tEntrada", "Duración de la entrada (s)"), S("salida", "Cómo sale", [["ninguna", "Corte"], ["desvanecer", "Desvanecer"], ["barrido", "Barrido"]]), N("tSalida", "Duración de la salida (s)"), R("opacidad", "Opacidad", 0, 1)],
+  forma: [S("figura", "Figura", [["pildora", "Píldora"], ["rect", "Rectángulo"], ["circulo", "Círculo / óvalo"]]), R("w", "Ancho", 4, 2000, 1), R("h", "Alto", 4, 2000, 1), C("color", "Color"), R("radio", "Redondeo", 0, 200, 1), R("borde", "Borde", 0, 40, 1), C("colorBorde", "Color del borde")],
+  linea: [C("color", "Color"), R("grosor", "Grosor", 1, 40, .5), X("flecha", "Punta de flecha"), X("punteada", "Punteada"), R("curva", "Curva", -.8, .8), R("x2", "Final X", -1, 3, .001), R("y2", "Final Y", -2, 3, .001)],
+  contador: [N("desde", "Desde", 1), N("hasta", "Hasta", 1), N("decimales", "Decimales", 1), TX("prefijo", "Antes del número (ej. $)"), TX("sufijo", "Después del número (ej. km)"), N("tConteo", "Segundos contando"), { k: "fuente", l: "Tipografía", tipo: "fuente" }, R("tam", "Tamaño", 20, 420, 1), C("color", "Color")],
+  lupa: [R("radio", "Tamaño de la lupa", 40, 520, 1), R("aumento", "Aumento", 1.2, 5), R("x2", "Termina en X", -.2, 1.2, .001), R("y2", "Termina en Y", -.2, 1.2, .001)],
+  audio: [{ k: "media", l: "Archivo de audio", tipo: "media", mt: "audio" }, N("recorte", "Empieza en el segundo (del archivo)"), R("volumen", "Volumen", 0, 1), N("fadeIn", "Entrada suave (s)"), N("fadeOut", "Salida suave (s)")],
+  efecto: [S("sonido", "Sonido", SONIDOS.slice(1).map(s => [s, s[0].toUpperCase() + s.slice(1)])), R("volumen", "Volumen", 0, 1)],
+};
+const ANIM = [S("entrada", "Entrada", ENTRADAS), N("tEntrada", "Duración de la entrada (s)"), S("salida", "Salida", SALIDAS), N("tSalida", "Duración de la salida (s)"),
+  S("mov", "Movimiento mientras está en pantalla", MOVS), R("fuerzaMov", "Intensidad del movimiento", 0, 4), S("sonido", "Sonido al aparecer", SONIDOS.map(s => [s, s[0].toUpperCase() + s.slice(1)]))];
+const POS = [R("x", "Posición X", -1, 2, .001), R("y", "Posición Y", -2, 3, .001), R("escala", "Escala", .05, 5), R("rot", "Rotación", -180, 180, 1), R("opacidad", "Opacidad", 0, 1), X("camara", "Se mueve con la cámara")];
+
+function htmlCampo(f, el) {
+  const v = el[f.k], id = "f-" + f.k;
+  switch (f.tipo) {
+    case "texto": return `<div class="campo"><label for="${id}">${f.l}</label><input type="text" id="${id}" data-k="${f.k}" value="${escapar(v ?? "")}"></div>`;
+    case "area": return `<div class="campo"><label for="${id}">${f.l}</label><textarea id="${id}" data-k="${f.k}" rows="3">${escapar(v ?? "")}</textarea></div>`;
+    case "num": return `<div class="campo"><label for="${id}">${f.l}</label><input type="number" id="${id}" data-k="${f.k}" step="${f.step}" value="${v ?? 0}"></div>`;
+    case "rango": return `<div class="campo"><label for="${id}">${f.l}</label><div class="rng"><input type="range" id="${id}" data-k="${f.k}" min="${f.min}" max="${f.max}" step="${f.step}" value="${v}"><input type="number" aria-label="${f.l}" data-k="${f.k}" step="${f.step}" value="${+(+v).toFixed(3)}"></div></div>`;
+    case "chk": return `<label class="chk"><input type="checkbox" id="${id}" data-k="${f.k}"${v ? " checked" : ""}> ${f.l}</label>`;
+    case "sel": return `<div class="campo"><label for="${id}">${f.l}</label><select id="${id}" data-k="${f.k}">${f.op.map(([a, b]) => `<option value="${a}"${a === v ? " selected" : ""}>${b}</option>`).join("")}</select></div>`;
+    case "fuente": return `<div class="campo"><label for="${id}">${f.l}</label><select id="${id}" data-k="${f.k}">${FUENTES.map(x => `<option value="${x.id}"${x.id === v ? " selected" : ""}>${x.nombre}</option>`).join("")}</select></div>`;
+    case "ilus": return `<div class="campo"><label for="${id}">${f.l}</label><select id="${id}" data-k="${f.k}">${[...ILUS, ...proy.ilusPropias].map(x => `<option value="${x.id}"${x.id === v ? " selected" : ""}>${escapar(x.n)}</option>`).join("")}</select></div>`;
+    case "media": { const ms = Object.values(medios).filter(m => m.tipo === f.mt);
+      return `<div class="campo"><label for="${id}">${f.l}</label><select id="${id}" data-k="${f.k}"><option value="">— elige —</option>${ms.map(m => `<option value="${m.id}"${m.id === v ? " selected" : ""}>${escapar(m.nombre)}</option>`).join("")}<option value="__importar">Importar archivo…</option></select></div>`; }
+    case "color": {
+      const sw = TOKENS.map(([k, n]) => `<button type="button" data-k="${f.k}" data-color="@${k}" title="${n}" aria-label="${n}" aria-pressed="${v === "@" + k}" style="background:${proy.estilo[k]}"></button>`).join("");
+      const hex = v && v[0] === "#" ? v.slice(0, 7) : col(v || "#000000").slice(0, 7);
+      return `<div class="campo"><span class="lbl">${f.l}</span><div class="colores">${f.ninguno ? `<button type="button" data-k="${f.k}" data-color="" title="Ninguno" aria-label="Ninguno" aria-pressed="${!v}" style="background:repeating-linear-gradient(45deg,#555 0 3px,#222 3px 6px)"></button>` : ""}${sw}<input type="color" aria-label="${f.l} personalizado" data-k="${f.k}" data-colorlibre="1" value="${/^#[0-9a-f]{6}$/i.test(hex) ? hex : "#000000"}"></div></div>`;
+    }
+  }
+  return "";
+}
+function seccion(titulo, campos, el) {
+  const filtra = campos.filter(Boolean);
+  return filtra.length ? `<div class="grupo"><div class="h">${titulo}</div>${filtra.map(f => htmlCampo(f, el)).join("")}</div>` : "";
+}
+function pintarProps() {
+  const p = $("#panelProps"), tab = est.tabProps;
+  $$("#tabsProps button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+  if (tab === "cam") return pintarCamara(p);
+  if (tab === "proy") return pintarProyecto(p);
+  const el = elPorId(est.sel);
+  if (!el) {
+    p.innerHTML = `<div class="nota">Selecciona algo en la vista previa o en la línea de tiempo para editarlo.<br><br><b>Atajos:</b> espacio = play · S = cortar · Supr = borrar · Ctrl+D = duplicar · Ctrl+Z = deshacer · flechas = mover.</div>`;
+    return;
+  }
+  const esAudio = ES_AUDIO(el);
+  const pos = el.tipo === "fondo" ? [] : el.tipo === "lupa" ? [R("x", "Empieza en X", -.2, 1.2, .001), R("y", "Empieza en Y", -.2, 1.2, .001), R("opacidad", "Opacidad", 0, 1)] : POS;
+  p.innerHTML = `<div class="campo"><label for="f-nombre">${TIPOS[el.tipo]}</label><input type="text" id="f-nombre" data-k="nombre" value="${escapar(el.nombre)}"></div>
+    <div class="fila"><div class="campo"><label for="f-inicio">Inicio (s)</label><input type="number" id="f-inicio" data-k="inicio" step=".1" value="${el.inicio}"></div>
+    <div class="campo"><label for="f-dur">Duración (s)</label><input type="number" id="f-dur" data-k="dur" step=".1" min=".1" value="${el.dur}"></div></div>
+    ${seccion("Contenido", ESQUEMAS[el.tipo] || [], el)}
+    ${esAudio ? "" : seccion("Posición", pos, el)}
+    ${esAudio || el.tipo === "fondo" ? "" : seccion("Animación", ANIM, el)}
+    <div class="grupo acciones"><button class="btn" data-acc="dup">Duplicar</button><button class="btn" data-acc="cortar">Cortar en el cabezal</button><button class="btn" data-acc="borrar">Borrar</button></div>`;
+  el._nombreAuto = el.nombre === nombrePara(el) ? el.nombre : null;
+  enlazarCampos(p, el);
+  $$("[data-acc]", p).forEach(b => b.onclick = () => ({ dup: duplicar, cortar: cortar, borrar: borrar })[b.dataset.acc]());
+}
+function enlazarCampos(p, el) {
+  $$("[data-k]", p).forEach(inp => {
+    const k = inp.dataset.k;
+    const ev = inp.tagName === "SELECT" || inp.type === "checkbox" || inp.dataset.color !== undefined ? (inp.tagName === "BUTTON" ? "click" : "change") : "input";
+    inp.addEventListener(ev, () => {
+      let v;
+      if (inp.dataset.color !== undefined) v = inp.dataset.color;
+      else if (inp.dataset.colorlibre) v = inp.value.toUpperCase();
+      else if (inp.type === "checkbox") v = inp.checked;
+      else if (inp.type === "number" || inp.type === "range") { v = parseFloat(inp.value); if (isNaN(v)) return; }
+      else v = inp.value;
+      if (k === "media" && v === "__importar") { inp.value = el.media || ""; $("#archivoMedios").click(); return; }
+      if (k === "dur") v = Math.max(.1, v);
+      if (k === "inicio") v = Math.max(0, v);
+      el[k] = v;
+      if (k === "media" && medios[v]) { el.nombre = medios[v].nombre; if (el.tipo !== "foto" && medios[v].dur) el.dur = +(medios[v].dur - (el.recorte || 0)).toFixed(3); }
+      if (["ilus", "texto", "hasta", "prefijo", "sufijo", "sonido"].includes(k) && el.nombre === el._nombreAuto) { el.nombre = nombrePara(el); const fn = $("#f-nombre"); if (fn) fn.value = el.nombre; }
+      el._nombreAuto = nombrePara(el);
+      $$(`[data-k="${k}"]`, p).forEach(o => { if (o === inp) return; if (o.type === "range" || o.type === "number") o.value = v;
+        if (o.dataset.color !== undefined) o.setAttribute("aria-pressed", String(o.dataset.color === v)); });
+      if (inp.dataset.color !== undefined || inp.dataset.colorlibre) $$(`[data-k="${k}"][data-color]`, p).forEach(o => o.setAttribute("aria-pressed", String(o.dataset.color === v)));
+      if (["inicio", "dur", "nombre", "media", "ilus", "texto", "hasta", "sonido"].includes(k)) pintarTimeline();
+      sincronizarMedios(null); pedirRender(); registrarLuego();
+    });
+  });
+}
+function refrescarCamposPos() {
+  const el = elPorId(est.sel); if (!el || est.tabProps !== "elem") return;
+  for (const k of ["x", "y", "x2", "y2", "escala"]) $$(`#panelProps [data-k="${k}"]`).forEach(o => { if (document.activeElement !== o) o.value = +(+el[k]).toFixed(3); });
+}
+function kfAqui() { return proy.camara.find(k => Math.abs(k.t - est.t) < .04); }
+function pintarCamara(p) {
+  const c = camaraEn(est.t), aqui = kfAqui();
+  p.innerHTML = `<div class="nota">La cámara hace zoom y se desplaza sobre todo lo que tenga “Se mueve con la cámara”. Coloca el cabezal en un segundo, ajusta los controles y se guarda un punto ahí. Entre dos puntos la cámara se mueve sola.</div>
+    <div class="campo"><label for="cam-z">Zoom</label><div class="rng"><input type="range" id="cam-z" data-c="z" min=".3" max="5" step=".01" value="${c.z}"><input type="number" aria-label="Zoom" data-c="z" step=".05" value="${(+c.z).toFixed(2)}"></div></div>
+    <div class="campo"><label for="cam-x">Centro X</label><div class="rng"><input type="range" id="cam-x" data-c="x" min="-1" max="2" step=".001" value="${c.x}"><input type="number" aria-label="Centro X" data-c="x" step=".01" value="${(+c.x).toFixed(3)}"></div></div>
+    <div class="campo"><label for="cam-y">Centro Y</label><div class="rng"><input type="range" id="cam-y" data-c="y" min="-2" max="3" step=".001" value="${c.y}"><input type="number" aria-label="Centro Y" data-c="y" step=".01" value="${(+c.y).toFixed(3)}"></div></div>
+    <div class="acciones"><button class="btn" id="camAgregar">${aqui ? "Punto guardado aquí" : "Guardar punto en " + fmtTiempo(est.t)}</button><button class="btn" id="camReset">Encuadre normal</button></div>
+    <div class="h">Puntos de cámara</div>
+    <div class="kfs">${proy.camara.length ? proy.camara.map(k => `<div class="kf${aqui && aqui.id === k.id ? " aqui" : ""}"><span>${fmtTiempo(k.t)} · ×${k.z.toFixed(2)}</span><span class="acciones">
+      <select data-curva="${k.id}" aria-label="Movimiento hacia este punto">${[["suave", "Suave"], ["lineal", "Constante"], ["salida", "Frenando"], ["entrada", "Acelerando"], ["corte", "Corte"]].map(([a, b]) => `<option value="${a}"${(k.curva || "suave") === a ? " selected" : ""}>${b}</option>`).join("")}</select>
+      <button class="btn icon" data-ir="${k.id}" aria-label="Ir a este punto">Ir</button><button class="btn icon" data-quitar="${k.id}" aria-label="Borrar punto">×</button></span></div>`).join("") : `<div class="nota">Sin puntos: la cámara se queda quieta.</div>`}</div>
+    ${proy.camara.length ? `<button class="btn" id="camBorrarTodo">Quitar todos los puntos</button>` : ""}`;
+  const fijar = (campo, v) => {
+    let k = kfAqui();
+    if (!k) { const c2 = camaraEn(est.t); k = { id: uid(), t: +est.t.toFixed(3), z: c2.z, x: c2.x, y: c2.y, curva: "suave" }; proy.camara.push(k); ordenarCamara(); }
+    k[campo] = v; est.selKf = k.id; pedirRender(); pintarTimeline(); registrarLuego();
+    $$(`[data-c="${campo}"]`, p).forEach(o => { if (document.activeElement !== o) o.value = v; });
+  };
+  $$("[data-c]", p).forEach(i => i.oninput = () => { const v = parseFloat(i.value); if (!isNaN(v)) fijar(i.dataset.c, v); });
+  $$("[data-c]", p).forEach(i => i.onchange = () => pintarCamara(p));
+  $("#camAgregar").onclick = () => { fijar("z", camaraEn(est.t).z); pintarCamara(p); };
+  $("#camReset").onclick = () => { fijar("z", 1); fijar("x", .5); fijar("y", .5); pintarCamara(p); };
+  $$("[data-ir]", p).forEach(b => b.onclick = () => { const k = proy.camara.find(x => x.id === b.dataset.ir); est.selKf = k.id; irA(k.t); pintarTimeline(); });
+  $$("[data-quitar]", p).forEach(b => b.onclick = () => { proy.camara = proy.camara.filter(x => x.id !== b.dataset.quitar); pintarCamara(p); pintarTimeline(); pedirRender(); registrar(); });
+  $$("[data-curva]", p).forEach(s => s.onchange = () => { proy.camara.find(x => x.id === s.dataset.curva).curva = s.value; pedirRender(); registrar(); });
+  const bt = $("#camBorrarTodo"); if (bt) bt.onclick = () => { proy.camara = []; pintarCamara(p); pintarTimeline(); pedirRender(); registrar(); };
+}
+function pintarProyecto(p) {
+  p.innerHTML = `<div class="campo"><label for="pr-dur">Duración del video (0 = automática)</label><input type="number" id="pr-dur" step="1" min="0" value="${proy.duracion}"></div>
+    <div class="nota">Duración actual: ${fmtTiempo(duracionProyecto())} · ${proy.elementos.length} elementos · formato ${proy.formato}</div>
+    <div class="grupo"><div class="h">Cómo trabajar</div><div class="nota">1. Sube tu video y tu narración en <b>Medios</b>.<br>2. Corta con <b>S</b> en el cabezal y acomoda clips en la línea de tiempo.<br>3. Agrega <b>Plantillas</b> donde quieras animación; en una capa encima de tu video se ven sobre él.<br>4. Cambia textos, colores y movimientos en <b>Propiedades</b>; arrastra en la vista previa para mover.<br>5. <b>Exportar video</b> genera un MP4 en 1080p o 4K.</div></div>
+    <div class="grupo"><button class="btn" id="pr-ejemplo">Cargar el proyecto de ejemplo</button></div>`;
+  $("#pr-dur").oninput = e => { proy.duracion = Math.max(0, +e.target.value || 0); pintarTimeline(); registrarLuego(); };
+  $("#pr-ejemplo").onclick = () => { cargarProyecto(proyectoEjemplo()); aviso("Proyecto de ejemplo cargado. Puedes deshacer con Ctrl+Z."); };
+}
+function abrirTabProps(tab) { est.tabProps = tab; pintarProps(); }
+$("#tabsProps").addEventListener("click", e => { const b = e.target.closest("button"); if (b) abrirTabProps(b.dataset.tab); });
+
+/* ===================================================================
+   14. Edición, historial y guardado
+   =================================================================== */
+const elPorId = id => proy.elementos.find(e => e.id === id);
+function seleccionar(id, abrir = true) {
+  est.sel = id || null; if (id) est.selKf = null;
+  if (abrir && id) est.tabProps = "elem";
+  if (est.tabLib === "ilus") pintarLib();
+  pintarProps(); pintarTimeline(); pedirRender();
+}
+function borrar() {
+  if (est.sel) { proy.elementos = proy.elementos.filter(e => e.id !== est.sel); est.sel = null; }
+  else if (est.selKf) { proy.camara = proy.camara.filter(k => k.id !== est.selKf); est.selKf = null; }
+  else return;
+  pintarProps(); pintarTimeline(); pedirRender(); registrar();
+}
+function duplicar() {
+  const el = elPorId(est.sel); if (!el) return;
+  const c = { ...copia(el), id: uid(), inicio: +(el.inicio + el.dur).toFixed(3) };
+  if (ES_AUDIO(c)) { while (!pistaAudioLibre(c.pistaAudio, c.inicio, c.inicio + c.dur)) c.pistaAudio++; }
+  else while (!pistaLibre(c.pista, c.inicio, c.inicio + c.dur)) c.pista++;
+  proy.elementos.push(c); seleccionar(c.id); registrar();
+}
+function cortar() {
+  const el = elPorId(est.sel);
+  if (!el || est.t <= el.inicio + .05 || est.t >= el.inicio + el.dur - .05) { aviso("Pon el cabezal rojo dentro del clip seleccionado para cortarlo."); return; }
+  const corte = +est.t.toFixed(3), b = { ...copia(el), id: uid(), inicio: corte, dur: +(el.inicio + el.dur - corte).toFixed(3) };
+  if (el.tipo === "video" || el.tipo === "audio") b.recorte = +((el.recorte || 0) + corte - el.inicio).toFixed(3);
+  el.dur = +(corte - el.inicio).toFixed(3); el.salida = "ninguna"; el.fadeOut = 0;
+  b.entrada = "ninguna"; b.fadeIn = 0; b.sonido = b.tipo === "efecto" ? b.sonido : "ninguno"; if (b.tipo === "texto") b.animTexto = "ninguna";
+  proy.elementos.push(b); seleccionar(b.id); registrar();
+}
+const hist = { pila: [], pos: -1, timer: null };
+function guardarLocal(json) { try { localStorage.setItem("estudio-animaciones-proyecto", json); } catch (e) { /* almacenamiento lleno o bloqueado */ } }
+function registrar() {
+  clearTimeout(hist.timer);
+  const json = JSON.stringify(proy);
+  if (hist.pila[hist.pos] === json) return;
+  hist.pila = hist.pila.slice(0, hist.pos + 1); hist.pila.push(json); if (hist.pila.length > 120) hist.pila.shift();
+  hist.pos = hist.pila.length - 1; guardarLocal(json); actualizarBotonesHist(); actualizarTC();
+}
+function registrarLuego() { clearTimeout(hist.timer); hist.timer = setTimeout(registrar, 400); }
+function restaurar(json) {
+  proy = JSON.parse(json);
+  if (!elPorId(est.sel)) est.sel = null;
+  ajustarLienzo(); pintarTodo(); guardarLocal(json); actualizarBotonesHist();
+}
+function deshacer() { registrar(); if (hist.pos > 0) { hist.pos--; restaurar(hist.pila[hist.pos]); } }
+function rehacer() { if (hist.pos < hist.pila.length - 1) { hist.pos++; restaurar(hist.pila[hist.pos]); } }
+function actualizarBotonesHist() { $("#btnDeshacer").disabled = hist.pos <= 0; $("#btnRehacer").disabled = hist.pos >= hist.pila.length - 1; }
+function cargarProyecto(p) {
+  proy = { ...proyectoVacio(), ...p, estilo: { ...proyectoVacio().estilo, ...(p.estilo || {}) } };
+  for (const k in cacheIlus) if (k.startsWith("propia-")) delete cacheIlus[k];
+  est.sel = null; est.selKf = null; est.t = Math.min(est.t, duracionProyecto());
+  $("#nombreProyecto").value = proy.nombre;
+  ajustarLienzo(); pintarTodo(); registrar();
+}
+function pintarTodo() {
+  $$(".seg [data-fmt]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.fmt === proy.formato)));
+  $("#nombreProyecto").value = proy.nombre;
+  pintarLib(); pintarProps(); pintarTimeline(); pedirRender();
+}
+let toastTimer = null;
+function aviso(txt) { const t = $("#toast"); t.textContent = txt; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200); }
+
+async function ofrecerArchivo(nombre, blob) {
+  try {
+    const dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+    if (dl) { await dl.save({ filename: nombre, data: blob }); return "guardado"; }
+  } catch (e) {
+    if (e && e.code === "declined") return "cancelado";
+    if (e && e.code === "too_large") return "grande";
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+  return "enlace";
+}
+
+// Barra superior
+$("#nombreProyecto").addEventListener("input", e => { proy.nombre = e.target.value; registrarLuego(); });
+$$(".seg [data-fmt]").forEach(b => b.onclick = () => { proy.formato = b.dataset.fmt; ajustarLienzo(); pintarTodo(); registrar(); });
+$("#btnDeshacer").onclick = deshacer; $("#btnRehacer").onclick = rehacer;
+$("#btnPlay").onclick = () => reproducir(); $("#btnInicio").onclick = () => irA(0);
+$("#btnCortar").onclick = cortar; $("#btnDuplicar").onclick = duplicar; $("#btnBorrar").onclick = borrar;
+let confirmarNuevo = null;
+$("#btnNuevo").onclick = e => {
+  const b = e.currentTarget;
+  if (!confirmarNuevo) { b.textContent = "¿Seguro? Clic otra vez"; confirmarNuevo = setTimeout(() => { b.textContent = "Nuevo"; confirmarNuevo = null; }, 3000); return; }
+  clearTimeout(confirmarNuevo); confirmarNuevo = null; b.textContent = "Nuevo";
+  cargarProyecto(proyectoVacio()); aviso("Proyecto nuevo. Puedes deshacer con Ctrl+Z.");
+};
+$("#btnGuardar").onclick = async () => {
+  const r = await ofrecerArchivo((proy.nombre || "proyecto").replace(/[^\w\- áéíóúñ]/gi, "") + ".json", new Blob([JSON.stringify(proy, null, 1)], { type: "application/json" }));
+  if (r !== "cancelado") aviso("Proyecto guardado como archivo. Tus videos y fotos no van dentro: guárdalos aparte.");
+};
+$("#btnAbrir").onclick = () => $("#archivoProyecto").click();
+$("#archivoProyecto").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try { const p = JSON.parse(await f.text()); if (!Array.isArray(p.elementos)) throw 0; cargarProyecto(p);
+    const faltan = p.elementos.filter(x => x.media && !medios[x.media]).length;
+    aviso(faltan ? `Proyecto abierto. Faltan ${faltan} archivos: vuelve a importarlos y elígelos en Propiedades.` : "Proyecto abierto.");
+  } catch (err) { aviso("Ese archivo no es un proyecto de este editor."); }
+};
+
+// Teclado
+document.addEventListener("keydown", e => {
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (["input", "textarea", "select"].includes(tag) && e.key !== "Escape") return;
+  if (!$("#modalExport").hidden) return;
+  const mod = e.ctrlKey || e.metaKey;
+  if (e.key === " ") { e.preventDefault(); reproducir(); }
+  else if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? rehacer() : deshacer(); }
+  else if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); rehacer(); }
+  else if (mod && e.key.toLowerCase() === "d") { e.preventDefault(); duplicar(); }
+  else if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); borrar(); }
+  else if (e.key.toLowerCase() === "s" && !mod) cortar();
+  else if (e.key === "Escape") seleccionar(null);
+  else if (e.key === "Home") irA(0);
+  else if (e.key.startsWith("Arrow")) {
+    e.preventDefault();
+    const el = elPorId(est.sel), paso = e.shiftKey ? .02 : .004;
+    if (el && el.tipo !== "fondo" && !ES_AUDIO(el)) {
+      const dx = e.key === "ArrowLeft" ? -paso : e.key === "ArrowRight" ? paso : 0, dy = e.key === "ArrowUp" ? -paso : e.key === "ArrowDown" ? paso : 0;
+      el.x += dx; el.y += dy; if (el.tipo === "linea" || el.tipo === "lupa") { el.x2 += dx; el.y2 += dy; }
+      refrescarCamposPos(); pedirRender(); registrarLuego();
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") irA(est.t + (e.key === "ArrowLeft" ? -1 : 1) * (e.shiftKey ? 1 : 1 / 30));
+  }
+});
+window.addEventListener("resize", ajustarLienzo);
+
+/* ===================================================================
+   15. Exportar MP4 (WebCodecs + mp4-muxer)
+   =================================================================== */
+const cacheAudio = {};
+async function bufferAudio(id, ctx) {
+  if (cacheAudio[id] !== undefined) return cacheAudio[id];
+  const m = medios[id]; if (!m) return null;
+  try { cacheAudio[id] = await ctx.decodeAudioData(await m.blob.arrayBuffer()); } catch (e) { cacheAudio[id] = null; }
+  return cacheAudio[id];
+}
+async function mezclarAudio(dur) {
+  const SR = 48000, oac = new OfflineAudioContext(2, Math.ceil(dur * SR), SR);
+  const limitador = oac.createDynamicsCompressor();
+  limitador.threshold.value = -3; limitador.knee.value = 6; limitador.ratio.value = 12; limitador.attack.value = .003; limitador.release.value = .15;
+  limitador.connect(oac.destination);
+  let hay = false;
+  for (const el of proy.elementos) {
+    if (el.inicio >= dur) continue;
+    const g = oac.createGain(); g.connect(limitador);
+    if (el.tipo === "video" || el.tipo === "audio") {
+      const b = await bufferAudio(el.media, oac); if (!b) continue;
+      const s = oac.createBufferSource(); s.buffer = b; s.connect(g);
+      const vol = clamp(el.volumen ?? 1, 0, 1), fin = el.inicio + el.dur;
+      g.gain.setValueAtTime(el.fadeIn > 0 ? 0 : vol, el.inicio);
+      if (el.fadeIn > 0) g.gain.linearRampToValueAtTime(vol, el.inicio + el.fadeIn);
+      if (el.fadeOut > 0) { g.gain.setValueAtTime(vol, Math.max(el.inicio, fin - el.fadeOut)); g.gain.linearRampToValueAtTime(0, fin); }
+      s.start(el.inicio, el.recorte || 0, el.dur); hay = true;
+    }
+    const sfx = el.tipo === "efecto" ? el.sonido : (!ES_AUDIO(el) && el.sonido !== "ninguno" ? el.sonido : null);
+    if (sfx && sfx !== "ninguno") {
+      const d = sintetizar(sfx, SR), b = oac.createBuffer(2, d.length, SR); b.copyToChannel(d, 0); b.copyToChannel(d, 1);
+      const s = oac.createBufferSource(); s.buffer = b; g.gain.value = el.tipo === "efecto" ? (el.volumen ?? 1) * .8 : .8; s.connect(g); s.start(el.inicio); hay = true;
+    }
+  }
+  return hay ? await oac.startRendering() : null;
+}
+async function buscarCodec(W, H, fps, bitrate) {
+  // H.264 primero (lo abre cualquier editor); VP9 como respaldo en navegadores sin H.264.
+  for (const codec of ["avc1.640034", "avc1.640033", "avc1.640032", "avc1.64002A", "avc1.640028", "avc1.4D0034", "avc1.42003E", "vp09.00.51.08", "vp09.00.41.08", "vp09.00.40.08"]) {
+    const cfg = { codec, width: W, height: H, bitrate, framerate: fps, latencyMode: "quality" };
+    if (codec.startsWith("avc")) cfg.avc = { format: "avc" };
+    try { const r = await VideoEncoder.isConfigSupported(cfg); if (r.supported) return cfg; } catch (e) { /* probar el siguiente */ }
+  }
+  return null;
+}
+function esperarSeek(v, t) {
+  return new Promise(res => {
+    if (!v || v.readyState < 1) return res();
+    if (Math.abs(v.currentTime - t) < .001 && v.readyState >= 2) return res();
+    const fin = () => { v.removeEventListener("seeked", fin); clearTimeout(to); res(); };
+    const to = setTimeout(fin, 3000);
+    v.addEventListener("seeked", fin); v.currentTime = t;
+  });
+}
+let cancelarExport = false;
+async function exportar() {
+  const estado = $("#expEstado"), barra = $("#expBarra"), boton = $("#expIniciar");
+  const fallo = msg => { estado.textContent = msg; estado.classList.add("error"); boton.disabled = false; };
+  estado.classList.remove("error");
+  if (!("VideoEncoder" in window) || !window.Mp4Muxer) return fallo("Este navegador no puede crear el MP4. Abre el editor en Chrome o Edge actualizados.");
+  if (est.play) reproducir(false);
+  const alto = +$("#expRes").value, fps = +$("#expFps").value;
+  const { W, H } = dimensiones(alto);
+  const bitrate = Math.round(W * H * fps * .33);
+  const cfg = await buscarCodec(W, H, fps, bitrate);
+  if (!cfg) return fallo(`Tu equipo no puede codificar a ${W}×${H}. Prueba una calidad menor.`);
+  boton.disabled = true; cancelarExport = false;
+  const dur = duracionProyecto(), n = Math.round(dur * fps);
+  estado.textContent = "Mezclando audio…";
+  let audio = null; try { audio = await mezclarAudio(dur); } catch (e) { console.warn(e); }
+  let aacCfg = null;
+  if (audio && "AudioEncoder" in window) {
+    for (const c of [{ codec: "mp4a.40.2", sampleRate: 48000, numberOfChannels: 2, bitrate: 256000 }, { codec: "opus", sampleRate: 48000, numberOfChannels: 2, bitrate: 192000 }]) {
+      try { if ((await AudioEncoder.isConfigSupported(c)).supported) { aacCfg = c; break; } } catch (e) { /* siguiente */ }
+    }
+  }
+  const muxer = new Mp4Muxer.Muxer({ target: new Mp4Muxer.ArrayBufferTarget(), fastStart: "in-memory", firstTimestampBehavior: "offset",
+    video: { codec: cfg.codec.startsWith("vp09") ? "vp9" : "avc", width: W, height: H, frameRate: fps },
+    audio: aacCfg ? { codec: aacCfg.codec === "opus" ? "opus" : "aac", numberOfChannels: 2, sampleRate: 48000 } : undefined });
+  let errorEnc = null;
+  const venc = new VideoEncoder({ output: (ch, meta) => muxer.addVideoChunk(ch, meta), error: e => { errorEnc = e; } });
+  venc.configure(cfg);
+  const lz = document.createElement("canvas"); lz.width = W; lz.height = H;
+  const cx = lz.getContext("2d", { alpha: false });
+  for (const el of proy.elementos) if (el.tipo === "video") { const v = videoDe(el); if (v) { v.pause(); v.muted = true; } }
+  const t0 = performance.now();
+  for (let i = 0; i < n; i++) {
+    if (cancelarExport || errorEnc) break;
+    const t = i / fps;
+    const activos = proy.elementos.filter(e => e.tipo === "video" && t >= e.inicio && t < e.inicio + e.dur);
+    await Promise.all(activos.map(e => esperarSeek(videoDe(e), (e.recorte || 0) + t - e.inicio)));
+    renderizar(cx, W, H, t, false);
+    const frame = new VideoFrame(lz, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
+    venc.encode(frame, { keyFrame: i % (fps * 2) === 0 }); frame.close();
+    while (venc.encodeQueueSize > 6) await new Promise(r => setTimeout(r, 4));
+    if (i % 5 === 0) {
+      const k = (i + 1) / n, trans = (performance.now() - t0) / 1000, resta = trans / k - trans;
+      barra.style.width = (k * 100).toFixed(1) + "%";
+      estado.textContent = `Cuadro ${i + 1} de ${n} · faltan ~${Math.max(1, Math.round(resta))} s`;
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+  for (const el of proy.elementos) if (el.tipo === "video") { const v = videoDe(el); if (v) v.muted = false; }
+  if (cancelarExport) { try { venc.close(); } catch (e) { /* nada */ } boton.disabled = false; estado.textContent = "Exportación cancelada."; barra.style.width = "0"; return; }
+  await venc.flush(); venc.close();
+  if (errorEnc) return fallo("Falló la codificación: " + errorEnc.message);
+  if (aacCfg && audio) {
+    estado.textContent = "Codificando audio…";
+    const aenc = new AudioEncoder({ output: (ch, meta) => muxer.addAudioChunk(ch, meta), error: e => { errorEnc = e; } });
+    aenc.configure(aacCfg);
+    const L = audio.getChannelData(0), Rr = audio.getChannelData(1), bloque = 1024;
+    for (let i = 0; i < L.length; i += bloque) {
+      const m = Math.min(bloque, L.length - i), datos = new Float32Array(m * 2);
+      datos.set(L.subarray(i, i + m), 0); datos.set(Rr.subarray(i, i + m), m);
+      const ad = new AudioData({ format: "f32-planar", sampleRate: 48000, numberOfFrames: m, numberOfChannels: 2, timestamp: Math.round(i / 48000 * 1e6), data: datos });
+      aenc.encode(ad); ad.close();
+      if (aenc.encodeQueueSize > 20) await new Promise(r => setTimeout(r, 2));
+    }
+    await aenc.flush(); aenc.close();
+  }
+  muxer.finalize();
+  const blob = new Blob([muxer.target.buffer], { type: "video/mp4" });
+  barra.style.width = "100%";
+  const nombre = (proy.nombre || "video").replace(/[^\w\- áéíóúñ]/gi, "").trim() + ` ${H >= 2160 || W >= 2160 ? "4K" : Math.min(W, H) + "p"}.mp4`;
+  const notas = [];
+  if (cfg.codec.startsWith("vp09")) notas.push("en VP9 porque este navegador no tiene H.264; para CapCut o Premiere exporta desde Chrome o Edge");
+  if (audio && !aacCfg) notas.push("sin audio: este navegador no codifica audio");
+  estado.textContent = `Listo: ${(blob.size / 1048576).toFixed(1)} MB${notas.length ? " (" + notas.join("; ") + ")" : ""}. Guardando…`;
+  const r = await ofrecerArchivo(nombre, blob);
+  estado.textContent = r === "cancelado" ? "No se guardó. Puedes intentarlo otra vez." : r === "grande" ? "El archivo es muy grande para esta app; prueba 1080p." : `Video listo: ${nombre} (${(blob.size / 1048576).toFixed(1)} MB)${notas.length ? " · " + notas.join("; ") : ""}.`;
+  boton.disabled = false;
+}
+$("#btnExportar").onclick = () => { $("#modalExport").hidden = false; $("#expEstado").textContent = ""; $("#expBarra").style.width = "0";
+  $("#expInfo").textContent = `Duración ${fmtTiempo(duracionProyecto())}. Se renderiza cuadro por cuadro en tu navegador con el audio mezclado, en MP4 (H.264) de alta calidad. Funciona mejor en Chrome o Edge.`; };
+$("#expCancelar").onclick = () => { cancelarExport = true; $("#modalExport").hidden = true; };
+$("#expIniciar").onclick = () => exportar().catch(e => { $("#expEstado").textContent = "Error: " + e.message; $("#expEstado").classList.add("error"); $("#expIniciar").disabled = false; });
+
+/* ===================================================================
+   16. Asistente: describe la animación y Claude la arma
+   =================================================================== */
+let asis = { modo: "escena", texto: "", dur: 6, ocupado: false };
+function promptAsistente() {
+  const { W, H } = dimensiones(1080);
+  return `Eres un motion designer de videos explicativos en español (estilo documental de YouTube: fondo liso, títulos condensados en mayúsculas, narración en gris que aparece palabra por palabra, ilustraciones de línea con un color de acento, fotos recortadas, cámara que hace zoom y se desplaza).
+Crea una secuencia animada para un editor. Responde SOLO con JSON: {"elementos":[...],"camara":[...]}.
+Pantalla ${W}x${H}. Tiempos en segundos desde 0. x,y = centro en fracción de pantalla (0..1); pueden salirse (ej. y:-0.8) si la cámara viaja hasta allá. Tamaños "tam" en px pensados para una pantalla de 1080 de alto.
+Campos comunes: tipo, inicio, dur, x, y, escala(1), rot, capa (0 = al frente, números mayores van detrás), entrada (${ENTRADAS.map(e => e[0]).join("|")}), tEntrada, salida (${SALIDAS.map(e => e[0]).join("|")}), tSalida, mov (${MOVS.map(e => e[0]).join("|")}), sonido (${SONIDOS.join("|")}), camara (true si se mueve con la cámara; false para textos fijos de narración).
+Colores: "@texto", "@gris", "@acento", "@fondo", "@tinta", "@papel" o "#RRGGBB".
+Tipos:
+- texto: texto, tam, color, fuente (${FUENTES.map(f => f.id).join("|")}), animTexto (palabras|letras|ninguna), ritmo (s por palabra, 0.15-0.3), efectoPalabra (subir|pop|aparecer|corte), resaltar ("palabra1,palabra2"), estiloResalte (color|caja|subrayado|circulo), alinear (centro|izquierda|derecha), anchoMax (0.2-1), mayus (bool).
+- ilustracion: ilus (uno de: ${[...ILUS, ...proy.ilusPropias].map(i => i.id).join(", ")}), tam (ancho en px, 100-700).
+- fondo: color, transicion (v|barrido|barrido-arriba|circulo|persianas|desvanecer|corte), tEntrada. Cubre toda la pantalla; ponlo con capa alta.
+- forma: figura (pildora|rect|circulo), w, h, color, radio.
+- linea: x, y, x2, y2, color, grosor (4-10), flecha (bool), curva (-0.5..0.5); usa entrada "dibujar".
+- contador: desde, hasta, prefijo, sufijo, decimales, tConteo, tam, color.
+- lupa: x, y, x2, y2, radio, aumento (amplía lo que hay debajo).
+camara: lista de {t, z (zoom, 1 = normal), x, y (centro visto), curva (suave|lineal|corte)}. Úsala para acercarte a detalles o recorrer escalas y líneas de tiempo.
+Reglas: escenas limpias, máximo 3-4 cosas a la vez, textos cortos y contundentes, nada encimado ilegible, todo dentro de la pantalla visible en su momento. Usa sonidos con moderación. La duración total debe ser cercana a ${asis.dur} s.`;
+}
+function normalizarSugerido(e) {
+  if (!e || !TIPOS[e.tipo] || ["video", "foto", "audio", "efecto"].includes(e.tipo)) return null;
+  const o = { _t: e.tipo, _p: Number.isFinite(+e.capa) ? clamp(Math.round(+e.capa), 0, 8) : (e.tipo === "fondo" ? 3 : e.tipo === "texto" ? 0 : 1) };
+  const base = { ...BASE, ...DEF[e.tipo] };
+  for (const k of Object.keys(base).concat(["inicio", "dur"])) {
+    if (e[k] === undefined) continue;
+    const ref = base[k];
+    if (typeof ref === "number" || k === "inicio" || k === "dur") { const n = +e[k]; if (Number.isFinite(n)) o[k] = n; }
+    else if (typeof ref === "boolean") o[k] = !!e[k];
+    else o[k] = String(e[k]);
+  }
+  if (e.tipo === "texto" && !o.fuente) o.fuente = Ft();
+  if (o.fuente && !FUENTES.some(f => f.id === o.fuente)) o.fuente = Ft();
+  if (e.tipo === "ilustracion" && ![...ILUS, ...proy.ilusPropias].some(i => i.id === o.ilus)) o.ilus = "foco";
+  if (o.entrada && !ENTRADAS.some(x => x[0] === o.entrada)) delete o.entrada;
+  if (o.salida && !SALIDAS.some(x => x[0] === o.salida)) delete o.salida;
+  if (o.mov && !MOVS.some(x => x[0] === o.mov)) delete o.mov;
+  if (o.sonido && !SONIDOS.includes(o.sonido)) delete o.sonido;
+  o.inicio = Math.max(0, o.inicio || 0); if (o.dur !== undefined) o.dur = clamp(o.dur, .2, 120);
+  return o;
+}
+function pintarAsistente(p) {
+  p.innerHTML = `<div class="nota">Describe lo que quieres ver y Claude arma la animación en el cabezal, con tus colores. Después puedes cambiar cualquier detalle.</div>
+    <div class="seg" role="group" aria-label="Qué vas a escribir"><button data-modo="escena" aria-pressed="${asis.modo === "escena"}">Describir una escena</button><button data-modo="guion" aria-pressed="${asis.modo === "guion"}">Pegar mi narración</button></div>
+    <div class="asis campo"><label for="asisTexto">${asis.modo === "escena" ? "¿Qué animación quieres?" : "Tu guion de narración"}</label>
+    <textarea id="asisTexto" placeholder="${asis.modo === "escena" ? "Ej: Explica que el Sol es 109 veces más grande que la Tierra: aparece la Tierra pequeña, la cámara se aleja y aparece el Sol enorme con el número 109 contando." : "Pega aquí lo que vas a decir. Claude reparte el texto al ritmo de la voz y pone animaciones que ilustran cada idea."}">${escapar(asis.texto)}</textarea></div>
+    <div class="campo"><label for="asisDur">Duración aproximada (segundos)</label><input type="number" id="asisDur" min="2" max="90" value="${asis.dur}"></div>
+    <button class="btn prim" id="asisIr"${asis.ocupado ? " disabled" : ""}>${asis.ocupado ? "Creando…" : "Crear animación"}</button>
+    <div class="estado" id="asisEstado" role="status"></div>
+    <div class="h">Ideas</div>
+    <div class="plantillas">${["Una línea del tiempo con 4 fechas de la historia del chocolate", "Comparar el tamaño de la Tierra y la Luna con un contador de kilómetros", "Una lupa que revela un detalle escondido en un billete", "Presentar a Frida Kahlo con su nombre gigante y un dato curioso"].map(i => `<button class="plantilla" data-idea="${escapar(i)}"><small>${i}</small></button>`).join("")}</div>`;
+  $$("[data-modo]", p).forEach(b => b.onclick = () => { asis.modo = b.dataset.modo; pintarAsistente(p); });
+  $("#asisTexto", p).oninput = e => { asis.texto = e.target.value; };
+  $("#asisDur", p).oninput = e => { asis.dur = clamp(+e.target.value || 6, 2, 90); };
+  $$("[data-idea]", p).forEach(b => b.onclick = () => { asis.modo = "escena"; asis.texto = b.dataset.idea; pintarAsistente(p); });
+  $("#asisIr", p).onclick = crearConClaude;
+}
+async function crearConClaude() {
+  const st = () => $("#asisEstado");
+  if (!asis.texto.trim()) { st().textContent = "Escribe primero qué animación quieres."; return; }
+  let sample = null;
+  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { sample = null; }
+  if (!sample) { st().textContent = "El asistente funciona cuando abres este editor dentro de Claude. Mientras, usa las Plantillas."; st().classList.add("error"); return; }
+  asis.ocupado = true; pintarLib();
+  st().textContent = "Claude está diseñando la animación…";
+  const t0 = est.t;
+  try {
+    const pedido = asis.modo === "escena" ? `Escena pedida: ${asis.texto}` : `Guion de narración (habla a ~2.6 palabras por segundo; la narración NO se escribe completa en pantalla, solo frases clave en gris palabra por palabra y animaciones que ilustren cada idea en el momento en que se dice):\n${asis.texto}`;
+    const r = await sample.json(promptAsistente() + "\n\n" + pedido, { modelTier: "complex", cache: false });
+    const els = (r && Array.isArray(r.elementos) ? r.elementos : []).map(normalizarSugerido).filter(Boolean);
+    if (!els.length) throw { message: "La respuesta no traía elementos." };
+    const durTotal = Math.max(...els.map(e => (e.inicio || 0) + (e.dur || 3)));
+    const cam = Array.isArray(r.camara) ? r.camara.filter(k => k && Number.isFinite(+k.t)).map(k => ({ t: +k.t, z: clamp(+k.z || 1, .2, 8), x: Number.isFinite(+k.x) ? +k.x : .5, y: Number.isFinite(+k.y) ? +k.y : .5, curva: ["suave", "lineal", "corte", "salida", "entrada"].includes(k.curva) ? k.curva : "suave" })) : [];
+    const nuevos = insertarGrupo(els.map(e => ({ ...e, dur: e.dur || Math.max(.5, durTotal - (e.inicio || 0)) })), durTotal, t0, cam);
+    asis.ocupado = false; pintarLib(); seleccionar(nuevos[0].id); registrar(); irA(t0);
+    $("#asisEstado").textContent = `Listo: ${nuevos.length} elementos en ${fmtTiempo(t0)}. Dale play y ajusta lo que quieras.`;
+  } catch (e) {
+    asis.ocupado = false; pintarLib();
+    const m = e && e.code === "rate_limited" ? "Demasiadas peticiones seguidas; espera un momento." : e && e.code === "not_granted" ? "No se dio permiso para usar a Claude en esta página." : "No se pudo crear: " + ((e && e.message) || "error desconocido");
+    $("#asisEstado").textContent = m; $("#asisEstado").classList.add("error");
+  }
+}
+
+/* ===================================================================
+   17. Proyecto de ejemplo y arranque
+   =================================================================== */
+function proyectoEjemplo() {
+  const prev = proy, pl = id => PLANTILLAS.find(p => p.id === id);
+  proy = proyectoVacio(); proy.nombre = "Ejemplo: la escala Scoville";
+  insertarGrupo(pl("personaje").gen(), 4.6, 0);
+  insertarGrupo([
+    Li({ x: .18, y: .88, x2: .8, y2: .88, color: "@tinta", grosor: 5, flecha: false, tEntrada: .5 }, 2),
+    I({ ilus: "hombre", tam: 560, x: .44, y: .586, entrada: "subir" }, 1),
+    I({ ilus: "campana", tam: 190, x: .68, y: .748, inicio: .4, sonido: "pop" }, 0),
+    T({ texto: "¿QUÉ CHILES ERAN LOS MÁS PICANTES DEL MUNDO?", color: "@gris", tam: 72, anchoMax: .55, y: .14, camara: false, ritmo: .24, inicio: .9 }, 0),
+  ], 5.4, 4.6, [{ t: 0, z: 1, x: .5, y: .5 }, { t: 1.8, z: 1, x: .5, y: .5 }, { t: 3.8, z: 1.8, x: .64, y: .7 }]);
+  insertarGrupo(pl("golpe").gen(), 3.6, 9.3);
+  insertarGrupo(pl("escala").gen(), 8, 12.9, pl("escala").cam);
+  const r = proy; proy = prev; return r;
+}
+async function iniciar() {
+  await abrirBD();
+  const regs = await bdTodos();
+  await Promise.all(regs.map(r => registrarMedio(r).catch(() => null)));
+  let guardado = null;
+  try { guardado = localStorage.getItem("estudio-animaciones-proyecto"); } catch (e) { guardado = null; }
+  let p = null;
+  if (guardado) { try { p = JSON.parse(guardado); } catch (e) { p = null; } }
+  cargarProyecto(p && Array.isArray(p.elementos) ? p : proyectoEjemplo());
+  hist.pila = [JSON.stringify(proy)]; hist.pos = 0; actualizarBotonesHist();
+  if (window.ResizeObserver) new ResizeObserver(ajustarLienzo).observe($("#lienzoWrap")); else ajustarLienzo();
+  Promise.all(FUENTES.map(f => document.fonts.load(`${f.estilo || "normal"} ${f.peso} 40px ${f.css}`).catch(() => null))).then(() => { pedirRender(); pintarLib(); });
+  document.fonts.ready.then(pedirRender);
+}
+iniciar();
+</script>

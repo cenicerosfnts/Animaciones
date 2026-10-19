@@ -11,6 +11,29 @@ se escribe un `.yaml` y el programa renderiza el video. Dos estilos:
   contadores, zoom de golpe y sacudidas.
   ▶️ [`ejemplos/demo.mp4`](ejemplos/demo.mp4) (guion: [`ejemplos/demo.yaml`](ejemplos/demo.yaml))
 
+## Editor visual (recomendado)
+
+`editor/index.html` es un editor de video completo en el navegador, sin instalar nada:
+
+- **Línea de tiempo** con capas, cortar (S), recortar bordes, mover entre capas, imán, deshacer.
+- **Tus medios**: importa videos, fotos, música y tu narración (se quedan en tu navegador).
+- **Plantillas** estilo documental: presentación de personaje, pregunta narrada, golpe de color en V,
+  escala vertical, línea del tiempo, lupa, cita, lugar en el mapa, comparación, capítulo, nota a mano…
+- **Ilustraciones** con buscador que toman los colores de tu estilo y se pueden "dibujar solas";
+  importa tus propios SVG.
+- **Mi estilo**: paletas (Documental rojo, Museo, Noche, México…) y tipografías para todo el video.
+- **Cámara virtual** con puntos de zoom/paneo, **lupa** que amplía lo que hay debajo, sonidos (pop, whoosh, ding…).
+- **Claude**: describe una escena o pega tu narración y arma las animaciones (al abrirlo dentro de Claude).
+- **Exportar MP4** H.264 + AAC en 720p, 1080p, 2K o 4K a 24/30/60 fps (Chrome, Edge o Safari).
+
+Ábrelo en tu computadora con:
+
+```bash
+python -m animaciones --editor
+```
+
+## Motor por línea de comandos
+
 ## Instalación
 
 Necesitas **Python 3.9+** y **ffmpeg**.

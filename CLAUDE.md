@@ -10,7 +10,11 @@ por palabra para la narración, ilustraciones de línea negra con acento rojo, c
 y transición `fondo` con `entrada_estilo: v`. Ilustraciones nuevas: SVG en `animaciones/recursos/`
 con trazo #111 de 6-7 px, puntas redondas, relleno blanco y acentos #D0161B.
 
-Flujo:
+El editor visual vive en `editor/index.html` (un solo archivo, JS sin dependencias salvo mp4-muxer;
+sin `<html>/<head>` porque se publica como Artifact en https://claude.ai/artifact/47vks5cDGMpc4SqoDTx5hV;
+`python -m animaciones --editor` lo sirve localmente). Plantillas en `PLANTILLAS`, ilustraciones en `ILUS`.
+
+Flujo con el motor YAML:
 1. Escribe/edita el guion en `guiones/<nombre>.yaml` (ver `README.md` para el catálogo y
    `ejemplos/demo.yaml` como referencia de todas las opciones).
 2. Revisa con vistas previas antes del render completo:
