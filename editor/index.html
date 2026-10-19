@@ -175,6 +175,32 @@ button { cursor: pointer; }
 .barra i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 .toast { position: fixed; left: 50%; bottom: calc(var(--tl-h, 250px) + 16px); transform: translateX(-50%); background: var(--panel-3); border: 1px solid var(--line); padding: 8px 14px; border-radius: 6px; z-index: 30; }
 
+/* Asistente de nuevo video y revisión */
+.caja.ancha { width: min(780px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; }
+.plataformas { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.plataforma { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; text-align: left; display: grid; gap: 4px; }
+.plataforma[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.plataforma b { font-family: var(--f-display); font-size: 18px; font-weight: 800; text-transform: uppercase; }
+.plataforma small { color: var(--muted); font-size: 11.5px; line-height: 1.35; }
+.forma-ico { display: inline-block; border: 2px solid currentColor; border-radius: 3px; vertical-align: middle; margin-right: 6px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; }
+.chips button[aria-pressed="true"] { border-color: var(--accent); color: var(--fg); background: var(--panel-3); }
+.lista-clips { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+.lista-clips label { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: grid; cursor: pointer; }
+.lista-clips label:has(input:checked) { border-color: var(--accent); }
+.lista-clips .mini { aspect-ratio: 16/9; background: #000 center/cover; display: grid; place-items: center; color: var(--muted); }
+.lista-clips span { padding: 4px 6px; font-size: 11px; display: flex; gap: 6px; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.revision { display: grid; gap: 6px; }
+.chequeo { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: start; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.chequeo .ico { font-weight: 700; text-align: center; }
+.chequeo.ok .ico { color: var(--ok); } .chequeo.aviso .ico { color: var(--amber); } .chequeo.error .ico { color: #ff6b5e; }
+.chequeo b { display: block; font-weight: 600; } .chequeo small { color: var(--muted); line-height: 1.4; display: block; }
+.resumen { display: flex; gap: 14px; flex-wrap: wrap; font-family: var(--f-mono); font-size: 12px; }
+.pub { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 6px; }
+.pub pre { margin: 0; white-space: pre-wrap; font-family: var(--f-ui); line-height: 1.45; }
+.fuente-muestra { font-size: 26px; line-height: 1.1; color: var(--fg); padding: 4px 0 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
 /* Teléfono / pantallas angostas: todo en una columna */
 @media (max-width: 900px) {
   body { overflow: auto; }
@@ -198,14 +224,16 @@ button { cursor: pointer; }
       <button id="fmt-16x9" data-fmt="16:9" aria-pressed="true">16:9</button>
       <button id="fmt-9x16" data-fmt="9:16" aria-pressed="false">9:16</button>
       <button id="fmt-1x1" data-fmt="1:1" aria-pressed="false">1:1</button>
+      <button id="fmt-4x5" data-fmt="4:5" aria-pressed="false">4:5</button>
     </div>
     <span class="esp"></span>
     <button class="btn icon" id="btnDeshacer" title="Deshacer (Ctrl+Z)" aria-label="Deshacer">↶</button>
     <button class="btn icon" id="btnRehacer" title="Rehacer (Ctrl+Shift+Z)" aria-label="Rehacer">↷</button>
-    <button class="btn" id="btnNuevo">Nuevo</button>
+    <button class="btn" id="btnNuevo">Nuevo video</button>
     <button class="btn" id="btnAbrir">Abrir</button>
     <button class="btn" id="btnGuardar">Guardar proyecto</button>
     <input type="file" id="archivoProyecto" accept=".json,application/json" hidden>
+    <button class="btn" id="btnRevisar">Revisar</button>
     <button class="btn prim" id="btnExportar">Exportar video</button>
   </header>
 
@@ -215,7 +243,7 @@ button { cursor: pointer; }
       <button role="tab" id="tab-elementos" aria-selected="false" data-tab="elementos">Elementos</button>
       <button role="tab" id="tab-ilus" aria-selected="false" data-tab="ilus">Ilustraciones</button>
       <button role="tab" id="tab-medios" aria-selected="false" data-tab="medios">Medios</button>
-      <button role="tab" id="tab-estilo" aria-selected="false" data-tab="estilo">Mi estilo</button>
+      <button role="tab" id="tab-estilo" aria-selected="false" data-tab="estilo">Mi identidad</button>
       <button role="tab" id="tab-asis" aria-selected="false" data-tab="asis">Claude</button>
     </div>
     <div class="scroll" id="panelLib"></div>
@@ -1241,6 +1269,8 @@ $("#imanTl").addEventListener("change", e => { est.iman = e.target.checked; });
    11. Plantillas (animaciones listas para editar)
    =================================================================== */
 const Ft = () => proy.estilo.fuenteTitulo || "barlow";
+const Fn = () => proy.estilo.fuenteNarracion || Ft();
+const Fm = () => proy.estilo.fuenteMano || "mano";
 const T = (o, p = 0) => ({ _t: "texto", _p: p, fuente: Ft(), ...o });
 const I = (o, p = 1) => ({ _t: "ilustracion", _p: p, ...o });
 const Fo = (o, p = 3) => ({ _t: "fondo", _p: p, ...o });
@@ -1254,7 +1284,7 @@ const PLANTILLAS = [
     T({ texto: "SCOVILLE", tam: 270, y: .5, inicio: 1.1, dur: 2.6, animTexto: "ninguna", entrada: "zoom", tEntrada: .35, tSalida: .5, sonido: "golpe" }, 1),
     I({ ilus: "hombre", tam: 230, x: .45, y: .5, inicio: 1.4, dur: 3.2, entrada: "pop", sonido: "pop" }, 0) ] },
   { id: "pregunta", n: "Pregunta narrada", d: "Texto gris que aparece palabra por palabra al ritmo de tu voz. No se mueve con la cámara.", dur: 4, gen: () => [
-    T({ texto: "¿QUÉ CHILES ERAN LOS MÁS PICANTES DEL MUNDO?", color: "@gris", tam: 72, anchoMax: .55, y: .14, camara: false, ritmo: .24 }) ] },
+    T({ texto: "¿QUÉ CHILES ERAN LOS MÁS PICANTES DEL MUNDO?", fuente: Fn(), color: "@gris", tam: 72, anchoMax: .55, y: .14, camara: false, ritmo: .24 }) ] },
   { id: "golpe", n: "Golpe de color", d: "El fondo entra en “V” con tu color de acento y aparece un título de dos niveles.", dur: 3.6, gen: () => [
     Fo({ color: "@acento", transicion: "v", sonido: "whoosh" }),
     T({ texto: "LA ESCALA", color: "#FFFFFF", tam: 110, y: .37, inicio: .6, ritmo: .25 }),
@@ -1301,7 +1331,7 @@ const PLANTILLAS = [
     T({ texto: "CAPÍTULO 1", color: "@acento", tam: 56, y: .38, inicio: .5, ritmo: .15 }),
     T({ texto: "EL ORIGEN DEL PICANTE", color: "@fondo", tam: 150, y: .53, anchoMax: .8, inicio: .8, ritmo: .18 }) ] },
   { id: "mano", n: "Nota a mano", d: "Texto escrito letra por letra con letra a mano. Para frases de la gente.", dur: 2.6, gen: () => [
-    T({ texto: "¡ASUMAKINA, SÍ PICA!", fuente: "mano", tam: 84, animTexto: "letras", ritmo: .18, y: .2, camara: false, sonido: "tecleo" }) ] },
+    T({ texto: "¡ASUMAKINA, SÍ PICA!", fuente: Fm(), tam: 84, animTexto: "letras", ritmo: .18, y: .2, camara: false, sonido: "tecleo" }) ] },
   { id: "experimento", n: "Experimento", d: "Un vaso que se aclara poco a poco, con dos datos a los lados.", dur: 5, gen: () => [
     Li({ x: .3, y: .8, x2: .7, y2: .8, color: "@tinta", grosor: 5, flecha: false, tEntrada: .5 }),
     I({ ilus: "vaso", tam: 280, y: .62, dur: 2.6, entrada: "aparecer", tSalida: .8 }),
@@ -1358,8 +1388,8 @@ function agregar(tipo, props = {}) {
 }
 const AGREGAR = [
   ["Título", "Grande, palabra por palabra", () => agregar("texto", { texto: "TU TÍTULO", fuente: Ft(), tam: 160 })],
-  ["Narración", "Texto gris al ritmo de la voz", () => agregar("texto", { texto: "LO QUE VAS DICIENDO APARECE AQUÍ", fuente: Ft(), color: "@gris", tam: 72, anchoMax: .6, y: .14, camara: false, ritmo: .24 })],
-  ["Texto a mano", "Se escribe letra por letra", () => agregar("texto", { texto: "¡NO PUEDE SER!", fuente: "mano", tam: 84, animTexto: "letras", ritmo: .18, camara: false, y: .2, sonido: "tecleo" })],
+  ["Narración", "Texto gris al ritmo de la voz", () => agregar("texto", { texto: "LO QUE VAS DICIENDO APARECE AQUÍ", fuente: Fn(), color: "@gris", tam: 72, anchoMax: .6, y: .14, camara: false, ritmo: .24 })],
+  ["Texto a mano", "Se escribe letra por letra", () => agregar("texto", { texto: "¡NO PUEDE SER!", fuente: Fm(), tam: 84, animTexto: "letras", ritmo: .18, camara: false, y: .2, sonido: "tecleo" })],
   ["Subtítulo", "Abajo, con caja oscura", () => agregar("texto", { texto: "Escribe aquí lo que dices", fuente: "barlow-semi", mayus: false, tam: 54, color: "#FFFFFF", caja: "#000000B0", y: .86, camara: false, animTexto: "ninguna", entrada: "aparecer", tEntrada: .15, tSalida: .15 })],
   ["Fondo de color", "Pantalla completa con transición", () => agregar("fondo", { sonido: "whoosh" })],
   ["Etiqueta", "Forma de color para poner texto", () => agregar("forma", {})],
@@ -1384,7 +1414,7 @@ function pintarLib() {
   const p = $("#panelLib"); const tab = est.tabLib;
   $$("#tabsLib button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
   if (tab === "plantillas") {
-    p.innerHTML = `<div class="nota">Animaciones completas listas para editar. Se agregan en el punto donde está el cabezal rojo y toman los colores de <b>Mi estilo</b>.</div>
+    p.innerHTML = `<div class="nota">Animaciones completas listas para editar. Se agregan en el punto donde está el cabezal rojo y toman los colores de <b>Mi identidad</b>.</div>
       <div class="plantillas">${PLANTILLAS.map(pl => `<button class="plantilla" data-pl="${pl.id}"><b>${pl.n}</b><small>${pl.d}</small></button>`).join("")}</div>`;
     $$("[data-pl]", p).forEach(b => b.onclick = () => insertarPlantilla(PLANTILLAS.find(x => x.id === b.dataset.pl)));
   } else if (tab === "elementos") {
@@ -1396,7 +1426,7 @@ function pintarLib() {
   } else if (tab === "ilus") {
     const sel = elPorId(est.sel);
     p.innerHTML = `<input class="buscar" id="buscarIlus" type="search" placeholder="Buscar: persona, comida, viaje, historia…" value="${escapar(filtroIlus)}" aria-label="Buscar ilustraciones">
-      <div class="nota">${sel && sel.tipo === "ilustracion" ? "Haz clic en una para <b>reemplazar</b> la ilustración seleccionada." : "Haz clic para agregar. Se dibujan con los colores de Mi estilo."}</div>
+      <div class="nota">${sel && sel.tipo === "ilustracion" ? "Haz clic en una para <b>reemplazar</b> la ilustración seleccionada." : "Haz clic para agregar. Se dibujan con los colores de Mi identidad."}</div>
       <div class="grid-ilus" id="gridIlus"></div>
       <button class="btn" id="btnSvgPropio">Importar mis propias ilustraciones (SVG)</button>
       <div class="nota">Tip: dibuja en Illustrator, Figma o Procreate y exporta en SVG. Si usas negro #111, blanco y rojo #D0161B, tomarán los colores de tu estilo y podrán “dibujarse solas”.</div>`;
@@ -1423,20 +1453,7 @@ function pintarLib() {
     z.ondragleave = () => z.classList.remove("sobre");
     z.ondrop = e => { e.preventDefault(); z.classList.remove("sobre"); importarArchivos(e.dataTransfer.files); };
   } else if (tab === "estilo") {
-    p.innerHTML = `<div class="nota">Tu identidad visual. Todo lo que use estos colores cambia al instante: textos, fondos e ilustraciones.</div>
-      <div class="h">Paletas</div>
-      <div class="paletas">${Object.entries(PALETAS).map(([n, c]) => `<button class="paleta" data-paleta="${n}"><span>${n}</span><span class="sw">${["fondo", "texto", "gris", "acento", "papel"].map(k => `<i style="background:${c[k]}"></i>`).join("")}</span></button>`).join("")}</div>
-      <div class="h">Mis colores</div>
-      ${TOKENS.map(([k, n]) => `<div class="campo"><label for="tok-${k}">${n} <span style="font-family:var(--f-mono)">${proy.estilo[k]}</span></label><input type="color" id="tok-${k}" data-tok="${k}" value="${proy.estilo[k]}" style="width:100%;height:30px;background:var(--panel-2);border:1px solid var(--line);border-radius:5px"></div>`).join("")}
-      <div class="h">Tipografía de títulos</div>
-      <div class="campo"><select id="fuenteTitulo" aria-label="Tipografía de títulos">${FUENTES.map(f => `<option value="${f.id}"${(proy.estilo.fuenteTitulo || "barlow") === f.id ? " selected" : ""}>${f.nombre}</option>`).join("")}</select></div>
-      <button class="btn" id="aplicarFuente">Usar esta tipografía en todos los títulos</button>`;
-    $$("[data-paleta]", p).forEach(b => b.onclick = () => { Object.assign(proy.estilo, PALETAS[b.dataset.paleta]); pintarLib(); pedirRender(); registrar(); });
-    $$("[data-tok]", p).forEach(i => i.oninput = () => { proy.estilo[i.dataset.tok] = i.value; i.previousElementSibling.querySelector("span").textContent = i.value; pedirRender(); registrarLuego(); });
-    $("#fuenteTitulo").onchange = e => { proy.estilo.fuenteTitulo = e.target.value; registrar(); };
-    $("#aplicarFuente").onclick = () => { const f = proy.estilo.fuenteTitulo || "barlow"; let n = 0;
-      for (const el of proy.elementos) if ((el.tipo === "texto" || el.tipo === "contador") && !["barlow-light", "mano", "marcador", "caveat", "maquina"].includes(el.fuente)) { el.fuente = f; n++; }
-      pedirRender(); registrar(); aviso(n + " títulos actualizados."); };
+    pintarIdentidad(p);
   } else if (tab === "asis") pintarAsistente(p);
 }
 function agregarMedio(id) {
@@ -1472,7 +1489,7 @@ const ESQUEMAS = {
     TX("resaltar", "Palabras a resaltar (separadas por coma)"), S("estiloResalte", "Estilo del resaltado", [["color", "Color"], ["caja", "Caja de color"], ["subrayado", "Marcatextos"], ["circulo", "Círculo a mano"]]),
     C("colorResalte", "Color del resaltado"), R("anchoMax", "Ancho máximo", .15, 1), R("interlineado", "Interlineado", .7, 2),
     C("caja", "Caja detrás del texto", true), R("borde", "Contorno", 0, 20, .5), C("colorBorde", "Color del contorno"), X("sombra", "Sombra")],
-  ilustracion: [{ k: "ilus", l: "Ilustración", tipo: "ilus" }, R("tam", "Tamaño", 30, 1800, 1), X("recolor", "Usar los colores de Mi estilo")],
+  ilustracion: [{ k: "ilus", l: "Ilustración", tipo: "ilus" }, R("tam", "Tamaño", 30, 1800, 1), X("recolor", "Usar los colores de Mi identidad")],
   foto: [{ k: "media", l: "Foto", tipo: "media", mt: "imagen" }, R("tam", "Tamaño", 60, 2400, 1), S("marco", "Marco", [["ninguno", "Sin marco"], ["blanco", "Foto impresa (borde blanco)"], ["esquinas", "Esquinas redondas"], ["redondo", "Círculo"], ["ovalo", "Óvalo dorado (retrato)"]]), X("bn", "Blanco y negro"), X("sombra", "Sombra")],
   video: [{ k: "media", l: "Video", tipo: "media", mt: "video" }, N("recorte", "Empieza en el segundo (del archivo)"), R("volumen", "Volumen", 0, 1),
     S("ajuste", "Encuadre", [["cubrir", "Llenar la pantalla"], ["contener", "Completo (con bordes)"], ["libre", "Libre (tamaño manual)"]]), R("tam", "Tamaño (si es libre)", 60, 2400, 1),
@@ -1690,13 +1707,6 @@ $$(".seg [data-fmt]").forEach(b => b.onclick = () => { proy.formato = b.dataset.
 $("#btnDeshacer").onclick = deshacer; $("#btnRehacer").onclick = rehacer;
 $("#btnPlay").onclick = () => reproducir(); $("#btnInicio").onclick = () => irA(0);
 $("#btnCortar").onclick = cortar; $("#btnDuplicar").onclick = duplicar; $("#btnBorrar").onclick = borrar;
-let confirmarNuevo = null;
-$("#btnNuevo").onclick = e => {
-  const b = e.currentTarget;
-  if (!confirmarNuevo) { b.textContent = "¿Seguro? Clic otra vez"; confirmarNuevo = setTimeout(() => { b.textContent = "Nuevo"; confirmarNuevo = null; }, 3000); return; }
-  clearTimeout(confirmarNuevo); confirmarNuevo = null; b.textContent = "Nuevo";
-  cargarProyecto(proyectoVacio()); aviso("Proyecto nuevo. Puedes deshacer con Ctrl+Z.");
-};
 $("#btnGuardar").onclick = async () => {
   const r = await ofrecerArchivo((proy.nombre || "proyecto").replace(/[^\w\- áéíóúñ]/gi, "") + ".json", new Blob([JSON.stringify(proy, null, 1)], { type: "application/json" }));
   if (r !== "cancelado") aviso("Proyecto guardado como archivo. Tus videos y fotos no van dentro: guárdalos aparte.");
@@ -1714,7 +1724,7 @@ $("#archivoProyecto").onchange = async e => {
 document.addEventListener("keydown", e => {
   const tag = (e.target.tagName || "").toLowerCase();
   if (["input", "textarea", "select"].includes(tag) && e.key !== "Escape") return;
-  if (!$("#modalExport").hidden) return;
+  if (!$("#modalExport").hidden || ($("#modalGeneral") && !$("#modalGeneral").hidden)) { if (e.key === "Escape") { $("#modalExport").hidden = true; const g = $("#modalGeneral"); if (g && !nv.ocupado) g.hidden = true; } return; }
   const mod = e.ctrlKey || e.metaKey;
   if (e.key === " ") { e.preventDefault(); reproducir(); }
   else if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? rehacer() : deshacer(); }
@@ -1751,10 +1761,11 @@ async function mezclarAudio(dur) {
   const limitador = oac.createDynamicsCompressor();
   limitador.threshold.value = -3; limitador.knee.value = 6; limitador.ratio.value = 12; limitador.attack.value = .003; limitador.release.value = .15;
   limitador.connect(oac.destination);
+  const general = oac.createGain(); general.gain.value = Math.pow(10, (proy.gananciaDb || 0) / 20); general.connect(limitador);
   let hay = false;
   for (const el of proy.elementos) {
     if (el.inicio >= dur) continue;
-    const g = oac.createGain(); g.connect(limitador);
+    const g = oac.createGain(); g.connect(general);
     if (el.tipo === "video" || el.tipo === "audio") {
       const b = await bufferAudio(el.media, oac); if (!b) continue;
       const s = oac.createBufferSource(); s.buffer = b; s.connect(g);
@@ -1877,7 +1888,7 @@ $("#expIniciar").onclick = () => exportar().catch(e => { $("#expEstado").textCon
    16. Asistente: describe la animación y Claude la arma
    =================================================================== */
 let asis = { modo: "escena", texto: "", dur: 6, ocupado: false };
-function promptAsistente() {
+function promptAsistente(durObjetivo = asis.dur) {
   const { W, H } = dimensiones(1080);
   return `Eres un motion designer de videos explicativos en español (estilo documental de YouTube: fondo liso, títulos condensados en mayúsculas, narración en gris que aparece palabra por palabra, ilustraciones de línea con un color de acento, fotos recortadas, cámara que hace zoom y se desplaza).
 Crea una secuencia animada para un editor. Responde SOLO con JSON: {"elementos":[...],"camara":[...]}.
@@ -1893,7 +1904,7 @@ Tipos:
 - contador: desde, hasta, prefijo, sufijo, decimales, tConteo, tam, color.
 - lupa: x, y, x2, y2, radio, aumento (amplía lo que hay debajo).
 camara: lista de {t, z (zoom, 1 = normal), x, y (centro visto), curva (suave|lineal|corte)}. Úsala para acercarte a detalles o recorrer escalas y líneas de tiempo.
-Reglas: escenas limpias, máximo 3-4 cosas a la vez, textos cortos y contundentes, nada encimado ilegible, todo dentro de la pantalla visible en su momento. Usa sonidos con moderación. La duración total debe ser cercana a ${asis.dur} s.`;
+Reglas: escenas limpias, máximo 3-4 cosas a la vez, textos cortos y contundentes, nada encimado ilegible, todo dentro de la pantalla visible en su momento. Usa sonidos con moderación. La duración total debe ser cercana a ${durObjetivo} s.`;
 }
 function normalizarSugerido(e) {
   if (!e || !TIPOS[e.tipo] || ["video", "foto", "audio", "efecto"].includes(e.tipo)) return null;
@@ -1989,5 +2000,363 @@ async function iniciar() {
   Promise.all(FUENTES.map(f => document.fonts.load(`${f.estilo || "normal"} ${f.peso} 40px ${f.css}`).catch(() => null))).then(() => { pedirRender(); pintarLib(); });
   document.fonts.ready.then(pedirRender);
 }
+</script>
+
+<script>
+"use strict";
+/* ===================================================================
+   18. Mi identidad: se guarda en el navegador y se usa en cada video nuevo
+   =================================================================== */
+const TIPOS_CONTENIDO = ["Cultura e historia", "Datos curiosos", "Biografías", "Misterios", "Viajes", "Comida", "Ciencia", "Noticias explicadas", "Educación", "Entretenimiento"];
+const TONOS = ["Curioso y cercano", "Serio documental", "Divertido", "Épico", "Misterioso", "Inspirador"];
+const IDENT_DEF = { canal: "", tipo: "Cultura e historia", tono: "Curioso y cercano", cierre: "Sígueme para más historias como esta",
+  paleta: "Documental rojo", colores: { ...PALETAS["Documental rojo"] }, fuenteTitulo: "barlow", fuenteNarracion: "barlow", fuenteMano: "mano" };
+let identidad = { ...IDENT_DEF };
+function cargarIdentidad() {
+  try { const g = JSON.parse(localStorage.getItem("estudio-identidad") || "null"); if (g) identidad = { ...IDENT_DEF, ...g, colores: { ...IDENT_DEF.colores, ...(g.colores || {}) } }; } catch (e) { /* sin guardar */ }
+}
+function guardarIdentidad() { try { localStorage.setItem("estudio-identidad", JSON.stringify(identidad)); } catch (e) { /* almacenamiento bloqueado */ } }
+function estiloDeIdentidad() {
+  return { ...identidad.colores, fuenteTitulo: identidad.fuenteTitulo, fuenteNarracion: identidad.fuenteNarracion, fuenteMano: identidad.fuenteMano };
+}
+const muestraFuente = id => { const f = fuentePorId(id); return `font-family:${f.css.replace(/"/g, "'")};font-weight:${f.peso};font-style:${f.estilo || "normal"}`; };
+function pintarIdentidad(p) {
+  const selFuente = (id, v) => `<select id="${id}">${FUENTES.map(f => `<option value="${f.id}"${v === f.id ? " selected" : ""}>${f.nombre}</option>`).join("")}</select>`;
+  p.innerHTML = `<div class="nota">Tu marca. Se guarda en este navegador y se usa en cada video nuevo. Al cambiar colores o letras se actualiza el video abierto.</div>
+    <div class="h">Tu canal</div>
+    <div class="campo"><label for="id-canal">Nombre del canal o usuario</label><input type="text" id="id-canal" placeholder="@tucanal" value="${escapar(identidad.canal)}"></div>
+    <div class="campo"><label for="id-tipo">Tipo de contenido</label><select id="id-tipo">${TIPOS_CONTENIDO.map(t => `<option${identidad.tipo === t ? " selected" : ""}>${t}</option>`).join("")}</select></div>
+    <div class="campo"><label for="id-tono">Tono</label><select id="id-tono">${TONOS.map(t => `<option${identidad.tono === t ? " selected" : ""}>${t}</option>`).join("")}</select></div>
+    <div class="campo"><label for="id-cierre">Frase de cierre</label><input type="text" id="id-cierre" value="${escapar(identidad.cierre)}"></div>
+    <div class="h">Tipografías</div>
+    <div class="campo"><label for="id-ft">Títulos</label>${selFuente("id-ft", identidad.fuenteTitulo)}<div class="fuente-muestra" id="mu-ft" style="${muestraFuente(identidad.fuenteTitulo)}">LA ESCALA SCOVILLE</div></div>
+    <div class="campo"><label for="id-fn">Narración en pantalla</label>${selFuente("id-fn", identidad.fuenteNarracion)}<div class="fuente-muestra" id="mu-fn" style="${muestraFuente(identidad.fuenteNarracion)};color:var(--muted)">¿Y CÓMO PODRÍA SABERLO?</div></div>
+    <div class="campo"><label for="id-fm">Frases a mano</label>${selFuente("id-fm", identidad.fuenteMano)}<div class="fuente-muestra" id="mu-fm" style="${muestraFuente(identidad.fuenteMano)}">¡Ya ni pica, compa!</div></div>
+    <button class="btn" id="aplicarFuentes">Aplicar estas letras a todo este video</button>
+    <div class="h">Paleta</div>
+    <div class="paletas">${Object.entries(PALETAS).map(([n, c]) => `<button class="paleta" data-paleta="${n}" aria-pressed="${identidad.paleta === n}"><span>${n}</span><span class="sw">${["fondo", "texto", "gris", "acento", "papel"].map(k => `<i style="background:${c[k]}"></i>`).join("")}</span></button>`).join("")}</div>
+    <div class="h">Colores a tu gusto</div>
+    ${TOKENS.map(([k, n]) => `<div class="campo"><label for="tok-${k}">${n} <span style="font-family:var(--f-mono)">${proy.estilo[k]}</span></label><input type="color" id="tok-${k}" data-tok="${k}" value="${proy.estilo[k]}" style="width:100%;height:30px;background:var(--panel-2);border:1px solid var(--line);border-radius:5px"></div>`).join("")}`;
+  const texto = (id, k) => $("#" + id, p).oninput = e => { identidad[k] = e.target.value; guardarIdentidad(); };
+  texto("id-canal", "canal"); texto("id-cierre", "cierre");
+  $("#id-tipo", p).onchange = e => { identidad.tipo = e.target.value; guardarIdentidad(); };
+  $("#id-tono", p).onchange = e => { identidad.tono = e.target.value; guardarIdentidad(); };
+  for (const [id, k, mu] of [["id-ft", "fuenteTitulo", "mu-ft"], ["id-fn", "fuenteNarracion", "mu-fn"], ["id-fm", "fuenteMano", "mu-fm"]]) {
+    $("#" + id, p).onchange = e => { identidad[k] = proy.estilo[k] = e.target.value; guardarIdentidad(); registrar();
+      const m = $("#" + mu, p); m.style.fontFamily = fuentePorId(e.target.value).css; m.style.fontWeight = fuentePorId(e.target.value).peso; m.style.fontStyle = fuentePorId(e.target.value).estilo || "normal"; };
+  }
+  $("#aplicarFuentes", p).onclick = () => {
+    let n = 0;
+    for (const el of proy.elementos) {
+      if (el.tipo === "contador") { el.fuente = identidad.fuenteTitulo; n++; continue; }
+      if (el.tipo !== "texto") continue;
+      if (el.animTexto === "letras" || ["mano", "marcador", "caveat"].includes(el.fuente)) el.fuente = identidad.fuenteMano;
+      else if (el.color === "@gris") el.fuente = identidad.fuenteNarracion;
+      else if (!["barlow-light", "maquina"].includes(el.fuente)) el.fuente = identidad.fuenteTitulo;
+      n++;
+    }
+    pedirRender(); registrar(); aviso(n + " textos actualizados con tus letras.");
+  };
+  $$("[data-paleta]", p).forEach(b => b.onclick = () => { identidad.paleta = b.dataset.paleta; identidad.colores = { ...PALETAS[b.dataset.paleta] };
+    Object.assign(proy.estilo, identidad.colores); guardarIdentidad(); pintarLib(); pedirRender(); registrar(); });
+  $$("[data-tok]", p).forEach(i => i.oninput = () => { proy.estilo[i.dataset.tok] = identidad.colores[i.dataset.tok] = i.value; identidad.paleta = "";
+    i.previousElementSibling.querySelector("span").textContent = i.value; guardarIdentidad(); pedirRender(); registrarLuego(); });
+}
+
+/* ===================================================================
+   19. Nuevo video: plataforma + tema + duración + clips -> borrador (con IA)
+   =================================================================== */
+const PLATAFORMAS = {
+  youtube: { n: "YouTube", fmt: "16:9", max: 43200, dur: 480, d: "Video horizontal largo. Lo ideal: 6 a 15 min con capítulos.", res: "2160" },
+  shorts: { n: "YouTube Shorts", fmt: "9:16", max: 180, dur: 50, d: "Vertical, hasta 3 min. Gancho en el primer segundo.", res: "1080" },
+  reel: { n: "Reel de Instagram", fmt: "9:16", max: 180, dur: 45, d: "Vertical, hasta 3 min. Funciona mejor entre 30 y 90 s.", res: "1080" },
+  tiktok: { n: "TikTok", fmt: "9:16", max: 600, dur: 60, d: "Vertical, hasta 10 min. Ritmo rápido y subtítulos.", res: "1080" },
+  historia: { n: "Historia", fmt: "9:16", max: 60, dur: 15, d: "Instagram o Facebook. Hasta 60 s por historia.", res: "1080" },
+  feed: { n: "Post de feed", fmt: "4:5", max: 900, dur: 30, d: "Instagram o Facebook en el muro. Formato 4:5.", res: "1080" },
+};
+const ZONAS_SEGURAS = { "9:16": { x0: .06, x1: .84, y0: .1, y1: .74 }, "4:5": { x0: .05, x1: .95, y0: .05, y1: .9 }, "16:9": { x0: .04, x1: .96, y0: .05, y1: .92 }, "1:1": { x0: .05, x1: .95, y0: .05, y1: .92 } };
+let nv = { plataforma: "reel", tema: "", guion: "", dur: 45, ritmo: "Dinámico", clips: new Set(), ocupado: false };
+function abrirModal(html) {
+  let m = $("#modalGeneral");
+  if (!m) { m = document.createElement("div"); m.className = "modal"; m.id = "modalGeneral"; document.body.appendChild(m);
+    m.addEventListener("click", e => { if (e.target === m && !nv.ocupado) m.hidden = true; }); }
+  m.innerHTML = `<div class="caja ancha" role="dialog" aria-modal="true">${html}</div>`; m.hidden = false; return m;
+}
+const cerrarModal = () => { const m = $("#modalGeneral"); if (m) m.hidden = true; };
+function pintarNuevoVideo() {
+  const pl = PLATAFORMAS[nv.plataforma];
+  const lista = Object.values(medios).filter(m => m.tipo !== "audio");
+  const icono = f => { const [a, b] = f.split(":").map(Number); const k = 16 / Math.max(a, b); return `<span class="forma-ico" style="width:${a * k}px;height:${b * k}px"></span>`; };
+  const m = abrirModal(`<h2>Nuevo video</h2>
+    <div class="campo"><span class="lbl">¿Dónde lo vas a publicar?</span><div class="plataformas">${Object.entries(PLATAFORMAS).map(([k, v]) => `<button class="plataforma" data-pl="${k}" aria-pressed="${nv.plataforma === k}"><b>${icono(v.fmt)}${v.n}</b><small>${v.d}</small></button>`).join("")}</div></div>
+    <div class="campo"><label for="nv-tema">¿De qué trata el video?</label><textarea id="nv-tema" rows="3" placeholder="Ej: La historia del chocolate: de bebida sagrada de los mexicas a dulce de todo el mundo.">${escapar(nv.tema)}</textarea></div>
+    <div class="fila">
+      <div class="campo"><label for="nv-dur">Duración que quieres (segundos)</label><input type="number" id="nv-dur" min="5" max="${pl.max}" value="${nv.dur}"></div>
+      <div class="campo"><span class="lbl">Ritmo</span><div class="chips">${["Calmado", "Dinámico", "Muy rápido"].map(r => `<button data-ritmo="${r}" aria-pressed="${nv.ritmo === r}">${r}</button>`).join("")}</div></div>
+    </div>
+    <div class="campo"><label for="nv-guion">Tu guion o narración (opcional)</label><textarea id="nv-guion" rows="4" placeholder="Si ya escribiste lo que vas a decir, pégalo aquí y las animaciones seguirán ese orden.">${escapar(nv.guion)}</textarea></div>
+    <div class="campo"><span class="lbl">Tus clips y fotos para este video <button class="btn" id="nv-importar" style="padding:3px 8px">Importar más</button></span>
+      ${lista.length ? `<div class="lista-clips">${lista.map(x => `<label><div class="mini" style="${x.mini ? `background-image:url('${x.mini}')` : ""}">${x.mini ? "" : "▶"}</div><span><input type="checkbox" data-clip="${x.id}"${nv.clips.has(x.id) ? " checked" : ""}> ${escapar(x.nombre)}</span></label>`).join("")}</div>`
+        : `<div class="nota">Aún no importas clips. Puedes crear un video solo con animaciones o importar tus fragmentos ahora.</div>`}</div>
+    <div class="nota">Se usa tu identidad: <b>${escapar(identidad.canal || "sin nombre de canal")}</b> · ${escapar(identidad.tipo)} · ${escapar(identidad.tono)} · paleta ${escapar(identidad.paleta || "personalizada")}. Cámbiala en “Mi identidad”.</div>
+    <div class="estado" id="nv-estado" role="status"></div>
+    <div class="acciones" style="justify-content:space-between">
+      <button class="btn" id="nv-vacio">Proyecto en blanco</button>
+      <span class="acciones"><button class="btn" id="nv-cancelar">Cancelar</button><button class="btn" id="nv-basico">Armar sin IA</button><button class="btn prim" id="nv-ia"${nv.ocupado ? " disabled" : ""}>${nv.ocupado ? "Creando…" : "Crear borrador con IA"}</button></span>
+    </div>`);
+  $$("[data-pl]", m).forEach(b => b.onclick = () => { nv.plataforma = b.dataset.pl; nv.dur = Math.min(nv.dur, PLATAFORMAS[nv.plataforma].max); if (nv.dur === pl.dur || !nv.tema) nv.dur = PLATAFORMAS[nv.plataforma].dur; pintarNuevoVideo(); });
+  $$("[data-ritmo]", m).forEach(b => b.onclick = () => { nv.ritmo = b.dataset.ritmo; pintarNuevoVideo(); });
+  $("#nv-tema", m).oninput = e => { nv.tema = e.target.value; };
+  $("#nv-guion", m).oninput = e => { nv.guion = e.target.value; };
+  $("#nv-dur", m).oninput = e => { nv.dur = clamp(+e.target.value || 30, 3, pl.max); };
+  $$("[data-clip]", m).forEach(c => c.onchange = () => { c.checked ? nv.clips.add(c.dataset.clip) : nv.clips.delete(c.dataset.clip); });
+  $("#nv-importar", m).onclick = () => { esperarImportacion = true; $("#archivoMedios").click(); };
+  $("#nv-cancelar", m).onclick = cerrarModal;
+  $("#nv-vacio", m).onclick = () => { const p = proyectoVacio(); p.formato = pl.fmt; p.estilo = { ...p.estilo, ...estiloDeIdentidad() }; est.t = 0; cargarProyecto(p); cerrarModal(); aviso("Proyecto en blanco. Puedes deshacer con Ctrl+Z."); };
+  $("#nv-basico", m).onclick = () => { if (!nv.tema.trim()) return estadoNv("Escribe primero de qué trata el video."); armarSinIA(); cerrarModal(); };
+  $("#nv-ia", m).onclick = crearVideoConIA;
+}
+let esperarImportacion = false;
+const estadoNv = (t, err = true) => { const e = $("#nv-estado"); if (e) { e.textContent = t; e.classList.toggle("error", err); } };
+function clipsElegidos() { return [...nv.clips].map(id => medios[id]).filter(Boolean); }
+function nuevoProyectoBase() {
+  const pl = PLATAFORMAS[nv.plataforma], p = proyectoVacio();
+  p.formato = pl.fmt; p.estilo = { ...p.estilo, ...estiloDeIdentidad() };
+  p.nombre = nv.tema.trim().split(/[.:\n]/)[0].slice(0, 60) || "Nuevo video";
+  p.plataforma = nv.plataforma; p.objetivo = nv.dur; p.tema = nv.tema; p.publicacion = null; p.derechos = {};
+  return p;
+}
+function ponerClips(lista) { // [{media, inicio, recorte, dur}] en la capa del fondo
+  for (const c of lista) {
+    const m = medios[c.media]; if (!m) continue;
+    const recorte = m.tipo === "video" ? clamp(+c.recorte || 0, 0, Math.max(0, (m.dur || 1) - .3)) : 0;
+    const max = m.tipo === "video" ? Math.max(.3, (m.dur || 5) - recorte) : 60;
+    const el = nuevoElemento(m.tipo === "video" ? "video" : "foto", { media: m.id, nombre: m.nombre, inicio: Math.max(0, +c.inicio || 0), recorte, dur: clamp(+c.dur || Math.min(max, 4), .3, max), pista: 50 });
+    if (el.tipo === "foto") Object.assign(el, { marco: "ninguno", tam: 1080 * dimensiones(1080).W / Math.min(dimensiones(1080).W, dimensiones(1080).H), entrada: "aparecer", mov: "acercar", sombra: false });
+    proy.elementos.push(el);
+  }
+  compactarPistas();
+}
+function armarSinIA() {
+  const pl = PLATAFORMAS[nv.plataforma], clips = clipsElegidos();
+  proy = nuevoProyectoBase(); est.t = 0;
+  let t = 0; const lista = [];
+  const porClip = clips.length ? Math.max(2, nv.dur / clips.length) : 0;
+  for (const m of clips) { const d = m.tipo === "video" ? Math.min(m.dur || porClip, porClip) : Math.min(4, porClip); lista.push({ media: m.id, inicio: t, recorte: 0, dur: d }); t += d; }
+  ponerClips(lista);
+  const total = clips.length ? t : nv.dur, vertical = pl.fmt === "9:16";
+  const titulo = nv.tema.trim().split(/[.:\n]/)[0].toUpperCase().slice(0, 70);
+  const sinClips = !clips.length;
+  const grupo = [];
+  if (sinClips) grupo.push(Fo({ color: "@fondo", transicion: "corte", inicio: 0, dur: total }, 4));
+  grupo.push(T({ texto: titulo, tam: vertical ? 110 : 130, anchoMax: .8, y: vertical ? .3 : .45, inicio: .1, dur: 3.2, color: sinClips ? "@texto" : "#FFFFFF", sombra: !sinClips, ritmo: .16, sonido: "whoosh" }, 0));
+  grupo.push(T({ texto: identidad.cierre, fuente: Fn(), tam: vertical ? 64 : 70, anchoMax: .7, y: vertical ? .62 : .5, inicio: Math.max(3.5, total - 3), dur: 3, color: sinClips ? "@gris" : "#FFFFFF", sombra: !sinClips }, 0));
+  if (identidad.canal) grupo.push(T({ texto: identidad.canal, fuente: Fn(), mayus: false, tam: 50, y: vertical ? .7 : .6, inicio: Math.max(3.8, total - 2.7), dur: 2.7, color: "@acento", animTexto: "ninguna", entrada: "pop", sonido: "pop" }, 0));
+  insertarGrupo(grupo, total, 0);
+  cargarProyecto(proy); irA(0);
+  aviso("Estructura armada: título de gancho, tus clips en orden y cierre con tu frase. Agrega plantillas donde quieras.");
+}
+function cuadrosDe(m, n = 3) {
+  return new Promise(res => {
+    const salida = [], c = document.createElement("canvas"), x = c.getContext("2d");
+    const guardar = (fuente, w, h) => new Promise(r => { const k = 320 / Math.max(w, h); c.width = Math.round(w * k); c.height = Math.round(h * k); x.drawImage(fuente, 0, 0, c.width, c.height); c.toBlob(b => { if (b) salida.push(b); r(); }, "image/jpeg", .7); });
+    if (m.tipo === "imagen") { if (!m.img) return res([]); guardar(m.img, m.w, m.h).then(() => res(salida)); return; }
+    const v = document.createElement("video"); v.muted = true; v.preload = "auto"; v.src = m.url;
+    let i = 0; const tiempos = Array.from({ length: n }, (_, k) => (m.dur || 1) * (k + .5) / n);
+    const fin = () => { clearTimeout(to); v.removeAttribute("src"); res(salida); };
+    const to = setTimeout(fin, 8000);
+    v.onseeked = () => guardar(v, v.videoWidth, v.videoHeight).then(() => { i++; if (i < tiempos.length) v.currentTime = tiempos[i]; else fin(); });
+    v.onloadeddata = () => { if (!v.videoWidth) return fin(); v.currentTime = tiempos[0]; };
+    v.onerror = fin;
+  });
+}
+async function crearVideoConIA() {
+  if (!nv.tema.trim()) return estadoNv("Escribe primero de qué trata el video.");
+  let sample = null;
+  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { sample = null; }
+  if (!sample) return estadoNv("La IA funciona al abrir el editor dentro de Claude. Mientras, usa “Armar sin IA”.");
+  nv.ocupado = true; pintarNuevoVideo(); estadoNv("Revisando tus clips…", false);
+  const pl = PLATAFORMAS[nv.plataforma], clips = clipsElegidos();
+  const lim = await sample.limits().catch(() => null), maxImg = lim && lim.images ? lim.images.maxCount || 0 : 0;
+  const porClip = clips.length && maxImg ? clamp(Math.floor(maxImg / clips.length), 1, 3) : 0;
+  const imagenes = [], descClips = [];
+  for (const m of clips) {
+    const cs = porClip ? await cuadrosDe(m, porClip) : [];
+    descClips.push(`- id "${m.id}": ${m.tipo === "video" ? "video" : "foto"} “${m.nombre}”${m.tipo === "video" ? `, dura ${(m.dur || 0).toFixed(1)} s` : ""}${cs.length ? `, imágenes ${imagenes.length + 1}-${imagenes.length + cs.length} (cuadros al ${cs.map((_, k) => Math.round((k + .5) / cs.length * 100) + "%").join(", ")})` : ""}`);
+    imagenes.push(...cs);
+  }
+  proy = nuevoProyectoBase();
+  const prompt = `${promptAsistente(nv.dur)}
+
+AHORA HAZ UN VIDEO COMPLETO, no una sola escena.
+Plataforma: ${pl.n} (${pl.fmt}, máximo ${pl.max} s). Duración objetivo: ${nv.dur} s. Ritmo: ${nv.ritmo}.
+Canal: ${identidad.canal || "(sin nombre)"}. Tipo de contenido: ${identidad.tipo}. Tono: ${identidad.tono}. Frase de cierre: “${identidad.cierre}”.
+Tema: ${nv.tema}
+${nv.guion.trim() ? "Guion/narración del creador (respeta su orden; ~2.6 palabras por segundo):\n" + nv.guion : "No hay guion: propón tú la narración en pantalla con frases cortas."}
+${clips.length ? `Clips del creador (úsalos como base visual, en el orden que mejor cuente la historia; recorta lo aburrido):\n${descClips.join("\n")}` : "No hay clips: haz el video 100% animado (usa fondos de color, ilustraciones, cámara)."}
+Además de "elementos" y "camara", devuelve:
+"clips": [{"media": id, "inicio": s en el video final, "recorte": s desde donde empieza dentro del archivo, "dur": s}] sin pasarte de la duración de cada archivo, sin huecos entre clips. Las animaciones van ENCIMA de los clips (capa 0-3); si una sección es solo animación, pon ahí un "fondo".
+"publicacion": {"titulo": título atractivo y honesto (sin clickbait engañoso), "descripcion": 2-4 frases + llamado a la acción, "hashtags": 5-10}
+"notas": 2-4 consejos breves para grabar o mejorar este video.
+Estructura: GANCHO fuerte en los primeros 2 s (pregunta o dato sorprendente en pantalla), desarrollo con un cambio visual cada ${nv.ritmo === "Calmado" ? "4-6" : nv.ritmo === "Dinámico" ? "2-4" : "1-2"} s, y cierre con la frase de cierre${identidad.canal ? " y el nombre del canal" : ""}. ${pl.fmt === "9:16" ? "Es vertical: deja libre el 25% de abajo y el lado derecho (ahí van los botones de la app); textos grandes (tam 70-130)." : ""}`;
+  estadoNv("Claude está armando tu video…", false);
+  try {
+    const opciones = { modelTier: "complex", cache: false };
+    if (imagenes.length) opciones.images = imagenes;
+    const r = await sample.json(prompt, opciones);
+    const clipsR = Array.isArray(r && r.clips) ? r.clips.filter(c => c && medios[c.media]) : [];
+    ponerClips(clipsR);
+    const els = (r && Array.isArray(r.elementos) ? r.elementos : []).map(normalizarSugerido).filter(Boolean);
+    const finClips = proy.elementos.reduce((a, e) => Math.max(a, e.inicio + e.dur), 0);
+    const total = Math.max(finClips, ...els.map(e => (e.inicio || 0) + (e.dur || 3)), 1);
+    const cam = Array.isArray(r && r.camara) ? r.camara.filter(k => k && Number.isFinite(+k.t)).map(k => ({ t: +k.t, z: clamp(+k.z || 1, .2, 8), x: Number.isFinite(+k.x) ? +k.x : .5, y: Number.isFinite(+k.y) ? +k.y : .5, curva: ["suave", "lineal", "corte", "salida", "entrada"].includes(k.curva) ? k.curva : "suave" })) : [];
+    if (els.length) insertarGrupo(els.map(e => ({ ...e, dur: e.dur || Math.max(.5, total - (e.inicio || 0)) })), total, 0, cam);
+    if (r && r.publicacion) proy.publicacion = { titulo: String(r.publicacion.titulo || ""), descripcion: String(r.publicacion.descripcion || ""), hashtags: (Array.isArray(r.publicacion.hashtags) ? r.publicacion.hashtags : []).map(String) };
+    proy.notas = Array.isArray(r && r.notas) ? r.notas.map(String).slice(0, 5) : [];
+    if (!els.length && !clipsR.length) throw { message: "La respuesta llegó vacía." };
+    nv.ocupado = false; est.t = 0; cargarProyecto(proy); cerrarModal(); irA(0);
+    aviso(`Borrador listo: ${clipsR.length} clips y ${els.length} animaciones. Dale play y luego “Revisar”.`);
+  } catch (e) {
+    nv.ocupado = false; proy = JSON.parse(hist.pila[hist.pos]); pintarNuevoVideo();
+    estadoNv(e && e.code === "rate_limited" ? "Demasiadas peticiones seguidas; espera un momento." : e && e.code === "not_granted" ? "No se dio permiso para usar a Claude en esta página." : "No se pudo crear el borrador: " + ((e && e.message) || "error desconocido"));
+  }
+}
+$("#btnNuevo").onclick = () => { nv.clips = new Set(Object.values(medios).filter(m => m.tipo !== "audio").map(m => m.id).filter(id => nv.clips.has(id))); pintarNuevoVideo(); };
+const importarOriginal = importarArchivos;
+importarArchivos = async lista => { // al importar desde el asistente, los clips nuevos quedan marcados
+  const antes = new Set(Object.keys(medios)); await importarOriginal(lista);
+  if (esperarImportacion) { for (const id of Object.keys(medios)) if (!antes.has(id) && medios[id].tipo !== "audio") nv.clips.add(id); esperarImportacion = false; if (!$("#modalGeneral")?.hidden) pintarNuevoVideo(); }
+};
+
+/* ===================================================================
+   20. Revisión antes de publicar (calidad, derechos y monetización)
+   =================================================================== */
+let revisionIA = null;
+const medirLienzo = document.createElement("canvas");
+function chequeos(audio) {
+  const r = [], pl = PLATAFORMAS[proy.plataforma] || null, dur = duracionProyecto();
+  const add = (nivel, titulo, detalle, accion) => r.push({ nivel, titulo, detalle, accion });
+  // Formato y duración
+  if (pl) {
+    add(proy.formato === pl.fmt ? "ok" : "error", "Formato " + proy.formato, proy.formato === pl.fmt ? `Correcto para ${pl.n}.` : `${pl.n} usa ${pl.fmt}.`, proy.formato === pl.fmt ? null : { l: "Cambiar a " + pl.fmt, f: () => { proy.formato = pl.fmt; ajustarLienzo(); pintarTodo(); registrar(); } });
+    add(dur <= pl.max ? (proy.objetivo && Math.abs(dur - proy.objetivo) > proy.objetivo * .3 ? "aviso" : "ok") : "error", "Duración " + fmtTiempo(dur),
+      dur > pl.max ? `${pl.n} permite hasta ${fmtTiempo(pl.max)}. Recorta o divídelo en partes.` : proy.objetivo ? `Querías ~${proy.objetivo} s.` : "Dentro del límite.");
+  } else add("aviso", "Plataforma sin elegir", "Crea el video desde “Nuevo video” para revisar formato y duración de la red social.");
+  // Gancho
+  const vis = proy.elementos.filter(e => !ES_AUDIO(e));
+  const temprano = vis.filter(e => e.inicio < 1.5 && ["texto", "contador", "ilustracion", "video", "foto"].includes(e.tipo));
+  add(temprano.length ? "ok" : "aviso", "Gancho en los primeros segundos", temprano.length ? "Hay algo llamativo antes de 1.5 s." : "Nada aparece en el primer segundo y medio. La gente decide si se queda en ese tiempo: pon una pregunta o un dato fuerte.");
+  // Pantalla vacía
+  const intervalos = vis.map(e => [e.inicio, e.inicio + e.dur]).sort((a, b) => a[0] - b[0]);
+  let cursor = 0, huecos = [];
+  for (const [a, b] of intervalos) { if (a > cursor + .3) huecos.push([cursor, a]); cursor = Math.max(cursor, b); }
+  if (dur > cursor + .3) huecos.push([cursor, dur]);
+  add(huecos.length ? "aviso" : "ok", "Pantalla sin contenido", huecos.length ? "Tramos vacíos: " + huecos.slice(0, 4).map(([a, b]) => `${fmtTiempo(a)}–${fmtTiempo(b)}`).join(", ") : "Siempre hay algo en pantalla.", huecos.length ? { l: "Ir al primero", f: () => irA(huecos[0][0]) } : null);
+  // Medios faltantes
+  const faltan = proy.elementos.filter(e => (e.tipo === "video" || e.tipo === "foto" || e.tipo === "audio") && !medios[e.media]);
+  if (faltan.length) add("error", "Archivos faltantes", `${faltan.length} clips no tienen su archivo en este navegador. Impórtalos y elígelos en Propiedades.`, { l: "Ver el primero", f: () => { seleccionar(faltan[0].id); irA(faltan[0].inicio); } });
+  // Textos: tamaño, tiempo de lectura y zona segura
+  const zona = ZONAS_SEGURAS[proy.formato] || ZONAS_SEGURAS["16:9"];
+  const { W, H } = dimensiones(540); medirLienzo.width = W; medirLienzo.height = H;
+  const cx = medirLienzo.getContext("2d"), textos = vis.filter(e => e.tipo === "texto" || e.tipo === "contador");
+  const chicos = [], rapidos = [], fuera = [];
+  for (const e of textos) {
+    if (e.tam < (proy.formato === "16:9" ? 34 : 44) && e.texto !== "“") chicos.push(e);
+    if (e.tipo === "texto") { const pal = e.texto.split(/\s+/).filter(Boolean).length; if (pal / Math.max(.1, e.dur) > 3.5 && pal > 2) rapidos.push(e); }
+    const tm = e.inicio + Math.min(e.dur - .05, Math.max(e.tEntrada || 0, 0) + 1.2 + (e.animTexto === "palabras" ? e.texto.split(/\s+/).length * e.ritmo : 0));
+    renderizar(cx, W, H, Math.min(tm, e.inicio + e.dur - .01), true);
+    const c = cajas.find(b => b.id === e.id);
+    if (c && c.pts.some(([x, y]) => x < zona.x0 * W - 2 || x > zona.x1 * W + 2 || y < zona.y0 * H - 2 || y > zona.y1 * H + 2)) fuera.push(e);
+  }
+  pedirRender();
+  const ir = e => ({ l: "Ver", f: () => { seleccionar(e.id); irA(e.inicio + Math.min(1, e.dur / 2)); cerrarModal(); } });
+  add(chicos.length ? "aviso" : "ok", "Textos legibles en el celular", chicos.length ? `${chicos.length} textos muy pequeños (“${chicos[0].nombre}”).` : "Tamaños correctos.", chicos[0] ? ir(chicos[0]) : null);
+  add(rapidos.length ? "aviso" : "ok", "Tiempo para leer", rapidos.length ? `${rapidos.length} textos duran muy poco para leerse (“${rapidos[0].nombre}”). Dales más tiempo o acórtalos.` : "Da tiempo de leer todo.", rapidos[0] ? ir(rapidos[0]) : null);
+  add(fuera.length ? "aviso" : "ok", "Zona segura", fuera.length ? `${fuera.length} textos quedan donde la app pone botones o descripción, o se salen de la pantalla (“${fuera[0].nombre}”).` : "Ningún texto queda tapado por los botones de la app.", fuera[0] ? ir(fuera[0]) : null);
+  // Derechos de autor
+  const usados = [...new Set(proy.elementos.filter(e => e.media && medios[e.media]).map(e => e.media))];
+  proy.derechos = proy.derechos || {};
+  const dudosos = usados.filter(id => !["mio", "licencia"].includes(proy.derechos[id]));
+  add(dudosos.length ? "error" : "ok", "Derechos de música, clips y fotos",
+    dudosos.length ? "Marca abajo de quién es cada archivo. Música comercial o clips de otros pueden quitarte la monetización o bloquear el video." : "Todo es tuyo o tiene licencia.");
+  // Audio
+  if (audio) {
+    let pico = 0, suma = 0; const L = audio.getChannelData(0), Rr = audio.getChannelData(1);
+    for (let i = 0; i < L.length; i += 4) { const v = Math.max(Math.abs(L[i]), Math.abs(Rr[i])); if (v > pico) pico = v; suma += L[i] * L[i] + Rr[i] * Rr[i]; }
+    const rms = 10 * Math.log10(suma / (L.length / 4) / 2 + 1e-12), ajuste = Math.round(clamp(-16 - rms, -12, 12));
+    const bien = rms > -21 && rms < -12;
+    add(bien ? "ok" : "aviso", `Volumen promedio ${rms.toFixed(1)} dB`, bien ? "Nivel adecuado para redes." : rms <= -21 ? "Se escucha bajo; en el celular costará oírlo." : "Está muy fuerte; puede saturarse.",
+      bien ? null : { l: `Ajustar ${ajuste > 0 ? "+" : ""}${ajuste} dB`, f: () => { proy.gananciaDb = (proy.gananciaDb || 0) + ajuste; registrar(); abrirRevision(); } });
+  } else add("aviso", "Sin audio", "El video no tiene sonido. En redes casi siempre funciona mejor con voz o música.");
+  const narracion = proy.elementos.some(e => e.tipo === "audio") || proy.elementos.some(e => e.tipo === "video");
+  if (!narracion) add("aviso", "Sin voz", "Agrega tu narración (graba una nota de voz y súbela en Medios).");
+  // Exportación recomendada
+  add("ok", "Exportación recomendada", pl ? `${pl.res === "2160" ? "2160p (4K)" : "1080p"} a 30 fps para ${pl.n}.` : "1080p a 30 fps.");
+  return { lista: r, usados };
+}
+async function abrirRevision() {
+  const m = abrirModal(`<h2>Revisar antes de publicar</h2><div class="estado" role="status">Analizando el video…</div>`);
+  let audio = null; try { audio = await mezclarAudio(duracionProyecto()); } catch (e) { audio = null; }
+  const { lista, usados } = chequeos(audio);
+  const cuenta = n => lista.filter(x => x.nivel === n).length;
+  const pub = proy.publicacion;
+  const ia = revisionIA && revisionIA.proyecto === proy.nombre ? revisionIA : null;
+  m.querySelector(".caja").innerHTML = `<h2>Revisar antes de publicar</h2>
+    <div class="resumen"><span style="color:var(--ok)">✓ ${cuenta("ok")} bien</span><span style="color:var(--amber)">! ${cuenta("aviso")} por mejorar</span><span style="color:#ff6b5e">✕ ${cuenta("error")} por resolver</span></div>
+    <div class="revision">${lista.map((c, i) => `<div class="chequeo ${c.nivel}"><span class="ico">${c.nivel === "ok" ? "✓" : c.nivel === "aviso" ? "!" : "✕"}</span><div><b>${escapar(c.titulo)}</b><small>${escapar(c.detalle)}</small></div>${c.accion ? `<button class="btn" data-acc="${i}">${escapar(c.accion.l)}</button>` : "<span></span>"}</div>`).join("")}</div>
+    ${usados.length ? `<div class="h">¿De quién es cada archivo?</div><div class="revision">${usados.map(id => `<div class="chequeo ${["mio", "licencia"].includes(proy.derechos[id]) ? "ok" : "error"}"><span class="ico">${medios[id].tipo === "audio" ? "♪" : "▶"}</span><div><b>${escapar(medios[id].nombre)}</b><small>Música de artistas o clips de películas, TV u otros creadores sin permiso no se pueden monetizar.</small></div>
+      <select data-der="${id}" aria-label="Origen de ${escapar(medios[id].nombre)}"><option value="">¿De quién es?</option><option value="mio"${proy.derechos[id] === "mio" ? " selected" : ""}>Lo grabé / hice yo</option><option value="licencia"${proy.derechos[id] === "licencia" ? " selected" : ""}>Con licencia o libre de derechos</option><option value="otro"${proy.derechos[id] === "otro" ? " selected" : ""}>Es de alguien más</option></select></div>`).join("")}</div>` : ""}
+    <div class="h">Revisión con IA</div>
+    <div class="nota">Claude revisa ortografía, datos que conviene verificar y temas que limitan los anuncios (lenguaje fuerte, violencia, afirmaciones médicas o polémicas). Además te propone título, descripción y hashtags.</div>
+    <div class="revision" id="revIA">${ia ? ia.html : ""}</div>
+    <button class="btn" id="btnRevIA">${ia ? "Revisar otra vez con IA" : "Revisar textos con IA"}</button>
+    ${pub && (pub.titulo || pub.descripcion) ? `<div class="h">Para publicar</div><div class="pub"><pre id="pubTexto">${escapar(pub.titulo)}\n\n${escapar(pub.descripcion)}\n\n${escapar((pub.hashtags || []).map(h => h.startsWith("#") ? h : "#" + h.replace(/\s+/g, "")).join(" "))}</pre><button class="btn" id="copiarPub" style="justify-self:start">Copiar texto</button></div>` : ""}
+    ${proy.notas && proy.notas.length ? `<div class="h">Consejos para este video</div><div class="nota">${proy.notas.map(escapar).join("<br>")}</div>` : ""}
+    <div class="nota">Esta revisión ayuda, pero no garantiza la monetización: cada red decide con sus propias reglas (contenido original, derechos y normas de la comunidad).</div>
+    <div class="acciones" style="justify-content:flex-end"><button class="btn" id="revCerrar">Cerrar</button><button class="btn prim" id="revExportar">Exportar video</button></div>`;
+  $$("[data-acc]", m).forEach(b => b.onclick = () => lista[+b.dataset.acc].accion.f());
+  $$("[data-der]", m).forEach(s => s.onchange = () => { proy.derechos[s.dataset.der] = s.value; registrar(); abrirRevision(); });
+  $("#revCerrar", m).onclick = cerrarModal;
+  $("#revExportar", m).onclick = () => { cerrarModal(); const pl = PLATAFORMAS[proy.plataforma]; if (pl) $("#expRes").value = pl.res; $("#btnExportar").click(); };
+  const cp = $("#copiarPub", m); if (cp) cp.onclick = () => { const t = $("#pubTexto").textContent; navigator.clipboard.writeText(t).then(() => aviso("Copiado."), () => { const r = document.createRange(); r.selectNodeContents($("#pubTexto")); getSelection().removeAllRanges(); getSelection().addRange(r); aviso("Selecciona y copia con Ctrl+C."); }); };
+  $("#btnRevIA", m).onclick = revisarConIA;
+}
+async function revisarConIA() {
+  const caja = $("#revIA"), b = $("#btnRevIA");
+  let sample = null;
+  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { sample = null; }
+  if (!sample) { caja.innerHTML = `<div class="chequeo aviso"><span class="ico">!</span><div><b>IA no disponible aquí</b><small>Abre el editor dentro de Claude para usar la revisión con IA.</small></div><span></span></div>`; return; }
+  b.disabled = true; b.textContent = "Revisando…";
+  const textos = proy.elementos.filter(e => e.tipo === "texto").sort((a, c) => a.inicio - c.inicio).map(e => `[${fmtTiempo(e.inicio)}] (id ${e.id}) ${e.texto}`);
+  const pl = PLATAFORMAS[proy.plataforma];
+  const prompt = `Eres editor de contenido para redes sociales en español. Revisa este video antes de publicarlo en ${pl ? pl.n : "redes sociales"}.
+Tema: ${proy.tema || proy.nombre}. Canal: ${identidad.canal || "(sin nombre)"} · ${identidad.tipo} · tono ${identidad.tono}.
+Textos en pantalla (en orden):
+${textos.join("\n") || "(sin textos)"}
+Responde SOLO JSON: {"problemas":[{"nivel":"error"|"aviso","tipo":"ortografia"|"dato"|"monetizacion"|"claridad","id": id del texto o null,"texto":"qué está mal","sugerencia":"cómo queda corregido"}],"publicacion":{"titulo":"…","descripcion":"…","hashtags":["…"]}}
+Reglas: ortografía y acentos del español; marca como "dato" cualquier cifra, fecha o afirmación histórica/científica dudosa o que conviene verificar; "monetizacion" para lo que limita anuncios (groserías, violencia gráfica, drogas, temas médicos sin fuente, discurso de odio, clickbait engañoso). Si todo está bien, devuelve problemas vacío. Título honesto y atractivo, descripción de 2-4 frases con llamado a la acción, 5-10 hashtags.`;
+  try {
+    const r = await sample.json(prompt, { modelTier: "default", cache: false });
+    const probs = Array.isArray(r && r.problemas) ? r.problemas : [];
+    if (r && r.publicacion) proy.publicacion = { titulo: String(r.publicacion.titulo || ""), descripcion: String(r.publicacion.descripcion || ""), hashtags: (r.publicacion.hashtags || []).map(String) };
+    const html = probs.length ? probs.map(x => {
+      const el = x.id && elPorId(x.id), corr = el && x.tipo === "ortografia" && x.sugerencia && x.sugerencia.length < 200;
+      return `<div class="chequeo ${x.nivel === "error" ? "error" : "aviso"}"><span class="ico">${x.nivel === "error" ? "✕" : "!"}</span><div><b>${escapar({ ortografia: "Ortografía", dato: "Verifica este dato", monetizacion: "Puede limitar anuncios", claridad: "Claridad" }[x.tipo] || "Revisa")}${el ? " · " + escapar(el.nombre) : ""}</b><small>${escapar(x.texto || "")}${x.sugerencia ? " → " + escapar(x.sugerencia) : ""}</small></div>${corr ? `<button class="btn" data-corr="${el.id}" data-txt="${escapar(x.sugerencia)}">Corregir</button>` : el ? `<button class="btn" data-ver="${el.id}">Ver</button>` : "<span></span>"}</div>`;
+    }).join("") : `<div class="chequeo ok"><span class="ico">✓</span><div><b>Textos sin problemas</b><small>No se encontraron errores ni temas delicados.</small></div><span></span></div>`;
+    revisionIA = { proyecto: proy.nombre, html };
+    registrar(); await abrirRevision();
+    $$("[data-corr]").forEach(x => x.onclick = () => { const el = elPorId(x.dataset.corr); el.texto = x.dataset.txt; el.nombre = nombrePara(el); registrar(); pedirRender(); pintarTimeline(); x.textContent = "Corregido"; x.disabled = true; });
+    $$("[data-ver]").forEach(x => x.onclick = () => { const el = elPorId(x.dataset.ver); seleccionar(el.id); irA(el.inicio + Math.min(1, el.dur / 2)); cerrarModal(); });
+  } catch (e) {
+    b.disabled = false; b.textContent = "Revisar textos con IA";
+    caja.innerHTML = `<div class="chequeo error"><span class="ico">✕</span><div><b>No se pudo revisar</b><small>${escapar(e && e.code === "rate_limited" ? "Demasiadas peticiones; espera un momento." : (e && e.message) || "Error desconocido")}</small></div><span></span></div>`;
+  }
+}
+$("#btnRevisar").onclick = abrirRevision;
+
+/* Arranque */
+cargarIdentidad();
+const cargarOriginal = cargarProyecto;
+cargarProyecto = p => { cargarOriginal(p); revisionIA = null; };
 iniciar();
 </script>
