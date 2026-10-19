@@ -26,11 +26,30 @@ se escribe un `.yaml` y el programa renderiza el video. Dos estilos:
 - **Claude**: describe una escena o pega tu narración y arma las animaciones (al abrirlo dentro de Claude).
 - **Exportar MP4** H.264 + AAC en 720p, 1080p, 2K o 4K a 24/30/60 fps (Chrome, Edge o Safari).
 
-Ábrelo en tu computadora con:
+### Dónde abrirlo
+
+| | Dentro de Claude | Tu página (GitHub Pages) o `--editor` |
+|---|---|---|
+| IA (asistente, nuevo video, revisión) | Automática con tu cuenta | Con tu clave de API de Anthropic (botón **IA**) |
+| Grabar narración con micrófono + teleprompter | Bloqueado por Claude: usa “Grabar o elegir una nota de voz” | Sí |
+| Nube (proyectos + archivos de hasta 20 MB) | Sí, en tu cuenta | No (se guarda en el navegador y con “Guardar proyecto”) |
+| Exportar MP4 hasta 4K | Sí | Sí |
+
+- **En tu computadora:** `python -m animaciones --editor`
+- **Tu propia página web:** en GitHub ve a *Settings → Pages → Source: GitHub Actions*. Cada cambio en `main`
+  publica el editor en `https://<usuario>.github.io/<repositorio>/` (workflow `.github/workflows/editor-pages.yml`).
+  En repos privados GitHub Pages requiere un plan de pago.
+
+### Videos de iPhone (HEVC / HDR)
+
+Si el navegador no abre un video, conviértelo sin pérdida visible (H.264, CRF 14, misma resolución y fps; el HDR
+se ajusta a SDR para que no se vea deslavado):
 
 ```bash
-python -m animaciones --editor
+python -m animaciones convertir carpeta_de_clips/ -o compatibles/
 ```
+
+Al importar un archivo que el proyecto ya usaba (mismo nombre y tamaño), se reconecta solo.
 
 ## Motor por línea de comandos
 

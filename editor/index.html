@@ -201,6 +201,27 @@ button { cursor: pointer; }
 .pub pre { margin: 0; white-space: pre-wrap; font-family: var(--f-ui); line-height: 1.45; }
 .fuente-muestra { font-size: 26px; line-height: 1.1; color: var(--fg); padding: 4px 0 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
+/* Teleprompter y grabación */
+.prompter { position: absolute; inset: 14px; display: grid; grid-template-rows: minmax(0, 1fr) auto; background: rgba(10, 9, 8, .78); border-radius: 6px; z-index: 6; overflow: hidden; }
+.prompter-texto { overflow: hidden; padding: 30% 8% 60%; font-family: var(--f-ui); font-weight: 600; line-height: 1.45; color: rgba(237, 232, 225, .45); }
+.prompter-texto .w.leida { color: rgba(237, 232, 225, .8); }
+.prompter-texto .w.actual { color: #fff; background: rgba(226, 35, 26, .35); border-radius: 3px; }
+.prompter-barra { display: flex; gap: 8px; align-items: center; justify-content: flex-end; padding: 8px 10px; background: rgba(0, 0, 0, .5); }
+.prompter-barra span { margin-right: auto; font-family: var(--f-mono); color: #ff8a80; }
+.cuenta { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--f-display); font-weight: 800; font-size: 140px; color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,.6); z-index: 7; pointer-events: none; }
+.medidor { height: 10px; background: var(--panel-3); border-radius: 5px; overflow: hidden; }
+.medidor i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ok), var(--amber) 75%, var(--accent)); }
+.btn.grabar { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; justify-content: center; padding: 10px; }
+.btn.grabar.activo { animation: latir 1s infinite; }
+@keyframes latir { 50% { filter: brightness(1.35); } }
+@media (prefers-reduced-motion: reduce) { .btn.grabar.activo { animation: none; } }
+.punto { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.punto.ok { background: var(--ok); }
+.proyectos { display: grid; gap: 6px; }
+.proyecto-nube { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.proyecto-nube b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.proyecto-nube small { color: var(--muted); }
+
 /* Teléfono / pantallas angostas: todo en una columna */
 @media (max-width: 900px) {
   body { overflow: auto; }
@@ -233,6 +254,8 @@ button { cursor: pointer; }
     <button class="btn" id="btnAbrir">Abrir</button>
     <button class="btn" id="btnGuardar">Guardar proyecto</button>
     <input type="file" id="archivoProyecto" accept=".json,application/json" hidden>
+    <button class="btn" id="btnIA" title="Conectar la inteligencia artificial"><span id="puntoIA" class="punto"></span> IA</button>
+    <button class="btn" id="btnNube" title="Tus proyectos en la nube">Nube</button>
     <button class="btn" id="btnRevisar">Revisar</button>
     <button class="btn prim" id="btnExportar">Exportar video</button>
   </header>
@@ -244,13 +267,16 @@ button { cursor: pointer; }
       <button role="tab" id="tab-ilus" aria-selected="false" data-tab="ilus">Ilustraciones</button>
       <button role="tab" id="tab-medios" aria-selected="false" data-tab="medios">Medios</button>
       <button role="tab" id="tab-estilo" aria-selected="false" data-tab="estilo">Mi identidad</button>
+      <button role="tab" id="tab-grabar" aria-selected="false" data-tab="grabar">Narración</button>
       <button role="tab" id="tab-asis" aria-selected="false" data-tab="asis">Claude</button>
     </div>
     <div class="scroll" id="panelLib"></div>
   </aside>
 
   <main class="stage">
-    <div class="lienzo-wrap" id="lienzoWrap"><canvas id="lienzo" width="1280" height="720" aria-label="Vista previa del video"></canvas></div>
+    <div class="lienzo-wrap" id="lienzoWrap"><canvas id="lienzo" width="1280" height="720" aria-label="Vista previa del video"></canvas>
+      <div class="prompter" id="prompter" hidden><div class="prompter-texto" id="prompterTexto"></div><div class="prompter-barra"><span id="prompterEstado"></span><button class="btn" id="prompterPausa">Pausa</button><button class="btn prim" id="prompterParar">Terminar</button></div></div>
+      <div class="cuenta" id="cuenta" hidden></div></div>
     <div class="transporte">
       <button class="btn icon" id="btnInicio" title="Ir al inicio" aria-label="Ir al inicio">⏮</button>
       <button class="btn prim" id="btnPlay" title="Reproducir (espacio)" style="min-width:84px">▶ Play</button>
@@ -968,7 +994,7 @@ async function importarArchivos(lista) {
     if (!tipo) { aviso("Formato no compatible: " + f.name); continue; }
     const reg = { id: uid(), nombre: f.name, tipo, blob: f };
     bdGuardar(reg); const m = await registrarMedio(reg); nuevos.push({ media: reg.id });
-    if (m.error) aviso(`Este navegador no puede leer “${f.name}”. Si es un video de iPhone (HEVC), expórtalo como “Más compatible” o ábrelo en Safari.`);
+    if (m.error) aviso(`Este navegador no puede leer “${f.name}” (suele ser video HEVC de iPhone). Ábrelo en Safari, o conviértelo sin perder calidad con: python -m animaciones convertir`);
   }
   pintarLib(); registrar();
   if (nuevos.length && !nuevos.some(n => n.media && medios[n.media].error)) aviso(nuevos.length === 1 ? "Archivo importado. Haz clic para agregarlo al video." : nuevos.length + " archivos importados.");
@@ -1076,14 +1102,14 @@ function sincronizarMedios(prevT) {
       if (activo) {
         let vol = clamp(el.volumen ?? 1, 0, 1);
         if (el.tipo === "audio") { const lt = t - el.inicio; if (el.fadeIn > 0) vol *= clamp(lt / el.fadeIn); if (el.fadeOut > 0) vol *= clamp((el.dur - lt) / el.fadeOut); }
-        m.volume = vol; m.muted = false;
+        m.volume = vol; m.muted = !!est.silencio;
         if (est.play) {
           if (m.paused) { try { m.currentTime = objetivo; } catch (e) { /* aún cargando */ } m.play().catch(() => {}); }
           else if (Math.abs(m.currentTime - objetivo) > .25) m.currentTime = objetivo;
         } else { if (!m.paused) m.pause(); if (Math.abs(m.currentTime - objetivo) > .02) { try { m.currentTime = objetivo; } catch (e) { /* nada */ } } }
       } else if (!m.paused) m.pause();
     }
-    if (est.play && prevT != null && el.inicio >= prevT && el.inicio < t) {
+    if (est.play && !est.silencio && prevT != null && el.inicio >= prevT && el.inicio < t) {
       if (el.tipo === "efecto") tocarSfx(el.sonido, el.volumen);
       else if (el.sonido && el.sonido !== "ninguno" && !ES_AUDIO(el)) tocarSfx(el.sonido, 1);
     }
@@ -1455,6 +1481,7 @@ function pintarLib() {
   } else if (tab === "estilo") {
     pintarIdentidad(p);
   } else if (tab === "asis") pintarAsistente(p);
+  else if (tab === "grabar") pintarGrabacion(p);
 }
 function agregarMedio(id) {
   const m = medios[id]; if (!m) return;
@@ -1947,8 +1974,8 @@ async function crearConClaude() {
   const st = () => $("#asisEstado");
   if (!asis.texto.trim()) { st().textContent = "Escribe primero qué animación quieres."; return; }
   let sample = null;
-  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { sample = null; }
-  if (!sample) { st().textContent = "El asistente funciona cuando abres este editor dentro de Claude. Mientras, usa las Plantillas."; st().classList.add("error"); return; }
+  sample = await iaDisponible();
+  if (!sample) { st().textContent = "Conecta la IA con el botón «IA» de arriba para usar el asistente. Mientras, usa las Plantillas."; st().classList.add("error"); return; }
   asis.ocupado = true; pintarLib();
   st().textContent = "Claude está diseñando la animación…";
   const t0 = est.t;
@@ -2173,8 +2200,8 @@ function cuadrosDe(m, n = 3) {
 async function crearVideoConIA() {
   if (!nv.tema.trim()) return estadoNv("Escribe primero de qué trata el video.");
   let sample = null;
-  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { sample = null; }
-  if (!sample) return estadoNv("La IA funciona al abrir el editor dentro de Claude. Mientras, usa “Armar sin IA”.");
+  sample = await iaDisponible();
+  if (!sample) return estadoNv("Conecta la IA con el botón «IA» de arriba, o usa “Armar sin IA”.");
   nv.ocupado = true; pintarNuevoVideo(); estadoNv("Revisando tus clips…", false);
   const pl = PLATAFORMAS[nv.plataforma], clips = clipsElegidos();
   const lim = await sample.limits().catch(() => null), maxImg = lim && lim.images ? lim.images.maxCount || 0 : 0;
@@ -2324,8 +2351,8 @@ async function abrirRevision() {
 async function revisarConIA() {
   const caja = $("#revIA"), b = $("#btnRevIA");
   let sample = null;
-  try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { sample = null; }
-  if (!sample) { caja.innerHTML = `<div class="chequeo aviso"><span class="ico">!</span><div><b>IA no disponible aquí</b><small>Abre el editor dentro de Claude para usar la revisión con IA.</small></div><span></span></div>`; return; }
+  sample = await iaDisponible();
+  if (!sample) { caja.innerHTML = `<div class="chequeo aviso"><span class="ico">!</span><div><b>IA sin conectar</b><small>Conéctala con el botón «IA» de arriba.</small></div><span></span></div>`; return; }
   b.disabled = true; b.textContent = "Revisando…";
   const textos = proy.elementos.filter(e => e.tipo === "texto").sort((a, c) => a.inicio - c.inicio).map(e => `[${fmtTiempo(e.inicio)}] (id ${e.id}) ${e.texto}`);
   const pl = PLATAFORMAS[proy.plataforma];
@@ -2354,9 +2381,334 @@ Reglas: ortografía y acentos del español; marca como "dato" cualquier cifra, f
 }
 $("#btnRevisar").onclick = abrirRevision;
 
+</script>
+
+<script>
+"use strict";
+/* ===================================================================
+   21. IA en cualquier lugar: dentro de Claude usa tu sesión; en tu propia
+       página usa tu clave de API de Anthropic (guardada solo en este navegador).
+   =================================================================== */
+const SDK_ANTHROPIC = "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.131.0/+esm";
+const MODELO_IA = "claude-opus-5-5";
+let iaClaude, iaClaudeLista = false;
+function claveApi() { try { return localStorage.getItem("estudio-clave-anthropic") || ""; } catch (e) { return ""; } }
+async function sampleDeClaude() {
+  if (!iaClaudeLista) {
+    iaClaudeLista = true;
+    try { iaClaude = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { iaClaude = null; }
+  }
+  return iaClaude;
+}
+const blobABase64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(b); });
+let sdkAnthropic = null;
+function iaConClave(clave) {
+  const conectar = async () => {
+    if (!sdkAnthropic) sdkAnthropic = (await import(SDK_ANTHROPIC)).default;
+    return { Anthropic: sdkAnthropic, cliente: new sdkAnthropic({ apiKey: clave, dangerouslyAllowBrowser: true }) };
+  };
+  const json = async (prompt, opts = {}) => {
+    const { Anthropic, cliente } = await conectar();
+    const contenido = [];
+    for (const img of opts.images || []) contenido.push({ type: "image", source: { type: "base64", media_type: img.type || "image/jpeg", data: await blobABase64(img) } });
+    contenido.push({ type: "text", text: prompt + "\n\nResponde únicamente con el JSON, sin texto antes ni después." });
+    try {
+      const flujo = cliente.beta.messages.stream({
+        model: MODELO_IA, max_tokens: 64000,
+        output_config: { effort: opts.modelTier === "complex" ? "high" : "medium" },
+        betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
+        messages: [{ role: "user", content: contenido }],
+      });
+      const msg = await flujo.finalMessage();
+      if (msg.stop_reason === "refusal") throw { code: "rechazo", message: "La IA no quiso generar esto. Reformula el pedido." };
+      const texto = msg.content.filter(b => b.type === "text").map(b => b.text).join("");
+      const a = texto.indexOf("{"), z = texto.lastIndexOf("}");
+      if (a < 0 || z < a) throw { code: "invalid_json", message: "La respuesta no traía datos válidos." };
+      return JSON.parse(texto.slice(a, z + 1));
+    } catch (e) {
+      if (e instanceof Anthropic.AuthenticationError) throw { code: "clave", message: "Tu clave de API no es válida. Revísala en el botón «IA»." };
+      if (e instanceof Anthropic.PermissionDeniedError) throw { code: "clave", message: "Tu clave no tiene permiso para este modelo." };
+      if (e instanceof Anthropic.RateLimitError) throw { code: "rate_limited", message: "Demasiadas peticiones; espera un momento." };
+      if (e instanceof Anthropic.APIConnectionError) throw { code: "red", message: "Sin conexión con la IA. Revisa tu internet." };
+      if (e instanceof Anthropic.APIError) throw { code: "api", message: e.message };
+      throw e;
+    }
+  };
+  return { origen: "clave", json, limits: async () => ({ images: { maxCount: 20 } }) };
+}
+async function iaDisponible() {
+  const s = await sampleDeClaude();
+  if (s) return s;
+  const k = claveApi();
+  return k ? iaConClave(k) : null;
+}
+async function pintarPuntoIA() { const s = await sampleDeClaude(); $("#puntoIA").classList.toggle("ok", !!(s || claveApi())); }
+async function abrirAjustesIA() {
+  const s = await sampleDeClaude(), k = claveApi();
+  const m = abrirModal(`<h2>Conectar la IA</h2>
+    ${s ? `<div class="chequeo ok"><span class="ico">✓</span><div><b>Conectada con tu cuenta de Claude</b><small>Abriste el editor dentro de Claude: la IA usa tu sesión, sin configurar nada.</small></div><span></span></div>`
+        : `<div class="nota">Estás usando el editor fuera de Claude. Para que la IA funcione aquí, pega una clave de API de Anthropic. La creas en <b>console.anthropic.com</b> → API Keys. Cada uso se cobra a esa cuenta según lo que consuma.</div>
+    <div class="campo"><label for="claveIA">Clave de API</label><input type="password" id="claveIA" autocomplete="off" placeholder="sk-ant-…" value="${escapar(k)}"></div>
+    <div class="nota">La clave se guarda solo en este navegador. No uses este editor con tu clave en computadoras compartidas.</div>
+    <div class="estado" id="estadoIA" role="status"></div>
+    <div class="acciones" style="justify-content:flex-end">${k ? `<button class="btn" id="quitarIA">Quitar clave</button>` : ""}<button class="btn" id="probarIA">Guardar y probar</button></div>`}
+    <div class="acciones" style="justify-content:flex-end"><button class="btn prim" id="cerrarIA">Listo</button></div>`);
+  $("#cerrarIA", m).onclick = cerrarModal;
+  if (s) return;
+  const est2 = (t, err) => { const e = $("#estadoIA"); e.textContent = t; e.classList.toggle("error", !!err); };
+  $("#probarIA", m).onclick = async () => {
+    const v = $("#claveIA").value.trim();
+    if (!v) return est2("Pega tu clave primero.", true);
+    try { localStorage.setItem("estudio-clave-anthropic", v); } catch (e) { return est2("Este navegador no deja guardar la clave.", true); }
+    est2("Probando…");
+    try { const r = await iaConClave(v).json('Devuelve {"ok": true}'); est2(r && r.ok ? "¡Conectada! La IA ya funciona en este navegador." : "Respondió, pero raro. Intenta de nuevo."); }
+    catch (e) { est2(e.message || "No se pudo conectar.", true); }
+    pintarPuntoIA();
+  };
+  const q = $("#quitarIA", m); if (q) q.onclick = () => { try { localStorage.removeItem("estudio-clave-anthropic"); } catch (e) { /* nada */ } pintarPuntoIA(); abrirAjustesIA(); };
+}
+$("#btnIA").onclick = abrirAjustesIA;
+
+/* ===================================================================
+   22. Narración: grabar con el micrófono y teleprompter
+   =================================================================== */
+const gr = { stream: null, mr: null, trozos: [], t0: 0, inicio: 0, activo: false, raf: 0, analizador: null, pausa: 0, pausadoEn: 0, prompterSolo: false };
+const opGr = (() => { try { return JSON.parse(localStorage.getItem("estudio-grabacion") || "null") || {}; } catch (e) { return {}; } })();
+const OPG = { prompter: true, ppm: 140, tamPrompter: 30, reproducir: true, silenciar: true, cuenta: true, ...opGr };
+const guardarOpGr = () => { try { localStorage.setItem("estudio-grabacion", JSON.stringify(OPG)); } catch (e) { /* nada */ } };
+function pintarGrabacion(p) {
+  const puede = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+  p.innerHTML = `<div class="nota">Graba tu voz mientras ves el video. La grabación se coloca en <b>Audio 1 · voz</b> justo donde está el cabezal rojo.</div>
+    <button class="btn grabar${gr.activo ? " activo" : ""}" id="btnGrabar"${puede ? "" : " disabled"}>${gr.activo ? "■ Detener grabación" : "● Grabar narración aquí (" + fmtTiempo(est.t) + ")"}</button>
+    <div class="medidor" aria-hidden="true"><i id="nivelMic"></i></div>
+    <div class="estado${gr.error ? " error" : ""}" id="estadoGrab" role="status">${puede ? escapar(gr.mensaje || "") : "Este navegador no permite grabar audio."}</div>
+    <label class="chk"><input type="checkbox" id="opReproducir"${OPG.reproducir ? " checked" : ""}> Reproducir el video mientras grabo</label>
+    <label class="chk"><input type="checkbox" id="opSilenciar"${OPG.silenciar ? " checked" : ""}> Silenciar el video (evita eco; o usa audífonos)</label>
+    <label class="chk"><input type="checkbox" id="opCuenta"${OPG.cuenta ? " checked" : ""}> Cuenta regresiva de 3 segundos</label>
+    <div class="grupo"><div class="h">Teleprompter</div>
+      <label class="chk"><input type="checkbox" id="opPrompter"${OPG.prompter ? " checked" : ""}> Mostrar el guion al grabar</label>
+      <div class="campo"><label for="guionPrompter">Tu guion</label><textarea id="guionPrompter" rows="7" placeholder="Pega aquí lo que vas a decir. Se irá marcando palabra por palabra mientras grabas.">${escapar(proy.guion || "")}</textarea></div>
+      <div class="campo"><label for="ppm">Velocidad: <span id="ppmTxt">${OPG.ppm}</span> palabras por minuto</label><input type="range" id="ppm" min="70" max="240" step="5" value="${OPG.ppm}"></div>
+      <div class="campo"><label for="tamPrompter">Tamaño de letra</label><input type="range" id="tamPrompter" min="18" max="56" step="1" value="${OPG.tamPrompter}"></div>
+      <button class="btn" id="probarPrompter">Probar teleprompter sin grabar</button>
+      <div class="nota" id="duracionGuion"></div>
+    </div>
+    <div class="grupo"><div class="h">¿No te deja usar el micrófono?</div>
+      <div class="nota">Dentro de la app de Claude el micrófono está bloqueado por seguridad. Opciones: abre tu editor en tu propia página web (ver README), o graba con tu celular aquí abajo y se importa solo.</div>
+      <button class="btn" id="grabarCelular">Grabar o elegir una nota de voz</button>
+    </div>`;
+  const dur = () => { const n = ($("#guionPrompter").value.match(/\S+/g) || []).length; $("#duracionGuion").textContent = n ? `${n} palabras ≈ ${fmtTiempo(n / OPG.ppm * 60)} leyendo a esta velocidad.` : ""; };
+  dur();
+  $("#guionPrompter", p).oninput = e => { proy.guion = e.target.value; dur(); registrarLuego(); };
+  $("#ppm", p).oninput = e => { OPG.ppm = +e.target.value; $("#ppmTxt").textContent = OPG.ppm; dur(); guardarOpGr(); };
+  $("#tamPrompter", p).oninput = e => { OPG.tamPrompter = +e.target.value; $("#prompterTexto").style.fontSize = OPG.tamPrompter + "px"; guardarOpGr(); };
+  for (const [id, k] of [["opReproducir", "reproducir"], ["opSilenciar", "silenciar"], ["opCuenta", "cuenta"], ["opPrompter", "prompter"]]) $("#" + id, p).onchange = e => { OPG[k] = e.target.checked; guardarOpGr(); };
+  $("#btnGrabar", p).onclick = () => gr.activo ? detenerGrabacion() : iniciarGrabacion();
+  $("#probarPrompter", p).onclick = () => { gr.prompterSolo = true; gr.inicio = performance.now(); gr.pausa = 0; gr.pausadoEn = 0; mostrarPrompter(); animarPrompter(); };
+  $("#grabarCelular", p).onclick = () => { const i = Object.assign(document.createElement("input"), { type: "file", accept: "audio/*" }); i.setAttribute("capture", "");
+    i.onchange = async () => { if (i.files[0]) { const t0 = est.t; const antes = new Set(Object.keys(medios)); await importarArchivos([i.files[0]]); const nuevo = Object.keys(medios).find(k => !antes.has(k)); if (nuevo) colocarNarracion(nuevo, t0); } }; i.click(); };
+}
+const estadoGrab = (t, err) => { gr.mensaje = t; gr.error = !!err; const e = $("#estadoGrab"); if (e) { e.textContent = t; e.classList.toggle("error", !!err); } };
+function mostrarPrompter() {
+  if (!OPG.prompter && !gr.prompterSolo) return;
+  const txt = (proy.guion || "").trim();
+  if (!txt) { if (gr.prompterSolo) { aviso("Escribe o pega tu guion en la pestaña Narración."); gr.prompterSolo = false; } return; }
+  const cont = $("#prompterTexto"); cont.style.fontSize = OPG.tamPrompter + "px";
+  cont.innerHTML = txt.split(/\n/).map(l => l.split(/\s+/).filter(Boolean).map(w => `<span class="w">${escapar(w)}</span>`).join(" ")).join("<br>");
+  cont.scrollTop = 0; $("#prompter").hidden = false; $("#prompterPausa").textContent = "Pausa";
+}
+function animarPrompter() {
+  cancelAnimationFrame(gr.raf);
+  const paso = () => {
+    if ($("#prompter").hidden) return;
+    const transcurrido = (gr.pausadoEn ? gr.pausadoEn : performance.now()) - gr.inicio - gr.pausa;
+    const ws = $$("#prompterTexto .w"), i = Math.floor(transcurrido / 1000 * OPG.ppm / 60);
+    ws.forEach((w, k) => { w.classList.toggle("leida", k < i); w.classList.toggle("actual", k === i); });
+    const actual = ws[Math.min(i, ws.length - 1)], cont = $("#prompterTexto");
+    if (actual) cont.scrollTop += (actual.offsetTop - cont.clientHeight * .35 - cont.scrollTop) * .12;
+    $("#prompterEstado").textContent = gr.activo ? "● GRABANDO " + fmtTiempo(transcurrido / 1000) : "Teleprompter " + fmtTiempo(transcurrido / 1000);
+    if (gr.analizador) { const d = new Uint8Array(gr.analizador.fftSize); gr.analizador.getByteTimeDomainData(d); let pico = 0; for (const v of d) pico = Math.max(pico, Math.abs(v - 128)); const n = $("#nivelMic"); if (n) n.style.width = Math.min(100, pico / 128 * 140) + "%"; }
+    gr.raf = requestAnimationFrame(paso);
+  };
+  gr.raf = requestAnimationFrame(paso);
+}
+$("#prompterPausa").onclick = () => {
+  if (gr.pausadoEn) { gr.pausa += performance.now() - gr.pausadoEn; gr.pausadoEn = 0; $("#prompterPausa").textContent = "Pausa"; if (gr.mr && gr.mr.state === "paused") { gr.mr.resume(); if (OPG.reproducir) reproducir(true); } }
+  else { gr.pausadoEn = performance.now(); $("#prompterPausa").textContent = "Seguir"; if (gr.mr && gr.mr.state === "recording") { gr.mr.pause(); if (est.play) reproducir(false); } }
+};
+$("#prompterParar").onclick = () => { if (gr.activo) detenerGrabacion(); else { $("#prompter").hidden = true; gr.prompterSolo = false; cancelAnimationFrame(gr.raf); } };
+async function cuentaRegresiva() {
+  if (!OPG.cuenta) return;
+  const c = $("#cuenta"); c.hidden = false;
+  for (const n of ["3", "2", "1"]) { c.textContent = n; tocarSfx("click", .6); await new Promise(r => setTimeout(r, 1000)); }
+  c.hidden = true;
+}
+async function iniciarGrabacion() {
+  if (est.play) reproducir(false);
+  try {
+    gr.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
+  } catch (e) {
+    estadoGrab(e && e.name === "NotAllowedError" ? "El micrófono está bloqueado aquí. Si estás dentro de la app de Claude, usa “Grabar o elegir una nota de voz” o abre tu editor en tu propia página." : "No se encontró un micrófono.", true);
+    return;
+  }
+  const ac = ctxAudio(); if (ac) { const src = ac.createMediaStreamSource(gr.stream); gr.analizador = ac.createAnalyser(); gr.analizador.fftSize = 1024; src.connect(gr.analizador); }
+  const tipo = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg;codecs=opus"].find(t => MediaRecorder.isTypeSupported(t)) || "";
+  gr.mr = new MediaRecorder(gr.stream, tipo ? { mimeType: tipo, audioBitsPerSecond: 192000 } : undefined);
+  gr.trozos = []; gr.mr.ondataavailable = e => { if (e.data.size) gr.trozos.push(e.data); };
+  gr.mr.onstop = terminarGrabacion;
+  mostrarPrompter();
+  await cuentaRegresiva();
+  gr.t0 = est.t; gr.inicio = performance.now(); gr.pausa = 0; gr.pausadoEn = 0; gr.activo = true;
+  gr.mr.start(250);
+  est.silencio = OPG.silenciar;
+  if (OPG.reproducir) reproducir(true);
+  animarPrompter();
+  if (est.tabLib === "grabar") pintarLib();
+}
+function detenerGrabacion() {
+  if (!gr.activo) return;
+  gr.duracion = ((gr.pausadoEn || performance.now()) - gr.inicio - gr.pausa) / 1000;
+  gr.activo = false;
+  if (gr.mr && gr.mr.state !== "inactive") gr.mr.stop();
+  if (est.play) reproducir(false);
+  est.silencio = false;
+}
+async function terminarGrabacion() {
+  cancelAnimationFrame(gr.raf); $("#prompter").hidden = true;
+  gr.stream.getTracks().forEach(t => t.stop()); gr.analizador = null;
+  const tipo = gr.mr.mimeType || "audio/webm", ext = tipo.includes("mp4") ? "m4a" : tipo.includes("ogg") ? "ogg" : "webm";
+  const n = Object.values(medios).filter(m => /^Narración \d+/.test(m.nombre)).length + 1;
+  const archivo = new File(gr.trozos, `Narración ${String(n).padStart(2, "0")}.${ext}`, { type: tipo });
+  const reg = { id: uid(), nombre: archivo.name, tipo: "audio", blob: archivo };
+  bdGuardar(reg); const m = await registrarMedio(reg);
+  if (!isFinite(m.dur) || !m.dur) m.dur = gr.duracion;
+  colocarNarracion(reg.id, gr.t0, gr.duracion);
+  estadoGrab(`Listo: ${fmtTiempo(gr.duracion)} grabados. Escúchala con Play; si no te gustó, bórrala y graba de nuevo.`);
+  if (est.tabLib === "grabar") pintarLib();
+}
+function colocarNarracion(mediaId, t0, dur) {
+  const m = medios[mediaId]; if (!m) return;
+  const d = +(dur || (isFinite(m.dur) && m.dur) || 5).toFixed(3);
+  const el = nuevoElemento("audio", { media: mediaId, nombre: m.nombre, inicio: +t0.toFixed(3), dur: d, fadeOut: 0, volumen: 1 });
+  let p = 0; while (!pistaAudioLibre(p, el.inicio, el.inicio + el.dur)) p++; el.pistaAudio = p;
+  proy.elementos.push(el); proy.derechos = proy.derechos || {}; proy.derechos[mediaId] = "mio";
+  seleccionar(el.id); registrar(); pintarTimeline();
+}
+
+/* ===================================================================
+   23. Nube (dentro de Claude): proyectos en tu cuenta y archivos de hasta 20 MB
+   =================================================================== */
+const LIMITE_ASSET = 20 * 1024 * 1024 - 4096;
+let nube = undefined; // undefined = sin revisar, null = no disponible
+async function nubeDisponible() {
+  if (nube !== undefined) return nube;
+  try {
+    if (!(window.claude && window.claude.use)) return (nube = null);
+    const [db, assets, user] = await Promise.all([window.claude.use("db"), window.claude.use("assets"), window.claude.use("user")]);
+    const id = db && user ? await user.id() : null;
+    nube = db && id ? { db, assets, uid: id } : null;
+  } catch (e) { nube = null; }
+  return nube;
+}
+const coleccionNube = n => n.db.collection("data/users/" + n.uid);
+function infoMedio(id) { const m = medios[id]; return m ? { nombre: m.nombre, tipo: m.tipo, size: m.blob ? m.blob.size : 0 } : null; }
+async function guardarEnNube(silencioso = false) {
+  const n = await nubeDisponible();
+  if (!n) { if (!silencioso) aviso("La nube funciona al abrir tu editor dentro de Claude."); return false; }
+  proy.id = proy.id || uid(); proy.nube = proy.nube || {};
+  const usados = [...new Set(proy.elementos.filter(e => e.media && medios[e.media]).map(e => e.media))];
+  let subidos = 0, grandes = 0;
+  for (const id of usados) {
+    const m = medios[id];
+    if (proy.nube[id] && proy.nube[id].asset) continue;
+    if (!n.assets || m.blob.size > LIMITE_ASSET) { grandes++; proy.nube[id] = { ...infoMedio(id), asset: null }; continue; }
+    try { if (!silencioso) aviso(`Subiendo ${m.nombre}…`); const r = await n.assets.upload(m.blob); proy.nube[id] = { ...infoMedio(id), asset: r.id, url: r.url }; subidos++; }
+    catch (e) { proy.nube[id] = { ...infoMedio(id), asset: null }; if (e && e.code === "too_large") grandes++; }
+  }
+  const json = JSON.stringify(proy);
+  if (json.length > 250000) { if (!silencioso) aviso("Este proyecto es demasiado grande para la nube. Usa “Guardar proyecto”."); return false; }
+  try {
+    await coleccionNube(n).doc(proy.id).set({ nombre: proy.nombre || "Sin nombre", actualizado: Date.now(), formato: proy.formato, duracion: duracionProyecto(), json });
+  } catch (e) { if (!silencioso) aviso("No se pudo guardar en la nube: " + ((e && e.message) || "error")); return false; }
+  guardarLocal(JSON.stringify(proy));
+  if (!silencioso) aviso(`Guardado en la nube${subidos ? ` con ${subidos} archivos nuevos` : ""}.${grandes ? ` ${grandes} videos pesan más de 20 MB y se quedan en este equipo.` : ""}`);
+  return true;
+}
+async function abrirDeNube(id) {
+  const n = await nubeDisponible(); if (!n) return;
+  const doc = await coleccionNube(n).doc(id).get();
+  if (!doc.exists) return aviso("Ese proyecto ya no existe.");
+  const p = JSON.parse(doc.data().json);
+  est.t = 0; cargarProyecto(p); cerrarModal();
+  const faltan = Object.entries(p.nube || {}).filter(([mid, info]) => info.asset && !medios[mid]);
+  for (const [mid, info] of faltan) {
+    try { aviso(`Descargando ${info.nombre}…`); const b = await (await fetch(info.url)).blob();
+      const reg = { id: mid, nombre: info.nombre, tipo: info.tipo, blob: new File([b], info.nombre, { type: b.type }) }; bdGuardar(reg); await registrarMedio(reg); }
+    catch (e) { /* queda como faltante */ }
+  }
+  const sinArchivo = proy.elementos.filter(e => e.media && !medios[e.media]).length;
+  pintarTodo(); sincronizarMedios(null);
+  aviso(sinArchivo ? `Proyecto abierto. Faltan ${sinArchivo} videos grandes: impórtalos en Medios y se conectan solos.` : "Proyecto abierto desde la nube.");
+}
+async function abrirPanelNube() {
+  const n = await nubeDisponible();
+  if (!n) {
+    abrirModal(`<h2>Mis proyectos</h2><div class="nota">La nube guarda tus proyectos en tu cuenta de Claude y los abres desde cualquier dispositivo. Funciona cuando abres tu editor <b>dentro de Claude</b>.<br><br>Aquí tus proyectos se guardan solo en este navegador. Para pasarlos a otro lado usa “Guardar proyecto” y “Abrir”.</div>
+      <div class="acciones" style="justify-content:flex-end"><button class="btn prim" id="nubeCerrar">Entendido</button></div>`);
+    $("#nubeCerrar").onclick = cerrarModal; return;
+  }
+  const m = abrirModal(`<h2>Mis proyectos en la nube</h2><div class="estado">Cargando…</div>`);
+  let docs = [];
+  try { docs = (await coleccionNube(n).orderBy("actualizado", "desc").limit(100).get()).docs; } catch (e) { docs = []; }
+  m.querySelector(".caja").innerHTML = `<h2>Mis proyectos en la nube</h2>
+    <div class="acciones"><button class="btn prim" id="nubeGuardar">Guardar “${escapar(proy.nombre)}” en la nube</button>
+    <label class="chk"><input type="checkbox" id="nubeAuto"${proy.nubeAuto ? " checked" : ""}> Guardar automáticamente</label></div>
+    <div class="nota">Se suben tu proyecto, tus fotos, tus narraciones y los clips de hasta 20 MB. Los videos más pesados se quedan en este equipo; en otro dispositivo impórtalos y se conectan solos por su nombre.</div>
+    <div class="proyectos">${docs.length ? docs.map(d => { const x = d.data(); return `<div class="proyecto-nube"><div><b>${escapar(x.nombre)}</b><small>${new Date(x.actualizado).toLocaleString("es-MX")} · ${x.formato} · ${fmtTiempo(x.duracion || 0)}</small></div>
+      <span class="acciones"><button class="btn" data-abrir="${d.id}">Abrir</button><button class="btn" data-borrar="${d.id}" aria-label="Borrar ${escapar(x.nombre)}">Borrar</button></span></div>`; }).join("") : `<div class="nota">Todavía no tienes proyectos en la nube.</div>`}</div>
+    <div class="acciones" style="justify-content:flex-end"><button class="btn" id="nubeCerrar">Cerrar</button></div>`;
+  $("#nubeCerrar", m).onclick = cerrarModal;
+  $("#nubeGuardar", m).onclick = async e => { e.currentTarget.disabled = true; await guardarEnNube(); abrirPanelNube(); };
+  $("#nubeAuto", m).onchange = e => { proy.nubeAuto = e.target.checked; registrar(); if (proy.nubeAuto) guardarEnNube(true); };
+  $$("[data-abrir]", m).forEach(b => b.onclick = () => abrirDeNube(b.dataset.abrir));
+  $$("[data-borrar]", m).forEach(b => b.onclick = async () => {
+    if (b.dataset.seguro !== "1") { b.dataset.seguro = "1"; b.textContent = "¿Seguro?"; return; }
+    await coleccionNube(n).doc(b.dataset.borrar).delete(); abrirPanelNube();
+  });
+}
+$("#btnNube").onclick = abrirPanelNube;
+let timerNube = null;
+const registrarBase = registrar;
+registrar = function () {
+  registrarBase();
+  proy.infoMedios = proy.infoMedios || {};
+  for (const e of proy.elementos) if (e.media && medios[e.media] && !proy.infoMedios[e.media]) proy.infoMedios[e.media] = infoMedio(e.media);
+  if (proy.nubeAuto) { clearTimeout(timerNube); timerNube = setTimeout(() => guardarEnNube(true), 45000); }
+};
+
+/* ===================================================================
+   24. Reconectar archivos: al importar un archivo que el proyecto ya usaba
+       (mismo nombre y tamaño), se conecta solo en otro dispositivo.
+   =================================================================== */
+const importarConReconexion = importarArchivos;
+importarArchivos = async lista => {
+  const antes = new Set(Object.keys(medios));
+  await importarConReconexion(lista);
+  const nuevos = Object.keys(medios).filter(k => !antes.has(k));
+  const info = { ...(proy.infoMedios || {}), ...(proy.nube || {}) };
+  let conectados = 0;
+  for (const el of proy.elementos) {
+    if (!el.media || medios[el.media]) continue;
+    const quiere = info[el.media]; if (!quiere) continue;
+    const hallado = nuevos.find(k => medios[k].nombre === quiere.nombre && (!quiere.size || medios[k].blob.size === quiere.size));
+    if (hallado) { const viejo = el.media; for (const e2 of proy.elementos) if (e2.media === viejo) { e2.media = hallado; conectados++; } }
+  }
+  if (conectados) { registrar(); pintarTimeline(); pintarProps(); sincronizarMedios(null); pedirRender(); aviso(`Se reconectaron ${conectados} clips con tus archivos.`); }
+};
+
 /* Arranque */
 cargarIdentidad();
 const cargarOriginal = cargarProyecto;
 cargarProyecto = p => { cargarOriginal(p); revisionIA = null; };
-iniciar();
+iniciar().then(pintarPuntoIA);
 </script>

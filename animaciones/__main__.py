@@ -4,6 +4,8 @@
     python -m animaciones guion.yaml -o intro.mp4     -> fondo verde para croma (o el video si lo trae)
     python -m animaciones guion.yaml --cuadro 1.2     -> vista previa PNG del segundo 1.2
     python -m animaciones --lista                     -> catálogo de animaciones
+    python -m animaciones --editor                    -> editor visual en el navegador
+    python -m animaciones convertir clips/ [-o salida/] -> videos de iPhone (HEVC/HDR) a H.264 compatible
 """
 import argparse
 import os
@@ -15,7 +17,8 @@ from .motor import TIPOS, Escena
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="animaciones", description="Motion graphics a partir de un guion YAML.")
-    ap.add_argument("guion", nargs="?", help="archivo .yaml con las animaciones")
+    ap.add_argument("guion", nargs="?", help="archivo .yaml con las animaciones, o 'convertir' seguido de videos/carpetas")
+    ap.add_argument("extra", nargs="*", help=argparse.SUPPRESS)
     ap.add_argument("-o", "--salida", help="archivo de salida (.mov, .webm, .mp4 o .png)")
     ap.add_argument("--fondo", help="color de fondo (ej. verde, negro, #00FF00). Sin esto: transparente")
     ap.add_argument("--cuadro", type=float, help="renderiza solo el cuadro de ese segundo como PNG")
@@ -28,6 +31,9 @@ def main(argv=None):
 
     if a.editor:
         return abrir_editor()
+    if a.guion == "convertir":
+        from .convertir import main as convertir
+        return convertir(a.extra, a.salida)
 
     if a.lista or not a.guion:
         print("Animaciones disponibles (tipo: descripción):")
@@ -58,20 +64,15 @@ def main(argv=None):
 
 
 def abrir_editor(puerto=8765):
-    """Sirve editor/index.html (que no trae <html>/<head> propios) envuelto en un documento completo."""
+    """Sirve el editor en http://localhost (ahí sí se permite el micrófono)."""
     import http.server
     import webbrowser
 
-    ruta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "editor", "index.html")
+    from .editor_web import pagina
 
     class Manejador(http.server.BaseHTTPRequestHandler):
         def do_GET(self):
-            with open(ruta, encoding="utf-8") as f:
-                cuerpo = f.read()
-            html = ('<!doctype html><html lang="es"><head><meta charset="utf-8">'
-                    '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
-                    '<style>body{margin:0}[hidden]{display:none!important}</style></head><body>'
-                    + cuerpo + "</body></html>").encode("utf-8")
+            html = pagina().encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(html)))
